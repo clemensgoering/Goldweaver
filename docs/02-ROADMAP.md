@@ -122,9 +122,9 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 | # | Frage | Status | Antwort / Entscheidung |
 |---|---|---|---|
 | F1 | `ReplicateItems` auf 1.60 | offen | API vorhanden (Probe 08.11.); Aufruf noch nicht getestet |
-| F2 | Berufe-API je Beruf | **teilweise beantwortet** | Nur `C_TradeSkillUI`; Legacy-APIs existieren nicht. `GetRecipeTools` fehlt. Rezeptfelder noch zu dumpen (Beruf öffnen) |
+| F2 | Berufe-API je Beruf | **beantwortet** | Nur `C_TradeSkillUI` (Kochkunst 132, Lederverarbeitung 592 Rezepte). `GetRecipeInfo` liefert `name`, `difficulty` als Zahl (Enum.TradeskillRelativeDifficulty), `learned`; `GetRecipeSchematic` liefert `reagentSlotSchematics`, `quantityMin/Max`. `GetRecipeTools` fehlt. Verzauberkunst noch zu bestätigen, aber keine Legacy-API vorhanden |
 | F3 | Namensformat, Realm-Funktionen, Regelsatz | **beantwortet** | `UnitFullName` = Vorname, Nachname. Realmname „CAMWOW EU4 Realm 5 PvE" → Markt-Key `EU-PvE-Horde`. Key „Vorname Nachname" |
-| F4 | Secure-Button mit `macrotext` | offen | Erster Versuch: Button nicht sichtbar; zweiter Versuch mit sichtbarem Template ausstehend |
+| F4 | Secure-Button mit `macrotext` | offen | Lauf 2: Button sichtbar, PreClick und PostClick feuern, `/run` im Makrotext lief nicht. Lauf 3 testet `/dance` |
 | F5 | `TooltipDataProcessor` | **beantwortet** | vorhanden |
 | F6 | Laufzeiten und Einzahlung | **teilweise beantwortet** | 2 / 8 / 24 h. Einzahlung 1 Silber pauschal für 1× Leinenstoff; Formel über Rechnung prüfen |
 | F7 | Favor pro Kiste, Bündel je Kategorie | offen | |
@@ -132,4 +132,5 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 | F9 | AH-Budget pro Minute | offen, kein Fix erwartet | Konservatives Design |
 | F10 | Post nach Vorname | offen | Testsendung vor erster echter Sendung |
 | F11 | Skill-up-Wahrscheinlichkeiten | offen | Kalibrierung in Phase 4 |
-| F12 | Ist `/run` in Makrotext eines Secure-Buttons auf Forever erlaubt (Midnight-Makro-Einschränkungen)? | offen | `/gw probe secure` zeigt PreClick und Makro getrennt; Zerlegen-Queue nutzt ohnehin `/cast`, nicht `/run` |
+| F12 | Ist `/run` in Makrotext eines Secure-Buttons auf Forever erlaubt (Midnight-Makro-Einschränkungen)? | **vermutlich nein** | Lauf 2: Klick kam an, `/run print` ohne Wirkung. Zerlegen-Queue nutzt `/cast`, nicht `/run`; Lauf 3 mit `/dance` trennt F4 von F12 |
+| F13 | `REPLICATE_ITEM_LIST_UPDATE` kommt nach `ReplicateItems()` nicht (Lauf 2, AH offen) | offen | Probe prüft nach 15/45/90 s `GetNumReplicateItems`; falls dauerhaft nichts kommt, ist der Vollscan auf Forever tot und WP3.4 entfällt (Auctionator als einzige Massen-Preisquelle) |

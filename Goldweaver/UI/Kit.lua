@@ -63,9 +63,11 @@ local function selectTab(key)
     if b then if k == key then b:Disable() else b:Enable() end end
   end
   if not tab.content then
-    local frame = CreateFrame("Frame", nil, window.Inset)
-    frame:SetPoint("TOPLEFT", window.Inset, "TOPLEFT", 10, -8)
-    frame:SetPoint("BOTTOMRIGHT", window.Inset, "BOTTOMRIGHT", -10, 8)
+    -- Verified 08.11.2026: BasicFrameTemplateWithInset has no usable .Inset on Forever, so the window owns its
+    -- own Body frame; every tab frame is parented to it and hides with the window.
+    local frame = CreateFrame("Frame", nil, window.Body)
+    frame:SetPoint("TOPLEFT", window.Body, "TOPLEFT", 10, -8)
+    frame:SetPoint("BOTTOMRIGHT", window.Body, "BOTTOMRIGHT", -10, 8)
     tab.content = tab.builder(frame) or {}
     tab.content.frame = frame
     frame:Show()
@@ -98,12 +100,14 @@ local function createWindow()
     tabButtons[key] = b
     x = x + 114
   end
-  -- push the inset below the tab row
-  if window.Inset then
-    window.Inset:ClearAllPoints()
-    window.Inset:SetPoint("TOPLEFT", window, "TOPLEFT", 8, -54)
-    window.Inset:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", -8, 8)
-  end
+  -- content area below the tab row (own frame, independent of template internals)
+  if window.Inset then window.Inset:Hide() end
+  window.Body = CreateFrame("Frame", nil, window)
+  window.Body:SetPoint("TOPLEFT", window, "TOPLEFT", 8, -54)
+  window.Body:SetPoint("BOTTOMRIGHT", window, "BOTTOMRIGHT", -8, 8)
+  local bg = window.Body:CreateTexture(nil, "BACKGROUND")
+  bg:SetAllPoints()
+  bg:SetColorTexture(0, 0, 0, 0.35)
   window:Hide()
   return window
 end

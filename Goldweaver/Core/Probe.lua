@@ -274,10 +274,22 @@ function Probe.Replicate()
     ns.Events:Off("REPLICATE_ITEM_LIST_UPDATE", onReplicate)
   end
   ns.Events:On("REPLICATE_ITEM_LIST_UPDATE", onReplicate)
+  result.throttleReady = C_AuctionHouse.IsThrottledMessageSystemReady and C_AuctionHouse.IsThrottledMessageSystemReady()
   local ok, err = pcall(C_AuctionHouse.ReplicateItems)
   result.callOk, result.callErr = ok, err and tostring(err) or nil
   store("replicate", result)
-  ns.Print("probe replicate: call " .. (ok and "sent, waiting for REPLICATE_ITEM_LIST_UPDATE" or ("failed: " .. tostring(err))))
+  ns.Print("probe replicate: call " .. (ok and "sent, waiting for REPLICATE_ITEM_LIST_UPDATE" or ("failed: " .. tostring(err))) .. " (throttle ready: " .. tostring(result.throttleReady) .. ")")
+  -- Run 1: no event within the time the player waited. Check-ins only READ the local count; nothing is re-sent.
+  for _, delay in ipairs({ 15, 45, 90 }) do
+    C_Timer.After(delay, function()
+      if result.answeredMs then return end
+      local n = C_AuctionHouse.GetNumReplicateItems and C_AuctionHouse.GetNumReplicateItems() or "?"
+      local open = AuctionHouseFrame and AuctionHouseFrame:IsShown()
+      result["checkAt" .. delay] = { count = n, ahOpen = open }
+      store("replicate", result)
+      ns.Print(("probe replicate: after %d s no event yet; GetNumReplicateItems=%s, AH open=%s"):format(delay, tostring(n), tostring(open)))
+    end)
+  end
 end
 
 function Probe.Mail()
@@ -311,11 +323,12 @@ function Probe.Secure()
       -- UIPanelButtonTemplate gives the visible button art; SecureActionButtonTemplate the secure click handling.
       b = CreateFrame("Button", "GoldweaverProbeSecureButton", UIParent, "UIPanelButtonTemplate, SecureActionButtonTemplate")
       b:SetAttribute("type", "macro")
-      -- Two signals: PreClick (insecure handler) proves the click arrives; the macro line proves secure attribute
-      -- execution and whether /run is still allowed in macros on this client (F12). Nothing is cast or sent.
-      b:SetAttribute("macrotext", "/run print('Goldweaver probe: secure macro ran')")
+      -- Run 1 (08.11.2026): PreClick and PostClick fired, "/run print(...)" did not -> /run is blocked in macro text
+      -- or the attribute did not fire. Run 2 uses a harmless emote: if the character dances, secure macro
+      -- attributes work (F4) and only /run is blocked (F12). Nothing is cast or sent to other players' chat.
+      b:SetAttribute("macrotext", "/dance")
       b:SetScript("PreClick", function() ns.Print("probe secure: click received (PreClick)") end)
-      b:SetScript("PostClick", function() ns.Print("probe secure: PostClick (if no 'secure macro ran' line appeared, /run in macros is blocked or the attribute did not fire)") end)
+      b:SetScript("PostClick", function() ns.Print("probe secure: PostClick. Did the character dance? yes = secure macro works (F4 ok), no = attribute did not fire") end)
       b:RegisterForClicks("AnyUp", "AnyDown")
       b:SetSize(260, 32)
       b:SetPoint("CENTER", UIParent, "CENTER", 0, 120)

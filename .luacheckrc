@@ -30,5 +30,5 @@ read_globals = {
   "Auctionator", "TSM_API", "Syndicator", "GatherMate2",
   -- Misc UI
   "BackdropTemplateMixin", "UISpecialFrames", "StaticPopup_Show", "StaticPopupDialogs",
-  "Minimap", "GetCursorPosition", "tinsert", "CreateFrame", "GetMoney",
+  "Minimap", "GetCursorPosition", "tinsert", "CreateFrame", "GetMoney", "AuctionHouseFrame",
 }

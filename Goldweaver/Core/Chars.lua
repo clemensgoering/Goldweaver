@@ -88,13 +88,21 @@ end
 
 -- One-time cleanup of records written before the name/market format was verified in game.
 function Chars.Migrate()
-  local first, surname = Chars.Names()
-  local newKey = Chars.FullName()
-  local oldKey = surname and (first .. "-" .. surname) or nil
-  if oldKey and ns.db.chars[oldKey] and not ns.db.chars[newKey] then
-    ns.db.chars[newKey] = ns.db.chars[oldKey]
-    ns.db.chars[oldKey] = nil
-    ns.Log("migrated character key", oldKey, "->", newKey)
+  -- On Forever every "First-Second" key written by the old code is "First Second" (second part = surname).
+  local onForever = Chars.ParseRealm(GetRealmName and GetRealmName() or nil) ~= nil
+  if onForever then
+    for key, rec in pairs(ns.db.chars) do
+      local first, second = key:match("^([^%-%s]+)%-([^%-%s]+)$")
+      if first and second then
+        local newKey = first .. " " .. second
+        if not ns.db.chars[newKey] then
+          rec.name, rec.firstName, rec.surname = newKey, first, second
+          ns.db.chars[newKey] = rec
+        end
+        ns.db.chars[key] = nil
+        ns.Log("migrated character key", key, "->", newKey)
+      end
+    end
   end
   for _, rec in pairs(ns.db.chars) do
     local normalized = Chars.NormalizeMarket(rec.market)
