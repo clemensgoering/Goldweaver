@@ -18,6 +18,12 @@ ns.Professions:Register({
   crateCategories = { "textiles" },
   vendorReagents = { COARSE, FINE, SILKEN, HEAVY_SILKEN, RUNE_THREAD, RED_DYE, 2324, 6260, 4340 },
   stations = {},
+  -- Where the next rank is taught (community beta guides; the Trade Contacts recorder overrides with visited trainers).
+  trainers = {
+    Journeyman = "Hauptstadt: Horde Magar (Orgrimmar), Rhiannon Davis (Undercity), Tepa (Thunder Bluff); Allianz Sellandus (Stormwind), Jormund Stonebrow (Ironforge), Me'lynn (Darnassus)",
+    Expert = "Josef Gregorian (Undercity) oder Georgio Bolero (Stormwind), 50 Silber",
+    Artisan = "Daryl Stack (Tarren Mill) oder Timothy Worthington (Theramore)",
+  },
   -- Materials are totals for the step (bolts counted as cloth where the guide does so).
   seedPath = {
     { from = 1,   to = 30,  recipe = "Bolt of Linen Cloth",       crafts = 30, mats = { { item = LINEN, qty = 60 } } },

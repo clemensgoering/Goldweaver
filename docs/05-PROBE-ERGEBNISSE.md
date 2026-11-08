@@ -29,6 +29,24 @@ Stand: erster Lauf am 08.11.2026 auf Build 1.60.1.70862 (deDE, Horde, „CAMWOW 
 | 7 | `/gw probe secure` | außerhalb des Kampfs | F4 |
 | 8 | Kiste öffnen, Tooltip ablesen | Waylaid Crate | F7 (Bündelgrößen, Favor) |
 
+## Abnahme 0.1.0 (Abend 08.11.2026)
+
+Reihenfolge für den Test, pro Punkt ein Häkchen oder eine Notiz:
+
+| # | Schritt | Erwartung | Ergebnis |
+|---|---|---|---|
+| A1 | `/reload`, Main einloggen | Keine Lua-Fehler, Minimap-Button, HUD-Zeile oben („Für Cupedos Bank: …") | |
+| A2 | Items in der Tasche anschauen | Goldene Goldweaver-Zeile mit „an Cupedos Bank schicken → …" bei Material/Grünen; mit Shift alle Optionen und Preisquelle | |
+| A3 | Briefkasten öffnen | Knopf „Anhängen für Cupedos Bank: N von M Items (Wert)"; Klick füllt Empfänger und Anhänge; zweiter Klick „Senden an …" sendet | |
+| A4 | Twink einloggen, Post abholen | „Alles abholen" leert Post mit Anhängen/Geld; Zeile „Heute verkauft …" | |
+| A5 | Berufefenster Schneiderei öffnen, dann `/gw` → Berufe | Status mit Skill/Rang/Lehrer, Nächster Skill-up mit Icons und Einkaufsliste, Lohnt sich, Noch nicht gelernt; „Herstellen ×N" aktiv bei offenem Fenster | |
+| A6 | `/gw probe prof` bei offenem Fenster | Zwei Zeilen „learned recipe … / unlearned recipe …" mit allen Feldern (für `sourceType`/Skill-Anforderung) → hier eintragen | |
+| A7 | `/gw de` beim Twink mit grünen Items | Liste und Button „Entzaubern: <Item> (≈…)"; Klick entzaubert genau ein Item | |
+| A8 | AH: Leinenstoff suchen, dann Leinenstoff in den Verkaufen-Tab legen | Unter dem AH-Fenster die Vorschlagszeile, Preis vorbelegt; Tooltip zeigt danach „selbst gesehen" als Quelle | |
+| A9 | Lehrer und einen Händler besuchen, `/gw contacts` | Beide gelistet mit Zone und Koordinaten | |
+| A10 | `/gw` → Heute | Bis zu drei Empfehlungen, klickbar; Verkäufe/Session-Gold | |
+| A11 | Einstellungen | Sechs Schalter wirken sofort (Minimap, HUD, Tooltip, AH-Vorbelegung, eigene Materialien, Debug) | |
+
 ## Ergebnisse
 
 ### 1 Allgemein

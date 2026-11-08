@@ -173,10 +173,40 @@ function Probe.Profession()
     end
     local first = type(ids) == "table" and ids[1]
     if first and C_TradeSkillUI.GetRecipeInfo then
+      -- dump one learned and one unlearned recipe with ALL fields (to find source/skill requirement fields)
+      local learnedID, unlearnedID
+      for _, id in ipairs(ids) do
+        local okI, inf = pcall(C_TradeSkillUI.GetRecipeInfo, id)
+        if okI and type(inf) == "table" then
+          if inf.learned and not learnedID then learnedID = id end
+          if not inf.learned and not unlearnedID then unlearnedID = id end
+        end
+        if learnedID and unlearnedID then break end
+      end
+      for label, id in pairs({ learned = learnedID, unlearned = unlearnedID }) do
+        local info = C_TradeSkillUI.GetRecipeInfo(id)
+        if type(info) == "table" then
+          result[label .. "Fields"] = {}
+          local parts = {}
+          for k, v in pairs(info) do result[label .. "Fields"][k] = show(v); parts[#parts + 1] = k .. "=" .. show(v) end
+          table.sort(parts)
+          lines[#lines + 1] = ("%s recipe %s: %s"):format(label, show(id), table.concat(parts, " "))
+        end
+        if C_TradeSkillUI.GetRecipeRequirements then
+          local okR, req = pcall(C_TradeSkillUI.GetRecipeRequirements, id)
+          if okR and type(req) == "table" then
+            local parts = {}
+            for _, r in ipairs(req) do parts[#parts + 1] = show(r.name) .. "(" .. show(r.type) .. "," .. show(r.met) .. ")" end
+            lines[#lines + 1] = ("%s requirements: %s"):format(label, table.concat(parts, " "))
+          end
+        end
+        if C_TradeSkillUI.GetRecipeDescription then
+          local okD, desc = pcall(C_TradeSkillUI.GetRecipeDescription, id, {})
+          if okD and desc then lines[#lines + 1] = ("%s description: %s"):format(label, show(desc)) end
+        end
+      end
       local info = C_TradeSkillUI.GetRecipeInfo(first)
       if type(info) == "table" then
-        result.recipeInfoFields = {}
-        for k, v in pairs(info) do result.recipeInfoFields[k] = show(v) end
         lines[#lines + 1] = ("recipe %s: %s difficulty=%s learned=%s"):format(show(first), show(info.name), show(info.difficulty or info.relativeDifficulty), show(info.learned))
       end
       if C_TradeSkillUI.GetRecipeSchematic then

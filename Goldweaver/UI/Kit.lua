@@ -147,6 +147,81 @@ function UI.Table(parent, columns, rowCount, firstY)
   return t
 end
 
+-- Rows with an item/recipe icon, a main text, a right-aligned value and an optional grey sub line.
+-- rows:Set({ { icon = textureOrItemID, text, right, sub, color, itemID (hover tooltip), onClick } , ... })
+function UI.IconRows(parent, count, width, firstY, rowHeight)
+  rowHeight = rowHeight or 30
+  local rows = {}
+  for i = 1, count do
+    local r = CreateFrame("Button", nil, parent)
+    r:SetSize(width, rowHeight - 2)
+    if i == 1 then r:SetPoint("TOPLEFT", parent, "TOPLEFT", parent.pad or 0, firstY or (parent.top or 0))
+    else r:SetPoint("TOPLEFT", rows[i - 1], "BOTTOMLEFT", 0, -2) end
+    r.icon = r:CreateTexture(nil, "ARTWORK")
+    r.icon:SetSize(22, 22)
+    r.icon:SetPoint("LEFT", 0, 0)
+    r.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    r.text = r:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    r.text:SetPoint("TOPLEFT", r.icon, "TOPRIGHT", 6, -1)
+    r.text:SetJustifyH("LEFT"); r.text:SetWordWrap(false)
+    r.right = r:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    r.right:SetPoint("TOPRIGHT", r, "TOPRIGHT", 0, -1)
+    r.right:SetJustifyH("RIGHT"); r.right:SetWordWrap(false); r.right:SetWidth(150)
+    r.text:SetPoint("RIGHT", r.right, "LEFT", -6, 0)
+    r.sub = r:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    r.sub:SetPoint("TOPLEFT", r.text, "BOTTOMLEFT", 0, -1)
+    r.sub:SetPoint("RIGHT", r, "RIGHT", 0, 0)
+    r.sub:SetJustifyH("LEFT"); r.sub:SetWordWrap(false)
+    r.highlight = r:CreateTexture(nil, "HIGHLIGHT")
+    r.highlight:SetAllPoints(); r.highlight:SetColorTexture(1, 1, 1, 0.06)
+    r:SetScript("OnEnter", function(self)
+      if self.itemID then
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        pcall(GameTooltip.SetItemByID, GameTooltip, self.itemID)
+        GameTooltip:Show()
+      elseif self.tooltip then
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(self.tooltip, 1, 1, 1, true)
+        GameTooltip:Show()
+      end
+    end)
+    r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    r:SetScript("OnClick", function(self) if self.onClick then self.onClick() end end)
+    r:Hide()
+    rows[i] = r
+  end
+  function rows:Set(data)
+    for i, r in ipairs(self) do
+      local d = data[i]
+      if d then
+        r:Show()
+        local icon = d.icon
+        if type(icon) == "number" and C_Item and C_Item.GetItemIconByID then icon = C_Item.GetItemIconByID(icon) end
+        if icon then r.icon:SetTexture(icon); r.icon:Show() else r.icon:Hide() end
+        r.text:SetText(d.text or "")
+        local c = d.color or { 1, 1, 1 }
+        r.text:SetTextColor(c[1], c[2], c[3])
+        r.right:SetText(d.right or "")
+        if d.rightColor then r.right:SetTextColor(d.rightColor[1], d.rightColor[2], d.rightColor[3]) else r.right:SetTextColor(1, 1, 1) end
+        r.sub:SetText(d.sub or "")
+        r.itemID, r.tooltip, r.onClick = d.itemID, d.tooltip, d.onClick
+      else
+        r:Hide()
+      end
+    end
+  end
+  return rows
+end
+
+-- Item name with cache fallback: asks the server once and returns a placeholder.
+function UI.ItemName(itemID)
+  if not itemID then return "?" end
+  local name = C_Item and C_Item.GetItemNameByID and C_Item.GetItemNameByID(itemID)
+  if name and not ns.Secret.IsSecret(name) then return name end
+  if C_Item and C_Item.RequestLoadItemDataByID then pcall(C_Item.RequestLoadItemDataByID, itemID) end
+  return ns.Data and ns.Data.ExpectedName and ns.Data.ExpectedName(itemID) or ("Item " .. itemID)
+end
+
 -- Window --------------------------------------------------------------------------------------
 
 local function selectTab(key)
@@ -174,7 +249,7 @@ end
 local function createWindow()
   if window then return window end
   window = CreateFrame("Frame", "GoldweaverMainWindow", UIParent, "BasicFrameTemplateWithInset")
-  window:SetSize(620, 440)
+  window:SetSize(720, 580)
   window:SetPoint("CENTER")
   window:SetMovable(true)
   window:EnableMouse(true)

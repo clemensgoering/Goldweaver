@@ -9,7 +9,12 @@ DEFAULT_CHAT_FRAME = { AddMessage = function(_, msg) io.write(msg, "\n") end }
 SlashCmdList = {}
 C_AddOns = { GetAddOnMetadata = function() return "test" end }
 C_Timer = { After = function(_, fn) fn() end }
-C_Item = { GetItemInfo = function() return nil end, GetItemInfoInstant = function() return nil end, RequestLoadItemDataByID = function() end }
+C_Item = {
+  GetItemInfo = function() return nil end, GetItemInfoInstant = function() return nil end, RequestLoadItemDataByID = function() end,
+  GetItemCount = function() return 0 end, GetItemNameByID = function() return nil end, GetItemIconByID = function() return nil end,
+}
+C_Container = nil
+GetTime = os.clock
 time, date = os.time, os.date
 -- In the game `issecretvalue` exists at load time; Core/Secret.lua captures it as an upvalue, so the stub is defined before loading.
 issecretvalue = function(v) return v == "SECRET" end
@@ -44,10 +49,11 @@ end
 -- Same order as the TOC for the files without UI dependencies.
 for _, rel in ipairs({
   "Locales/enUS.lua", "Core/Init.lua", "Core/Util.lua", "Core/Secret.lua", "Core/Events.lua", "Core/DB.lua",
-  "Core/Chars.lua", "Core/Price.lua", "Core/Graph.lua",
+  "Core/Chars.lua", "Core/Inventory.lua", "Core/Price.lua", "Core/Graph.lua",
   "Data/Disenchant.lua", "Data/Crates.lua", "Data/VendorReagents.lua", "Data/Conversions.lua",
-  "Professions/Registry.lua", "Professions/Tailoring.lua", "Professions/Enchanting.lua",
-  "Modules/Advisor.lua",
+  "Professions/Registry.lua", "Professions/Adapter.lua", "Professions/Tailoring.lua", "Professions/Enchanting.lua",
+  "Modules/Advisor.lua", "Modules/Planner.lua", "Modules/CraftProfit.lua", "Modules/Compare.lua", "Modules/Ledger.lua",
+  "Modules/Dashboard.lua",
 }) do loadAddonFile(rel) end
 
 -- Simulate the client: ADDON_LOADED initialises SavedVariables and module Init().

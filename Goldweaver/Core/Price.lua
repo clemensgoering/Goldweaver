@@ -91,8 +91,11 @@ function Price.VendorSell(itemID)
   return nil
 end
 
--- Vendor buy price for reagents a merchant always sells (Data/VendorReagents.lua). Acts as a price ceiling.
+-- Vendor buy price: first what we saw at a merchant ourselves (Modules/Contacts.lua), then the shipped reagent list.
+-- Acts as a price ceiling for unlimited-stock vendor goods.
 function Price.VendorBuy(itemID)
+  local seen = ns.db and ns.db.vendors and ns.db.vendors[itemID]
+  if seen and seen.buy and not seen.limited then return seen.buy end
   local reagents = ns.Data and ns.Data.VendorReagents
   local entry = reagents and reagents[itemID]
   return entry and entry.buy or nil

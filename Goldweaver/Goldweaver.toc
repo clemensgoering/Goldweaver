@@ -52,3 +52,4 @@ Modules\Auction.lua
 Modules\Ledger.lua
 Modules\Dashboard.lua
 Modules\Onboarding.lua
+Modules\Contacts.lua

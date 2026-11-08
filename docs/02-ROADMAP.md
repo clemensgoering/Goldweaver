@@ -35,6 +35,8 @@ Arbeitspakete:
 
 **Abnahme:** Protokoll in `docs/05-PROBE-ERGEBNISSE.md` mit Antworten zu F1–F11; Entscheidungen (z. B. Vollscan ja/nein, Tooltip-Pfad) in `01-KONZEPT.md` nachgetragen.
 
+**Stand 08.11.2026 abends, zur Abnahme:** Phase 1 komplett implementiert (WP1.1–1.9), aus Phase 2 WP2.1 Adapter, WP2.2 Planer, WP2.3 Craft-Profit, WP2.5 Berufs-Vergleich (Startpfad-Basis) und der Leitfaden (`09-LEITFADEN.md`), aus Phase 3 WP3.1 Preis-Mitlesen, WP3.2 Verkaufsvorschlag, WP3.6 Ledger, aus Phase 4 HUD und Heute-Tab, dazu ein Trade-Contacts-Rekorder (Lehrer, Händler, Händlerpreise). Nicht im Spiel getestet; Abnahmeprotokoll in `05-PROBE-ERGEBNISSE.md` Abschnitt „Abnahme 0.1.0". Offen: WP2.4 zehn weitere Profile, WP2.6 Sammel-Sicht, WP3.3/3.5, Rezeptquellen (`sourceType`), Lokalisierung, Packaging.
+
 **Phase 0 abgenommen am 08.11.2026** (drei Probe-Läufe im Spiel, Fenster und Rollenpflege vom Nutzer bestätigt). Offen bleiben nur F6 (Einzahlungsformel), F7 (Favor je Kiste), F10 (Post-Empfängerformat) und F11 (Skill-up-Wahrscheinlichkeiten), die sich im Spielbetrieb klären. Nächster Einstieg: Phase 1, Session A = WP1.4 Bestand + WP1.6 Zerlegen-Queue, Session B = WP1.3 Tooltip + WP1.5 Post.
 
 **Stand 08.11.2026:** WP0.1, WP0.2 und WP0.3 sind implementiert (Code, CI, Junction in `_forever_`). Offen ist nur noch das Ausführen der Probe im Spiel und das Eintragen der Ergebnisse. Aus Phase 1 sind die rein logischen Teile fertig und headless getestet: WP1.1 Preis-Engine, WP1.2 Graph + Daten, WP1.3 Advisor-Formel (ohne Tooltip/Overlay), Registry + Profile Schneiderei/Verzauberkunst aus WP1.8, Charakter-Registry aus WP1.1. Offen in Phase 1: WP1.4 Bestand, WP1.5 Post, WP1.6 Zerlegen-Queue, WP1.7 UI-Kit, Tooltip-Anbindung des Advisors.

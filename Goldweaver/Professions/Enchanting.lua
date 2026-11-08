@@ -27,7 +27,12 @@ ns.Professions:Register({
   category = "crafting",
   crateCategories = { "curiosities" },
   vendorReagents = { COPPER_ROD, LEADED_VIAL, CRYSTAL_VIAL },
-  destroy = { spellName = "Disenchant", minSkill = 1 },
+  destroy = { spellName = "Disenchant", spellID = 13262, minSkill = 1 },
+  trainers = {
+    Journeyman = "Verzauberkunst-Lehrer in jeder Hauptstadt (ab Skill 50, Level 10)",
+    Expert = "Horde: Hgarth (Steinkrallengebirge, Sonnenfels); Allianz: Kitta Firewind (Wald von Elwynn, Turm von Azora), 50 Silber",
+    Artisan = "Annora in Uldaman (Hintereingang), einzige Lehrerin für beide Fraktionen; erscheint erst, wenn ihr Bereich geleert ist",
+  },
   tools = { "Runed Copper Rod", "Runed Silver Rod", "Runed Golden Rod", "Runed Truesilver Rod", "Runed Arcanite Rod" },
   seedPath = {
     -- Mote of Magic is a new Forever item without a known ID; the first 20 points are priced as zero until the probe resolves it.
