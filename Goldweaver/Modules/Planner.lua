@@ -23,7 +23,7 @@ end
 function Planner.Candidates(skillLine, rec)
   local out = {}
   for _, recipe in ipairs(ns.Adapter.Learned(skillLine, rec)) do
-    local chance = recipe.difficulty and ns.Adapter.SKILLUP_CHANCE[recipe.difficulty] or nil
+    local chance = ns.Adapter.ChanceFor(recipe.difficulty)
     if chance and chance > 0 and #(recipe.reagents or {}) > 0 then
       local cost, coverage = Planner.CraftCost(recipe)
       -- what the product is worth after the cut offsets part of the cost (sold or used)
@@ -74,7 +74,10 @@ function Planner.NextRank(skillLine, rec)
     info.canTrain = (p.rank or 0) >= nextRank.reqSkill and level >= nextRank.reqLevel
     info.needSkill = math.max(0, nextRank.reqSkill - (p.rank or 0))
     info.needLevel = math.max(0, nextRank.reqLevel - level)
-    info.trainer = profile.trainers and profile.trainers[nextRank.name] or nil
+    -- a trainer we actually met beats the guide text
+    local seen = ns.Learn and ns.Learn.TrainerFor and ns.Learn.TrainerFor(skillLine, nextRank.reqSkill)
+    info.trainer = seen or (profile.trainers and profile.trainers[nextRank.name]) or nil
+    info.trainerSeen = seen ~= nil
   end
   info.capped = (p.rank or 0) >= (p.maxRank or rank.max)
   return info

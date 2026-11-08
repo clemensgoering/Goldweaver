@@ -15,6 +15,16 @@ Adapter.DIFFICULTY_NAMES = DIFFICULTY_NAMES
 -- Approximate skill-up chance per difficulty (Classic rule of thumb; calibrated later from own craft logs, F11).
 Adapter.SKILLUP_CHANCE = { [0] = 1.0, [1] = 0.75, [2] = 0.35, [3] = 0 }
 
+-- Skill-up chance: observed rate when enough own crafts exist (Learn, F11), else the rule of thumb.
+function Adapter.ChanceFor(difficulty)
+  if difficulty == nil then return nil end
+  if ns.Learn and ns.Learn.SkillupChance then
+    local observed = ns.Learn.SkillupChance(difficulty)
+    if observed then return observed end
+  end
+  return Adapter.SKILLUP_CHANCE[difficulty]
+end
+
 local function difficultyOf(info)
   local d = info.relativeDifficulty
   if d == nil then d = info.difficulty end
@@ -65,10 +75,16 @@ function Adapter.Read()
   book.list, book.byID = {}, {}
 
   local learnedSet, learnedCount = {}, 0
+  local fieldsRecorded = false
   for _, recipeID in ipairs(ids) do
     local okInfo, info = pcall(C_TradeSkillUI.GetRecipeInfo, recipeID)
     if okInfo and type(info) == "table" and info.name and not ns.Secret.Any(info.name, info.learned) then
       local schem = readSchematic(recipeID)
+      if not fieldsRecorded and ns.Learn then
+        fieldsRecorded = true
+        local okS, rawSchem = pcall(C_TradeSkillUI.GetRecipeSchematic, recipeID, false)
+        pcall(ns.Learn.RecipeFields, info, okS and rawSchem or nil)
+      end
       local rec = {
         id = recipeID, name = info.name, icon = info.icon or (schem and schem.icon),
         outputItemID = schem and schem.outputItemID, qtyMin = schem and schem.qtyMin or 1, qtyMax = schem and schem.qtyMax or 1,
@@ -110,7 +126,15 @@ function Adapter.Read()
     me.professions[skillLine] = p
   end
   Adapter.current = skillLine
+  Adapter.lastSkill = base.skillLevel
   ns.Log("adapter read", base.professionName, #book.list, "recipes,", learnedCount, "learned")
+  if ns.Checks then
+    ns.Checks.Pass("book", ("%s: %d Rezepte, %d gelernt"):format(tostring(base.professionName), #book.list, learnedCount))
+    if ns.Planner then
+      local okPlan, plan = pcall(ns.Planner.Plan, skillLine, me)
+      if okPlan and plan and plan.best then ns.Checks.Pass("plan", ("%s ×%d"):format(plan.best.recipe.name, plan.crafts or 1)) end
+    end
+  end
   if ns.UI and ns.UI.Refresh then ns.UI.Refresh() end
   if ns.Destroy and ns.Destroy.Refresh then ns.Destroy.Refresh() end
   return skillLine, base.professionName
@@ -203,10 +227,27 @@ ns:RegisterModule("Adapter", {
       pending = true
       C_Timer.After(0.3, function() pending = false; pcall(Adapter.Read) end)
     end
-    ns.Events:On("TRADE_SKILL_LIST_UPDATE", schedule)
-    ns.Events:On("TRADE_SKILL_SHOW", schedule)
-    ns.Events:On("TRADE_SKILL_DATA_SOURCE_CHANGED", schedule)
-    ns.Events:On("NEW_RECIPE_LEARNED", schedule)
-    ns.Events:On("TRADE_SKILL_CLOSE", function() Adapter.current = nil end)
+    ns.Events:On("TRADE_SKILL_LIST_UPDATE", schedule, "Adapter")
+    ns.Events:On("TRADE_SKILL_SHOW", schedule, "Adapter")
+    ns.Events:On("TRADE_SKILL_DATA_SOURCE_CHANGED", schedule, "Adapter")
+    ns.Events:On("NEW_RECIPE_LEARNED", schedule, "Adapter")
+    ns.Events:On("TRADE_SKILL_CLOSE", function() Adapter.current = nil end, "Adapter")
+    -- F11: count crafts (recipe IDs are spell IDs) and attribute skill-ups to the last craft's colour
+    ns.Events:On("UNIT_SPELLCAST_SUCCEEDED", function(_, unit, _, spellID)
+      if unit ~= "player" or not Adapter.current or not ns.Learn then return end
+      local book = Adapter.Book(Adapter.current)
+      local r = book and book.byID and book.byID[spellID]
+      if r and r.difficulty then
+        ns.Learn.Craft(r.difficulty, Adapter.lastSkill)
+        C_Timer.After(0.5, function()
+          local base = C_TradeSkillUI.GetBaseProfessionInfo and C_TradeSkillUI.GetBaseProfessionInfo()
+          local now = type(base) == "table" and base.skillLevel or nil
+          if now and not ns.Secret.IsSecret(now) then
+            ns.Learn.SkillChanged(now)
+            Adapter.lastSkill = now
+          end
+        end)
+      end
+    end, "Adapter")
   end,
 })

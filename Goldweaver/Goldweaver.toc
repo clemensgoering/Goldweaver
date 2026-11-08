@@ -42,6 +42,8 @@ UI\MainWindow.lua
 UI\Tooltip.lua
 UI\Minimap.lua
 
+Modules\Checks.lua
+Modules\Learn.lua
 Modules\Advisor.lua
 Modules\HUD.lua
 Modules\Mail.lua

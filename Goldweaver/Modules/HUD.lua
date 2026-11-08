@@ -57,6 +57,7 @@ function HUD.Refresh()
   text:SetText(table.concat(parts, "  ·  "))
   frame:SetWidth(math.max(220, text:GetStringWidth() + 24))
   frame:Show()
+  if ns.Checks then ns.Checks.Pass("hud", table.concat(parts, " · ")) end
 end
 
 ns:RegisterModule("HUD", {

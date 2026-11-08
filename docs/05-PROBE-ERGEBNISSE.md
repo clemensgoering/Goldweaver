@@ -31,7 +31,7 @@ Stand: erster Lauf am 08.11.2026 auf Build 1.60.1.70862 (deDE, Horde, „CAMWOW 
 
 ## Abnahme 0.1.0 (Abend 08.11.2026)
 
-Reihenfolge für den Test, pro Punkt ein Häkchen oder eine Notiz:
+**Seit Commit „Checks/Learn" läuft die Abnahme automatisch:** Jede Zeile der Tabelle unten ist eine Prüfung in `Modules/Checks.lua`, die im Spiel durch das Ereignis selbst bestanden wird (Knopf gedrückt, Daten angekommen, Post zugestellt). Der Heute-Tab zeigt „X von Y Prüfungen bestanden" und die nächsten zwei offenen Schritte mit Hinweis; `/gw checks` listet alle; `/gw debug run` enthält Status und Beweise. Die offenen Fragen F6, F7, F10, F11 beantwortet `Modules/Learn.lua` aus Beobachtungen und übernimmt die Antworten direkt in die Rechnung (Einzahlung, Post-Format, Skill-up-Chancen) bzw. in die Anzeige (Rezeptquellen, Rang-Lehrer). Die Tabelle bleibt als Lesehilfe:
 
 | # | Schritt | Erwartung | Ergebnis |
 |---|---|---|---|

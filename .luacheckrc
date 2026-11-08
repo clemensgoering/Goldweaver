@@ -34,4 +34,6 @@ read_globals = {
   "IsShiftKeyDown", "ItemRefTooltip", "BankFrame", "MailFrameTab2", "SendMailSubjectEditBox", "GetSendMailItem",
   "ATTACHMENTS_MAX_SEND", "GetNumLootItems", "GetLootSlotInfo", "GetLootSlotLink", "C_Map",
   "GetMerchantNumItems", "GetMerchantItemInfo", "GetMerchantItemLink", "UnitName", "unpack",
+  "GetNumTrainerServices", "GetTrainerServiceInfo", "GetTrainerServiceSkillReq", "GetTrainerServiceLevelReq",
+  "GetTrainerServiceCost", "ERR_MAIL_TARGET_NOT_FOUND",
 }

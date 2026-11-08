@@ -40,9 +40,14 @@ end
 function Onboarding.Check()
   local me = ns.Chars.Current()
   if not me or me.onboarded then return end
-  if (me.role or "none") ~= "none" then me.onboarded = true; return end
+  if (me.role or "none") ~= "none" then
+    me.onboarded = true
+    if ns.Checks then ns.Checks.Pass("onboarding", "übersprungen, Rolle war gesetzt") end
+    return
+  end
   create()
   card:Show()
+  if ns.Checks then ns.Checks.Pass("onboarding", "Karte gezeigt") end
 end
 
 ns:RegisterModule("Onboarding", {

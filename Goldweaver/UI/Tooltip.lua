@@ -113,11 +113,20 @@ local function onItemTooltip(tooltip, data)
       if info and info.itemID == itemID then quantity = info.stackCount; isBound = info.isBound end
     end
   end
+  -- F7: capture crate tooltips (any item whose lines mention favor) for automatic bundle/favor learning
+  if ns.Learn and data.lines then
+    local name = data.lines[1] and data.lines[1].leftText
+    pcall(ns.Learn.CrateTooltip, itemID, name, data.lines)
+  end
   local ok, lines = pcall(Tooltip.Lines, itemID, quantity, isBound)
   if not ok then ns.Log("tooltip error", lines); return end
   if not lines then return end
   tooltip:AddLine(" ")
-  for _, l in ipairs(lines) do tooltip:AddLine(l.text, l.color[1], l.color[2], l.color[3], true) end
+  for _, l in ipairs(lines) do
+    tooltip:AddLine(l.text, l.color[1], l.color[2], l.color[3], true)
+    if ns.Checks and l.text:find("Bestand:", 1, true) then ns.Checks.Pass("stock", l.text) end
+  end
+  if ns.Checks then ns.Checks.Pass("tooltip", lines[1].text) end
 end
 
 local registered = false

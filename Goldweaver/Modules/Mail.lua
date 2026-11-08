@@ -134,6 +134,8 @@ local function countAttachments()
   return n
 end
 
+local pendingSend -- { variant, recipient, t } while a send from our button is in flight (F10 learning)
+
 local function onSendClick()
   local p = sendButton.plan
   if not p then return end
@@ -141,11 +143,13 @@ local function onSendClick()
   if attached > 0 then
     -- second click: send this one mail
     local recipient = ns.Chars.MailName(p.rec)
+    local variant = (ns.Learn and ns.Learn.MailVariant()) or "full"
     if SendMailNameEditBox then SendMailNameEditBox:SetText(recipient) end
     local subject = ("Goldweaver: %d Items"):format(attached)
     if SendMailSubjectEditBox then SendMailSubjectEditBox:SetText(subject) end
+    pendingSend = { variant = variant, recipient = recipient, t = GetTime() }
     local ok, err = pcall(SendMail, recipient, subject, "")
-    if not ok then ns.Print("Senden fehlgeschlagen: " .. tostring(err)) end
+    if not ok then ns.Print("Senden fehlgeschlagen: " .. tostring(err)); pendingSend = nil end
     return
   end
   -- first click: fill recipient and attach up to 12 items
@@ -159,11 +163,16 @@ local function onSendClick()
       if ok then n = n + 1 end
     end
   end
-  C_Timer.After(0.2, function() attached = countAttachments(); refreshSendButton() end)
+  C_Timer.After(0.2, function()
+    attached = countAttachments()
+    refreshSendButton()
+    if attached > 0 and ns.Checks then ns.Checks.Pass("mailAttach", attached .. " Anhänge") end
+  end)
 end
 
 -- Inbox: open everything with attachments or money, one mail per step, recording invoices first.
 local opening = false
+local openedCount = 0
 local function openNext()
   if not opening then return end
   if not (MailFrame and MailFrame:IsShown()) then opening = false; return end
@@ -176,13 +185,16 @@ local function openNext()
   for i = n, 1, -1 do
     local _, _, sender, _, money, cod, _, hasItem = GetInboxHeaderInfo(i)
     if not ns.Secret.Any(sender, money, cod, hasItem) and (cod or 0) == 0 and ((money or 0) > 0 or hasItem) then
-      pcall(ns.Ledger.RecordInvoice, i)
+      local okInv, entry = pcall(ns.Ledger.RecordInvoice, i)
+      if okInv and entry and ns.Checks then ns.Checks.Pass("ledger", ("%s x%d für %s"):format(tostring(entry.item), entry.count, ns.Util.Money(entry.price))) end
       pcall(AutoLootMailItem, i)
+      openedCount = openedCount + 1
       C_Timer.After(0.6, openNext)
       return
     end
   end
   opening = false
+  if openedCount > 0 and ns.Checks then ns.Checks.Pass("mailOpen", openedCount .. " Briefe") end
   local t = ns.Ledger.Totals(1)
   if inboxLine then inboxLine:SetText(("Heute verkauft: %s (%d Auktionen) · Einzahlung zurück: %s"):format(ns.Util.Money(t.sales), t.count, ns.Util.Money(t.deposits))) end
   ns.Print("Posteingang abgeholt.")
@@ -191,6 +203,7 @@ end
 local function onOpenAll()
   if opening then opening = false; inboxButton:SetText("Alles abholen"); return end
   opening = true
+  openedCount = 0
   inboxButton:SetText("Stopp")
   openNext()
   C_Timer.After(0.1, function() if not opening then inboxButton:SetText("Alles abholen") end end)
@@ -231,16 +244,29 @@ ns:RegisterModule("Mail", {
       createButtons()
       attached = 0
       refreshSendButton()
+      if sendButton and ns.Checks then ns.Checks.Pass("mailButtons", "erzeugt") end
       if inboxLine then
         local t = ns.Ledger.Totals(1)
         inboxLine:SetText(t.count > 0 and ("Heute verkauft: %s (%d Auktionen) · Einzahlung zurück: %s"):format(ns.Util.Money(t.sales), t.count, ns.Util.Money(t.deposits)) or "")
       end
     end)
-    ns.Events:On("MAIL_CLOSED", function() opening = false; attached = 0 end)
+    ns.Events:On("MAIL_CLOSED", function() opening = false; attached = 0; pendingSend = nil end, "Mail")
     ns.Events:On("MAIL_SEND_SUCCESS", function()
       attached = 0
+      if pendingSend and ns.Learn then ns.Learn.MailResult(pendingSend.variant, true) end
+      pendingSend = nil
       C_Timer.After(0.5, refreshSendButton)
-    end)
+    end, "Mail")
+    -- the server rejects unknown recipients with a UI error; learn the format and switch for the next try
+    ns.Events:On("UI_ERROR_MESSAGE", function(_, _, message)
+      if not pendingSend or type(message) ~= "string" then return end
+      local notFound = ERR_MAIL_TARGET_NOT_FOUND and message == ERR_MAIL_TARGET_NOT_FOUND
+      if notFound or message:find("not found") or message:find("nicht gefunden") then
+        if ns.Learn then ns.Learn.MailResult(pendingSend.variant, false) end
+        ns.Print(("Empfänger '%s' nicht gefunden; nächster Versuch nutzt %s."):format(pendingSend.recipient, pendingSend.variant == "full" and "nur den Vornamen" or "Vorname Nachname"))
+        pendingSend = nil
+      end
+    end, "Mail")
     ns.Events:On("MAIL_SEND_INFO_UPDATE", function() attached = countAttachments(); refreshSendButton() end)
     ns.Events:On("BAG_UPDATE_DELAYED", function() if MailFrame and MailFrame:IsShown() then C_Timer.After(0.5, refreshSendButton) end end)
   end,

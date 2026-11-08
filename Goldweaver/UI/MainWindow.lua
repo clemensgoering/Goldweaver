@@ -41,9 +41,13 @@ UI.RegisterTab("heute", "Heute", function(frame)
   team:SetPoint("TOPLEFT", me, "TOPRIGHT", 10, 0)
   local teamTable = UI.Table(team, { { "Charakter", 0, 150 }, { "Rolle", 154, 90 }, { "Berufe", 248, 100 } }, 4)
 
-  local sales = UI.Group(frame, "VERKÄUFE UND GOLD", W, 110)
+  local sales = UI.Group(frame, "VERKÄUFE UND GOLD", W, 92)
   sales:SetPoint("TOPLEFT", me, "BOTTOMLEFT", 0, -10)
   local salesPairs = UI.Pairs(sales, 3, 130, W - 170)
+
+  local checks = UI.Group(frame, "SELBSTPRÜFUNG", W, 96)
+  checks:SetPoint("TOPLEFT", sales, "BOTTOMLEFT", 0, -10)
+  local checkLines = UI.Lines(checks, 3, W - 20, "GameFontHighlightSmall")
 
   local tip = UI.Text(frame, "", "GameFontDisableSmall")
   tip:SetPoint("BOTTOMLEFT", 0, 0)
@@ -88,7 +92,17 @@ UI.RegisterTab("heute", "Heute", function(frame)
       { "Verkauft heute", ("%s (%d Auktionen, Einzahlung zurück %s)"):format(money(today.sales), today.count, money(today.deposits)) },
       { "Letzte 7 Tage", ("%s (%d Auktionen, AH-Cut %s)"):format(money(week.sales), week.count, money(week.cut)) },
     })
-    tip:SetText("Verkäufe werden beim Abholen der Post erfasst. Zahlen tragen Quelle und Alter; ~ markiert unbestätigte Daten. /gw help listet alle Befehle.")
+    local s = ns.Checks.Summary()
+    local failText = s.fail > 0 and (", " .. s.fail .. " fehlgeschlagen") or ""
+    local summary = ("%d von %d Prüfungen bestanden, %d offen%s. Das Addon prüft sich selbst, während du spielst."):format(s.pass, s.total, s.pending, failText)
+    local clines = { { summary, s.fail > 0 and 1 or 0.6, s.fail > 0 and 0.5 or 1, 0.6 } }
+    for _, r in ipairs(ns.Checks.NextPending(2)) do
+      local failed = r.status == "fail"
+      local text = ("%s %s → %s"):format(failed and "✗" or "…", r.title, failed and tostring(r.detail) or (r.hint or ""))
+      clines[#clines + 1] = { text, failed and 1 or 0.8, failed and 0.5 or 0.8, failed and 0.5 or 0.8 }
+    end
+    checkLines:Set(clines)
+    tip:SetText("Verkäufe werden beim Abholen der Post erfasst. Zahlen tragen Quelle und Alter; ~ markiert unbestätigte Daten. /gw debug run erstellt den Bericht.")
   end
   return content
 end)
@@ -206,8 +220,9 @@ UI.RegisterTab("berufe", "Berufe", function(frame)
       end
       lines[1] = { ("%s %d / %d · %s%s"):format(p.name or "?", p.rank or 0, p.maxRank or 0, rankText, nextText), 1, 1, 1 }
       local trainer = rank and rank.next and rank.trainer
-      if rank and rank.canTrain and trainer then lines[2] = { "Lernen bei: " .. trainer, 0.6, 1, 0.6 }
-      elseif trainer then lines[2] = { "Nächster Rang bei: " .. trainer, 0.8, 0.8, 0.8 }
+      local seenTag = rank and rank.trainerSeen and " (selbst gesehen)" or ""
+      if rank and rank.canTrain and trainer then lines[2] = { "Lernen bei: " .. trainer .. seenTag, 0.6, 1, 0.6 }
+      elseif trainer then lines[2] = { "Nächster Rang bei: " .. trainer .. seenTag, 0.8, 0.8, 0.8 }
       elseif rank and rank.capped then lines[2] = { "Maximum dieses Rangs erreicht.", 1, 0.9, 0.5 }
       else lines[2] = { "", 1, 1, 1 } end
       if book then
@@ -282,14 +297,15 @@ UI.RegisterTab("berufe", "Berufe", function(frame)
       if i > 4 then break end
       local mats = {}
       for _, rg in ipairs(r.reagents or {}) do mats[#mats + 1] = ("%d× %s"):format(rg.qty, UI.ItemName(rg.item)) end
+      local source = ns.Learn and ns.Learn.RecipeSource(r) or nil
       urows[#urows + 1] = {
         icon = r.icon or r.outputItemID, text = r.name, itemID = r.outputItemID, tooltip = not r.outputItemID and r.name or nil,
-        right = r.sourceType and ("Quelle " .. tostring(r.sourceType)) or "", sub = table.concat(mats, ", "),
+        right = source or "Quelle unbekannt", rightColor = source and { 0.8, 1, 0.8 } or { 0.6, 0.6, 0.6 }, sub = table.concat(mats, ", "),
       }
     end
     local total = book and #ns.Adapter.Unlearned(skillLine, me) or 0
     if #urows == 0 then urows[1] = { text = book and "Alle Rezepte dieses Buchs sind gelernt." or "Noch keine Rezeptdaten.", color = { 0.7, 0.7, 0.7 } }
-    elseif total > 4 then urows[4].sub = ("… und %d weitere. Wo es sie gibt, zeigt der Trade-Contacts-Rekorder nach Besuch bei Lehrern und Händlern."):format(total - 4) end
+    elseif total > 4 then urows[4].sub = ("… und %d weitere. Quellen füllen sich automatisch nach Besuchen bei Lehrern und Händlern."):format(total - 4) end
     unlearnedRows:Set(urows)
     unlearned.title:SetText(("NOCH NICHT GELERNT (%d)"):format(total))
     if profile and profile.notes and profile.notes[1] then status.title:SetText("STATUS · " .. profile.notes[1]:sub(1, 90)) else status.title:SetText("STATUS") end

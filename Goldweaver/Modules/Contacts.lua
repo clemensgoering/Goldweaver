@@ -53,9 +53,23 @@ local function recordMerchant()
       if not v.buy or price < v.buy then v.buy = price; v.npc = name end
       v.limited = (numAvailable or -1) >= 0
       v.when = time()
+      -- recipe scrolls teach a spell whose ID is the recipe ID: that links the vendor to "Noch nicht gelernt"
+      if C_Item and C_Item.GetItemSpell then
+        local okSpell, _, spellID = pcall(C_Item.GetItemSpell, id)
+        if okSpell and type(spellID) == "number" then v.teaches = spellID end
+      end
       ns.db.vendors[id] = v
     end
   end
+  if ns.Checks then ns.Checks.Pass("contacts", ("Händler %s, %d Waren"):format(name, n)) end
+end
+
+local function recordTrainer()
+  local name = npcName()
+  local c = name and record("trainer")
+  if not c then return end
+  if ns.Checks then ns.Checks.Pass("contacts", "Lehrer " .. name) end
+  if ns.Learn then C_Timer.After(0.3, function() pcall(ns.Learn.TrainerServices, name) end) end
 end
 
 local function recordMerchantSafe()
@@ -93,8 +107,9 @@ ns:RegisterModule("Contacts", {
     }
   end,
   Init = function()
-    ns.Events:On("TRAINER_SHOW", function() pcall(record, "trainer") end)
-    ns.Events:On("MERCHANT_SHOW", function() C_Timer.After(0.3, recordMerchantSafe) end)
+    ns.Events:On("TRAINER_SHOW", function() pcall(recordTrainer) end, "Contacts")
+    ns.Events:On("TRAINER_UPDATE", function() local n = npcName() if n and ns.Learn then pcall(ns.Learn.TrainerServices, n) end end, "Contacts")
+    ns.Events:On("MERCHANT_SHOW", function() C_Timer.After(0.3, recordMerchantSafe) end, "Contacts")
   end,
 })
 

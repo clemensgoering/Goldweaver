@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Automatische Abnahme und Lernen im Spiel: `Modules/Checks.lua` (29 Prüfungen, bestanden durch Spielereignisse, Heute-Tab „Selbstprüfung", `/gw checks`), `Modules/Learn.lua` (Einzahlungsformel, Kisten-Tooltips, Post-Empfängerformat mit automatischem Fallback, Skill-up-Chancen aus eigenen Crafts, Rezeptfelder und Enums, Lehrer-Dienste mit Rang-Anforderungen, Rezeptquellen aus Lehrern und Händlern). Ergebnisse fließen direkt in Advisor, Planer, Post und Leitfaden.
 - Kompatibilitätsschicht: `ns.API` (Wrapper mit Fähigkeitsprüfung, normalisierte Rückgaben, Fehlerzähler), `ns.Features` (Funktionsgruppen mit API-Anforderungen, `/gw feature`), Fehlerisolierung pro Event-Handler (Abschaltung nach fünf Fehlern), Schema-Versionierung mit Migrationen, Patch-Erkennung beim Login.
 - Debug-Bericht `/gw debug run`: Selbsttest aller Module, Features, Daten, Events, Fehler, kontextabhängige Probes, Debug-Log; kopierbares Fenster, Bericht in SavedVariables.
 - Dokumente: `10-KOMPATIBILITAET.md` (Strategie und Patch-Routine), `11-ASSETS.md` (Grafik-Aufträge für Codex).

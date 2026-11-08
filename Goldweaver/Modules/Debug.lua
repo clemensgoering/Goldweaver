@@ -159,6 +159,37 @@ local function context()
   end
 end
 
+local function checks()
+  section("Prüfungen (automatisch)")
+  local s = ns.Checks.Summary()
+  add("%d bestanden, %d offen, %d fehlgeschlagen, %d übersprungen (von %d)", s.pass, s.pending, s.fail, s.skip, s.total)
+  for _, r in ipairs(ns.Checks.Status()) do
+    local mark = r.status == "pass" and "ok" or (r.status == "fail" and "!!" or (r.status == "skip" and "--" or ".."))
+    add("[%s] %s %s%s", mark, r.group or "", r.title, r.status == "pending" and (" -> " .. (r.hint or "")) or (r.detail and (": " .. tostring(r.detail)) or ""))
+  end
+end
+
+local function learned()
+  section("Gelernt aus dem Spiel (offene Fragen)")
+  for _, row in ipairs(ns.Learn.Status()) do add("%s: %s", row[1], row[2]) end
+  local l = ns.db.learned or {}
+  for itemID, crate in pairs(l.crates or {}) do
+    add("Kiste %s (%s): %s", tostring(itemID), tostring(crate.name), table.concat(crate.lines or {}, " | "))
+  end
+  for npc, t in pairs(l.trainers or {}) do
+    local parts = {}
+    for _, r in ipairs(t.ranks or {}) do parts[#parts + 1] = ("%s (Skill %s, Level %s, %s)"):format(r.name, tostring(r.skillReq), tostring(r.levelReq), ns.Util.Money(r.cost or 0)) end
+    add("Lehrer %s (line %s): %d Dienste, Ränge: %s", npc, tostring(t.skillLine), #(t.services or {}), #parts > 0 and table.concat(parts, "; ") or "-")
+  end
+  if l.recipeFields then add("Schematic-Felder: %s", table.concat(l.recipeFields.schematic or {}, ",")) end
+  for name, tbl in pairs(l.enums or {}) do
+    local parts = {}
+    for k, v in pairs(tbl) do parts[#parts + 1] = k .. "=" .. tostring(v) end
+    table.sort(parts)
+    add("Enum %s: %s", name, table.concat(parts, " "))
+  end
+end
+
 local function debugLog()
   section("Debug-Log (letzte 60 Zeilen)")
   local log = ns.db.debug and ns.db.debug.log or {}
@@ -169,11 +200,15 @@ end
 function Debug.Build()
   lines = {}
   add("Goldweaver Debug-Bericht")
-  local steps = { client, features, modules, data, events, errors, context, probes, debugLog }
+  local steps = { client, checks, learned, features, modules, data, events, errors, context, probes, debugLog }
   for _, step in ipairs(steps) do
     local ok, err = pcall(step)
     if not ok then add("[!!] Berichtsschritt fehlgeschlagen: %s", tostring(err)) end
   end
+  -- the self test itself is a check: no red module lines
+  local red = false
+  for _, line in ipairs(lines) do if line:sub(1, 4) == "[--]" or line:sub(1, 4) == "[!!]" then red = true end end
+  if ns.Checks then if red then ns.Checks.Fail("selftest", "rote Zeilen im Bericht") else ns.Checks.Pass("selftest", "keine roten Zeilen") end end
   local report = table.concat(lines, "\n")
   ns.db.debug.report = report
   ns.db.debug.reportAt = time()

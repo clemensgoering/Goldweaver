@@ -105,6 +105,26 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 
 ---
 
+## Automatisierte Auswertung im Spiel (Stand 08.11.2026, spät)
+
+Manuelle Checklisten sind abgeschafft. Was im Spiel beobachtbar ist, prüft und lernt das Addon selbst:
+
+| Punkt | Automatik | Wo sichtbar |
+|---|---|---|
+| Abnahme A1–A11 | `Modules/Checks.lua`: 29 Prüfungen, bestanden durch Ereignisse (Tooltip gezeigt, Post zugestellt, Buch gelesen, Craft über Knopf, Entzaubern über Queue, AH-Seite gelesen, Vorschlag gezeigt, Kontakte erfasst …) | Heute-Tab „Selbstprüfung", `/gw checks`, Debug-Bericht |
+| F6 Einzahlungsformel | Proben aus dem Verkaufen-Tab für alle drei Laufzeiten; erkennt Pauschale oder Prozentsatz und schreibt `settings.depositFlat`/`depositRate` | Advisor rechnet sofort damit |
+| F7 Kisten-Bündel/Favor | Jeder Tooltip mit „Favor/Gunst" wird gespeichert und auf Mengen/Favor geparst | Debug-Bericht „Gelernt", Check f7crate |
+| F10 Post-Empfängerformat | Erster Versand mit „Vorname Nachname"; bei Ablehnung automatisch „Vorname" beim nächsten Klick; Ergebnis gemerkt | `Chars.MailName`, Check f10mail |
+| F11 Skill-up-Chancen | Zählt Crafts (Zauber-ID = Rezept-ID) und Skill-ups je Farbe; ab 15 Crafts ersetzt die beobachtete Rate die Faustwerte | Planer, Check f11skillup |
+| Rezeptfelder/`sourceType` | Beim ersten Lesen eines Buchs werden alle Felder und passende Enums gespeichert; `sourceType` wird über den Enum-Namen angezeigt | „Noch nicht gelernt", Debug-Bericht |
+| Rang-Anforderungen und Lehrer (B1 teilweise) | Lehrerfenster wird gelesen (Dienste, Skill-/Level-Anforderung, Kosten), Beruf per Rezeptnamen zugeordnet; „Nächster Rang bei …" zeigt den tatsächlich gesehenen Lehrer | Leitfaden Status, Check trainerRanks |
+| Rezeptquellen (B1) | Händler-Rezepte über `C_Item.GetItemSpell` dem Rezept zugeordnet; Lehrer über Dienstnamen | „Noch nicht gelernt" rechte Spalte, Check recipeSources |
+| Händlerpreise | Jeder Händlerbesuch aktualisiert Preise und limitierte Bestände | Preis-Deckel, Einkaufsliste |
+| Entzauber-Kalibrierung (B8 Datenseite) | Jedes Entzaubern loggt die Ausbeute | Check deObserved |
+| Patch-Erkennung | Interface/Build-Vergleich beim Login | Chat-Hinweis, Check interface |
+
+Noch nicht automatisierbar (brauchen Entwicklung, nicht Spielzeit): B2 Profile, B3 Highlights, B4 Sammel-Sicht, B5 Overlay, B6 Lernen am Lehrer, B7 Shopping-Export, B9 Unterbietung, B10 Lokalisierung, B11 Packaging, B12 Grafiken.
+
 ## Offener Backlog (Stand 08.11.2026 abends, nach dem ersten vollständigen Durchstich)
 
 | # | Punkt | Abhängigkeit | Größe |

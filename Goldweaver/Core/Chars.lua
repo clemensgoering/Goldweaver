@@ -32,10 +32,14 @@ function Chars.FullName()
   return first
 end
 
--- Recipient string for the mailbox. Forever beta routed by first name only (F10); the surname form is the safe one
--- until /gw probe mail confirms otherwise.
+-- Recipient string for the mailbox. The accepted format is learned from the first sends (Modules/Learn.lua, F10):
+-- "Vorname Nachname" first; if the server rejects it, the first name alone.
 function Chars.MailName(rec)
-  return rec and rec.name or Chars.FullName()
+  rec = rec or Chars.Current()
+  if not rec then return Chars.FullName() end
+  local variant = ns.Learn and ns.Learn.MailVariant() or "full"
+  if variant == "first" and rec.firstName then return rec.firstName end
+  return rec.name
 end
 
 -- Parses "CAMWOW EU4 Realm 5 PvE" -> "EU", "PvE". Returns nil when the pattern is unknown.
@@ -200,6 +204,14 @@ end
 -- Notifies UI parts (minimap badge, window) after any registry change.
 function Chars.Changed()
   if ns.Minimap and ns.Minimap.SetBadge then ns.Minimap.SetBadge(Chars.Unassigned()) end
+  if ns.Checks then
+    local me = Chars.Current()
+    if me then ns.Checks.Pass("char", me.name .. " @ " .. (me.market or "?")) end
+    local market = Chars.MarketKey()
+    if #Chars.ByRole("main", market) > 0 and #Chars.ByRole("processor", market) > 0 then
+      ns.Checks.Pass("roles", ("%d Main, %d Verarbeiter"):format(#Chars.ByRole("main", market), #Chars.ByRole("processor", market)))
+    end
+  end
   if ns.UI and ns.UI.Refresh then ns.UI.Refresh() end
 end
 

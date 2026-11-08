@@ -7,28 +7,38 @@ local Auction = {}
 ns.Auction = Auction
 
 -- Observe -------------------------------------------------------------------------------------
+local function observed(itemID, n)
+  if n > 0 and ns.Checks then ns.Checks.Pass("ahObserve", ("Item %d: %d Angebote"):format(itemID, n)) end
+end
+
 local function observeCommodity(itemID)
   if not (C_AuctionHouse.GetNumCommoditySearchResults and C_AuctionHouse.GetCommoditySearchResultInfo) then return end
   local n = C_AuctionHouse.GetNumCommoditySearchResults(itemID) or 0
   local now = time()
+  local seen = 0
   for i = 1, math.min(n, 50) do
     local r = C_AuctionHouse.GetCommoditySearchResultInfo(itemID, i)
     if r and r.unitPrice and not ns.Secret.Any(r.unitPrice, r.quantity) then
       ns.Price.Observe(itemID, r.unitPrice, r.quantity or 1, now)
+      seen = seen + 1
     end
   end
+  observed(itemID, seen)
 end
 
 local function observeItem(itemKey)
   if not (itemKey and itemKey.itemID and C_AuctionHouse.GetNumItemSearchResults and C_AuctionHouse.GetItemSearchResultInfo) then return end
   local n = C_AuctionHouse.GetNumItemSearchResults(itemKey) or 0
   local now = time()
+  local seen = 0
   for i = 1, math.min(n, 50) do
     local r = C_AuctionHouse.GetItemSearchResultInfo(itemKey, i)
     if r and r.buyoutAmount and r.buyoutAmount > 0 and not ns.Secret.Any(r.buyoutAmount) then
       ns.Price.Observe(itemKey.itemID, r.buyoutAmount, 1, now)
+      seen = seen + 1
     end
   end
+  observed(itemKey.itemID, seen)
 end
 
 local function observeBrowse()
@@ -74,6 +84,19 @@ local function showSuggestion(sellFrame, itemLocation)
   if not itemID or ns.Secret.IsSecret(itemID) then helper:Hide(); return end
   local quantity = 1
   if sellFrame.GetQuantity then local ok, q = pcall(sellFrame.GetQuantity, sellFrame) if ok and type(q) == "number" then quantity = q end end
+  -- F6: sample the deposit for all three durations against the vendor price
+  if ns.Learn and C_AuctionHouse.CalculateCommodityDeposit then
+    local vendorSell = ns.Price.VendorSell(itemID)
+    local deposits = {}
+    for d = 1, 3 do
+      local ok, dep = pcall(C_AuctionHouse.CalculateCommodityDeposit, itemID, d, quantity)
+      if not (ok and type(dep) == "number") and C_AuctionHouse.CalculateItemDeposit then
+        ok, dep = pcall(C_AuctionHouse.CalculateItemDeposit, itemLocation, d, quantity)
+      end
+      deposits[d] = ok and type(dep) == "number" and dep or nil
+    end
+    if vendorSell and deposits[1] and deposits[2] and deposits[3] then pcall(ns.Learn.DepositSample, itemID, quantity, vendorSell, deposits) end
+  end
   local s = Auction.Suggest(itemID, quantity)
   if not s then
     helperText:SetText("Goldweaver: kein Preis bekannt für dieses Item. Erst suchen, dann posten.")
@@ -83,9 +106,11 @@ local function showSuggestion(sellFrame, itemLocation)
   helperText:SetText(("Goldweaver: Vorschlag %s je Stück · unterbietet %s (%s, %s) · Einzahlung %s · Erlös nach Cut %s"):format(
     ns.Util.Money(s.unitPrice), ns.Util.Money(s.market), s.source, ageText(s.age), s.deposit and ns.Util.Money(s.deposit) or "?", ns.Util.Money(s.net)))
   helper:Show()
+  local filled = false
   if ns.db.settings.autofillPrice ~= false and sellFrame.PriceInput and sellFrame.PriceInput.SetAmount then
-    pcall(sellFrame.PriceInput.SetAmount, sellFrame.PriceInput, s.unitPrice)
+    filled = pcall(sellFrame.PriceInput.SetAmount, sellFrame.PriceInput, s.unitPrice)
   end
+  if ns.Checks then ns.Checks.Pass("ahSuggest", ("%s%s"):format(ns.Util.Money(s.unitPrice), filled and ", vorbelegt" or "")) end
 end
 
 local function hookSellFrames()

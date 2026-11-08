@@ -77,7 +77,7 @@ local function createFrame()
   button:SetPoint("TOPLEFT", 10, -28)
   button:SetAttribute("type", "macro")
   button:RegisterForClicks("AnyUp", "AnyDown")
-  button:SetScript("PostClick", function() C_Timer.After(1.5, Destroy.Refresh) end)
+  button:SetScript("PostClick", function() Destroy.lastClickAt = GetTime(); C_Timer.After(1.5, Destroy.Refresh) end)
 
   line = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   line:SetPoint("TOPLEFT", 10, -58); line:SetWidth(280); line:SetJustifyH("LEFT")
@@ -158,7 +158,11 @@ ns:RegisterModule("Destroy", {
       table.insert(ns.db.observations.disenchant, obs)
       while #ns.db.observations.disenchant > 500 do table.remove(ns.db.observations.disenchant, 1) end
       lastCastAt = nil
-    end)
+      if ns.Checks then
+        ns.Checks.Pass("deObserved", #obs.items .. " Ergebnis(se)")
+        if Destroy.lastClickAt and GetTime() - Destroy.lastClickAt < 10 then ns.Checks.Pass("disenchant", "über die Queue") end
+      end
+    end, "Destroy")
     ns.Events:On("PLAYER_REGEN_ENABLED", function() Destroy.Refresh() end)
     ns.Events:On("BAG_UPDATE_DELAYED", function() if frame and frame:IsShown() then C_Timer.After(0.8, Destroy.Refresh) end end)
   end,

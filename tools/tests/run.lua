@@ -52,6 +52,7 @@ for _, rel in ipairs({
   "Core/Chars.lua", "Core/Inventory.lua", "Core/Price.lua", "Core/Graph.lua",
   "Data/Disenchant.lua", "Data/Crates.lua", "Data/VendorReagents.lua", "Data/Conversions.lua",
   "Professions/Registry.lua", "Professions/Adapter.lua", "Professions/Tailoring.lua", "Professions/Enchanting.lua",
+  "Modules/Checks.lua", "Modules/Learn.lua",
   "Modules/Advisor.lua", "Modules/Planner.lua", "Modules/CraftProfit.lua", "Modules/Compare.lua", "Modules/Ledger.lua",
   "Modules/Dashboard.lua",
 }) do loadAddonFile(rel) end

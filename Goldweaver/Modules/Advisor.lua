@@ -31,8 +31,10 @@ end
 local function auctionNet(unitPrice, qty, vendorSell, ctx)
   local gross = unitPrice * qty
   local cut = gross * setting(ctx, "ahCut")
-  -- deposit is based on the vendor price and lost when the auction does not sell
-  local deposit = (vendorSell or 0) * qty * setting(ctx, "depositRate")
+  -- deposit: a learned flat amount per auction (Forever beta: 1 silver) or a rate of the vendor price; lost when unsold
+  local deposit
+  local flat = ctx.settings and ctx.settings.depositFlat
+  if flat then deposit = flat else deposit = (vendorSell or 0) * qty * setting(ctx, "depositRate") end
   local depositLoss = deposit * (1 - setting(ctx, "sellProbability"))
   return math.floor(gross - cut - depositLoss)
 end
