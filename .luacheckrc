@@ -1,5 +1,5 @@
 std = "lua51"
-max_line_length = 160
+max_line_length = 240  -- data tables are kept on one line per entry
 self = false
 ignore = { "212/_.*", "213", "211/ADDON" }  -- unused args starting with _, unused loop vars, unused ADDON name from `local ADDON, ns = ...`
 
@@ -12,10 +12,10 @@ globals = {
 
 read_globals = {
   -- Lua / WoW basics
-  "DEFAULT_CHAT_FRAME", "CreateFrame", "C_Timer", "C_AddOns", "GetLocale", "GetBuildInfo",
+  "DEFAULT_CHAT_FRAME", "CreateFrame", "C_Timer", "C_AddOns", "GetLocale", "GetBuildInfo", "GetTime", "time", "date",
   "issecretvalue", "InCombatLockdown", "hooksecurefunc", "UIParent", "GameTooltip", "WOW_PROJECT_ID",
-  "UnitName", "UnitFullName", "UnitFactionGroup", "GetNormalizedRealmName", "GetRealmName",
-  "GetProfessions", "GetProfessionInfo", "GetMoney",
+  "UnitName", "UnitFullName", "UnitFactionGroup", "UnitClassBase", "UnitLevel", "GetNormalizedRealmName", "GetRealmName", "GetAutoCompleteRealms",
+  "GetProfessions", "GetProfessionInfo", "GetMoney", "C_RestrictedActions", "C_ChatInfo",
   -- Namespaces
   "C_Item", "C_Spell", "C_Container", "C_TradeSkillUI", "C_AuctionHouse", "C_TooltipInfo", "C_Mail",
   "TooltipDataProcessor", "Enum", "Item",

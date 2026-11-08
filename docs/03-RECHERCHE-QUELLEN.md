@@ -28,7 +28,7 @@ Stand: 08.11.2026. Vertrauensgrad: **A** = offiziell/Primärquelle oder Quellcod
 |---|---|---|
 | UI Add-On Development Policy, 8 Regeln | A | [Blizzard-Forum](https://us.forums.blizzard.com/en/wow/t/ui-add-on-development-policy/24534) |
 | „Addons should no longer offer a competitive advantage in WoW combat", für Forever bestätigt 15.09.2026; GDKP in Forever untersagt; Paid-Addon-Debatte offen | B | [ForeverMeta](https://forevermeta.me/en/guides/wow-forever-addons-interface) |
-| Auctionator-Lizenz MIT | C (Org-Listing, Repo 404) | [GitHub Auctionator Org](https://github.com/orgs/Auctionator/repositories?type=all) |
+| Auctionator-Lizenz: **All Rights Reserved** (LICENSE in Version 342, lokal installiert); externe API v1 laut README stabil und für Fremd-Addons gedacht; TOC listet Interface 16001 | A (installiertes Addon) | `Interface\AddOns\Auctionator\LICENSE`, `Source\API\v1\README.md`; das MIT-Listing der [GitHub-Org](https://github.com/orgs/Auctionator/repositories?type=all) ist veraltet |
 
 ## Wirtschaft, AH, Post
 | Fakt | Grad | Quelle |

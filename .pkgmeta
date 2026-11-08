@@ -1,0 +1,19 @@
+package-as: Goldweaver
+
+# The addon lives in Goldweaver/ inside the repo; move it to the zip root.
+move-folders:
+  Goldweaver/Goldweaver: Goldweaver
+
+ignore:
+  - docs
+  - tools
+  - .github
+  - README.md
+  - CHANGELOG.md
+  - CLAUDE.md
+  - .luacheckrc
+  - .gitattributes
+  - .gitignore
+
+manual-changelog: CHANGELOG.md
+enable-nolib-creation: no

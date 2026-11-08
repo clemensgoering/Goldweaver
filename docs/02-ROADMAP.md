@@ -35,6 +35,8 @@ Arbeitspakete:
 
 **Abnahme:** Protokoll in `docs/05-PROBE-ERGEBNISSE.md` mit Antworten zu F1–F11; Entscheidungen (z. B. Vollscan ja/nein, Tooltip-Pfad) in `01-KONZEPT.md` nachgetragen.
 
+**Stand 08.11.2026:** WP0.1, WP0.2 und WP0.3 sind implementiert (Code, CI, Junction in `_forever_`). Offen ist nur noch das Ausführen der Probe im Spiel und das Eintragen der Ergebnisse. Aus Phase 1 sind die rein logischen Teile fertig und headless getestet: WP1.1 Preis-Engine, WP1.2 Graph + Daten, WP1.3 Advisor-Formel (ohne Tooltip/Overlay), Registry + Profile Schneiderei/Verzauberkunst aus WP1.8, Charakter-Registry aus WP1.1. Offen in Phase 1: WP1.4 Bestand, WP1.5 Post, WP1.6 Zerlegen-Queue, WP1.7 UI-Kit, Tooltip-Anbindung des Advisors.
+
 ---
 
 ## Phase 1: MVP Durchstich (KW 47–48)

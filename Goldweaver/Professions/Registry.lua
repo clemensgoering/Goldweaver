@@ -1,2 +1,81 @@
--- Goldweaver: Registry (Professions). Stub, see docs/02-ROADMAP.md for the owning work package.
-local ADDON, ns = ... -- luacheck: ignore 211 (stub)
+-- Goldweaver: profession profile registry. Engine code never names a profession; it asks this registry.
+-- profile = {
+--   key = "tailoring", name = "Tailoring", skillLineID = 197, category = "crafting" | "gathering" | "secondary",
+--   ranks = Registry.DEFAULT_RANKS (or own), crateCategories = { "textiles" }, vendorReagents = { itemID, ... },
+--   destroy = { spellName = "Disenchant" } (optional), tools = { "Runed Copper Rod" } (optional),
+--   seedPath = { { from = 1, to = 30, recipe = "Bolt of Linen Cloth", crafts = 30, mats = { { item = 2589, qty = 60 } } }, ... },
+--   notes = { "..." }
+-- }
+local ADDON, ns = ...
+
+local Registry = { profiles = {}, bySkillLine = {} }
+ns.Professions = Registry
+
+-- Forever: four ranks, apprentice has no level requirement (community guides, to be confirmed by trainers in game).
+Registry.DEFAULT_RANKS = {
+  { name = "Apprentice", max = 75,  reqSkill = 0,   reqLevel = 0 },
+  { name = "Journeyman", max = 150, reqSkill = 50,  reqLevel = 10 },
+  { name = "Expert",     max = 225, reqSkill = 125, reqLevel = 20 },
+  { name = "Artisan",    max = 300, reqSkill = 200, reqLevel = 35 },
+}
+
+Registry.SKILL_LINES = {
+  alchemy = 171, blacksmithing = 164, enchanting = 333, engineering = 202, leatherworking = 165, tailoring = 197,
+  cooking = 185, firstaid = 129, fishing = 356, herbalism = 182, mining = 186, skinning = 393,
+}
+
+function Registry:Register(profile)
+  assert(type(profile) == "table" and profile.key, "profile needs a key")
+  assert(profile.skillLineID, "profile " .. profile.key .. " needs a skillLineID")
+  assert(profile.category, "profile " .. profile.key .. " needs a category")
+  profile.name = profile.name or profile.key
+  profile.ranks = profile.ranks or self.DEFAULT_RANKS
+  profile.crateCategories = profile.crateCategories or {}
+  profile.vendorReagents = profile.vendorReagents or {}
+  profile.seedPath = profile.seedPath or {}
+  self.profiles[profile.key] = profile
+  self.bySkillLine[profile.skillLineID] = profile
+  return profile
+end
+
+function Registry:Get(key) return self.profiles[key] end
+function Registry:BySkillLine(id) return self.bySkillLine[id] end
+
+function Registry:All()
+  local list = {}
+  for _, p in pairs(self.profiles) do list[#list + 1] = p end
+  table.sort(list, function(a, b) return a.key < b.key end)
+  return list
+end
+
+-- Rank entry for a skill value (the rank the player is in), and the next rank to train for.
+function Registry.RankFor(profile, skill)
+  local ranks = profile.ranks or Registry.DEFAULT_RANKS
+  for i, r in ipairs(ranks) do
+    if skill <= r.max then return r, ranks[i + 1] end
+  end
+  return ranks[#ranks], nil
+end
+
+-- Total seed-path material cost from `fromSkill` to `toSkill`, priced with priceFn. Used by the profession comparison
+-- before any live recipe data exists. Returns copper, coverage (priced share of the path steps).
+function Registry.SeedCost(profile, fromSkill, toSkill, priceFn)
+  local cost, steps, priced = 0, 0, 0
+  for _, step in ipairs(profile.seedPath or {}) do
+    if step.to > fromSkill and step.from < toSkill then
+      steps = steps + 1
+      local stepCost, stepPriced = 0, true
+      for _, m in ipairs(step.mats or {}) do
+        local p = priceFn(m.item)
+        if p then stepCost = stepCost + p * m.qty else stepPriced = false end
+      end
+      -- scale partial steps linearly
+      local span = step.to - step.from
+      local covered = math.min(step.to, toSkill) - math.max(step.from, fromSkill)
+      local share = span > 0 and (covered / span) or 1
+      cost = cost + stepCost * share
+      if stepPriced then priced = priced + 1 end
+    end
+  end
+  return math.floor(cost), steps > 0 and priced / steps or 0
+end

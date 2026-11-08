@@ -17,7 +17,7 @@ docs/              Konzept, Roadmap, Recherche, Compliance
 ```
 
 ## Entwicklung
-1. Junction in den Forever-AddOns-Ordner legen (Ordnername des Clients prüfen):
+1. Junction in den Forever-AddOns-Ordner (auf diesem Rechner am 08.11.2026 angelegt; der Forever-Client liegt unter `_forever_`):
    `mklink /J "C:\Program Files (x86)\World of Warcraft\_forever_\Interface\AddOns\Goldweaver" "D:\Development\WoW-Addon\Auctionator\Goldweaver"`
 2. Im Spiel `/console scriptErrors 1`, dann `/gw` für die Befehlsliste und `/gw probe` für die API-Verifikation.
 3. Vor jedem Abschluss `tools/check.ps1` ausführen. Werkzeuge: LuaJIT (`winget install --id DEVCOM.LuaJIT`, Lua-5.1-kompatibel) und die eigenständige `luacheck.exe` aus den GitHub-Releases von lunarmodules/luacheck unter `%LOCALAPPDATA%\Programs\luacheck`.

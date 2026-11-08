@@ -1,14 +1,27 @@
--- Goldweaver headless test runner (Lua 5.1). Usage: lua tools/tests/run.lua <repo root>
--- Loads selected addon files with a minimal WoW stub environment and runs the tests in tools/tests/*_test.lua.
+-- Goldweaver headless test runner (Lua 5.1 / LuaJIT). Usage: lua tools/tests/run.lua <repo root>
+-- Loads the pure-logic addon files with a minimal WoW stub environment, fires ADDON_LOADED, then runs the
+-- inline smoke tests and every tools/tests/*_test.lua (called as chunk(ns, eq, T)).
 local root = arg[1] or "."
 local ADDON, ns = "Goldweaver", {}
 
--- Minimal stubs for the pure-logic files. Extend as modules under test need them.
+-- Minimal WoW stubs. Extend as modules under test need them.
 DEFAULT_CHAT_FRAME = { AddMessage = function(_, msg) io.write(msg, "\n") end }
 SlashCmdList = {}
 C_AddOns = { GetAddOnMetadata = function() return "test" end }
+C_Timer = { After = function(_, fn) fn() end }
+C_Item = { GetItemInfo = function() return nil end, GetItemInfoInstant = function() return nil end, RequestLoadItemDataByID = function() end }
+time, date = os.time, os.date
 -- In the game `issecretvalue` exists at load time; Core/Secret.lua captures it as an upvalue, so the stub is defined before loading.
 issecretvalue = function(v) return v == "SECRET" end
+UnitFullName = function() return "Testchar", "" end
+UnitFactionGroup = function() return "Alliance", "Alliance" end
+UnitClassBase = function() return "MAGE" end
+UnitLevel = function() return 20 end
+GetNormalizedRealmName = function() return "Forever" end
+GetProfessions = function() return nil end
+GetProfessionInfo = function() return nil end
+InCombatLockdown = function() return false end
+GetBuildInfo = function() return "1.60.1", "70338", "Nov 4 2026", 16001 end
 CreateFrame = function()
   local f = { events = {} }
   function f:RegisterEvent(e) self.events[e] = true end
@@ -23,33 +36,42 @@ local function loadAddonFile(rel)
   chunk(ADDON, ns)
 end
 
-loadAddonFile("Core/Init.lua")
-loadAddonFile("Core/Util.lua")
-loadAddonFile("Core/Secret.lua")
-loadAddonFile("Core/Events.lua")
+-- Same order as the TOC for the files without UI dependencies.
+for _, rel in ipairs({
+  "Locales/enUS.lua", "Core/Init.lua", "Core/Util.lua", "Core/Secret.lua", "Core/Events.lua", "Core/DB.lua",
+  "Core/Chars.lua", "Core/Price.lua", "Core/Graph.lua",
+  "Data/Disenchant.lua", "Data/Crates.lua", "Data/VendorReagents.lua", "Data/Conversions.lua",
+  "Professions/Registry.lua", "Professions/Tailoring.lua", "Professions/Enchanting.lua",
+  "Modules/Advisor.lua",
+}) do loadAddonFile(rel) end
+
+-- Simulate the client: ADDON_LOADED initialises SavedVariables and module Init().
+GoldweaverDB, GoldweaverCharDB = nil, nil
+ns.Events.frame.onEvent(nil, "ADDON_LOADED", ADDON)
+assert(ns.db and ns.db.settings, "DB not initialised")
 
 -- Test harness
-local passed, failed = 0, 0
+local T = { passed = 0, failed = 0 }
 local function eq(a, b, label)
-  if a == b then passed = passed + 1
-  else failed = failed + 1; print(string.format("FAIL %s: expected %s, got %s", label or "", tostring(b), tostring(a))) end
+  if a == b then T.passed = T.passed + 1
+  else T.failed = T.failed + 1; print(string.format("FAIL %s: expected %s, got %s", label or "", tostring(b), tostring(a))) end
+end
+function T.near(a, b, tol, label)
+  if type(a) == "number" and math.abs(a - b) <= (tol or 1) then T.passed = T.passed + 1
+  else T.failed = T.failed + 1; print(string.format("FAIL %s: expected ~%s, got %s", label or "", tostring(b), tostring(a))) end
 end
 
--- Util.Money
+-- Smoke tests for the bootstrap files
 eq(ns.Util.Money(0), "0c", "money zero")
 eq(ns.Util.Money(99), "99c", "money copper")
 eq(ns.Util.Money(150), "1s 50c", "money silver")
 eq(ns.Util.Money(123456), "12g 34s 56c", "money gold")
 eq(ns.Util.Money(-250), "-2s 50c", "money negative")
 eq(ns.Util.AfterCut(10000, 0.05), 9500, "after cut 5%")
-
--- Secret helpers with the fake secret marker "SECRET"
 eq(ns.Secret.IsSecret("SECRET"), true, "secret detected")
 eq(ns.Secret.IsSecret(5), false, "non secret")
 eq(ns.Secret.Any(1, "SECRET"), true, "any secret")
 eq(ns.Secret.Safe("SECRET", "x"), "x", "safe fallback")
-
--- Event guard skips handlers on secret args
 local called = 0
 ns.Events:On("TEST_EVENT", function() called = called + 1 end)
 ns.Events.frame.onEvent(nil, "TEST_EVENT", 1, 2)
@@ -61,16 +83,20 @@ eq(ns.Events.skipped, 1, "one skipped")
 local onWindows = package.config:sub(1, 1) == "\\"
 local listCmd = onWindows and ('dir /b "' .. root:gsub("/", "\\") .. '\\tools\\tests"') or ('ls "' .. root .. '/tools/tests"')
 local p = io.popen(listCmd)
+local files = {}
 if p then
-  for file in p:lines() do
-    if file:match("_test%.lua$") then
-      local chunk = assert(loadfile(root .. "/tools/tests/" .. file))
-      local ok, err = pcall(chunk, ns, eq)
-      if not ok then failed = failed + 1; print("FAIL " .. file .. ": " .. tostring(err)) end
-    end
-  end
+  for file in p:lines() do if file:match("_test%.lua$") then files[#files + 1] = file end end
   p:close()
 end
+table.sort(files)
+for _, file in ipairs(files) do
+  local chunk, err = loadfile(root .. "/tools/tests/" .. file)
+  if not chunk then T.failed = T.failed + 1; print("FAIL load " .. file .. ": " .. tostring(err))
+  else
+    local ok, runErr = pcall(chunk, ns, eq, T)
+    if not ok then T.failed = T.failed + 1; print("FAIL " .. file .. ": " .. tostring(runErr)) end
+  end
+end
 
-print(string.format("tests: %d passed, %d failed", passed, failed))
-os.exit(failed == 0 and 0 or 1)
+print(string.format("tests: %d passed, %d failed (%d test files)", T.passed, T.failed, #files))
+os.exit(T.failed == 0 and 0 or 1)

@@ -43,7 +43,7 @@ Quelle: US-Forum „UI Add-On Development Policy" (Erstveröffentlichung 20.03.2
 |---|---|---|
 | Eigener Code | MIT (`LICENSE` im Repo) | – |
 | **ForeverArtisan** | „All rights reserved": lesen ja, Code/Daten/Name/Artwork **nicht** wiederverwenden, nicht weiterverteilen | Nur Lernen von Konzepten (API-Fallback-Reihenfolge, Secret-Guard-Idee). **Keine Zeile kopieren, keine Datentabellen übernehmen.** |
-| **Auctionator** | MIT (laut Org-Listing), Repo derzeit nicht erreichbar | Nutzung über `Auctionator.API.v1` als optionale Abhängigkeit. Kein Code-Kopieren nötig; falls doch, MIT-Hinweis beilegen. |
+| **Auctionator** | **„All Rights Reserved"** (LICENSE im installierten Addon, Version 342, plusmouse/borjamacare 2020–2025; das MIT-Listing der GitHub-Org war veraltet). Das Addon stellt in `Source/API/v1/README.md` eine ausdrücklich stabile externe API für andere Addons bereit. | Nur `Auctionator.API.v1.*` aufrufen (`GetAuctionPriceByItemID`, `GetAuctionAgeByItemID`, `GetDisenchantPriceByItemID`, `GetVendorPriceByItemID`, `MultiSearch`), immer optional. **Keinen Code kopieren**, keine internen Funktionen oder SavedVariables lesen. |
 | TradeSkillMaster | proprietär | Nur `TSM_API` optional lesen, kein Code. |
 | Syndicator, GatherMate2 | Open Source (jeweilige Lizenz prüfen) | Nur öffentliche API/Tabellen lesen, kein Code. |
 | Ace3, LibStub, LibDataBroker, LibDBIcon | BSD/Public Domain | Erlaubt, Trunk-Version mit 16001. Im MVP nicht nötig. |
