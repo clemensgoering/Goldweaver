@@ -105,6 +105,25 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 
 ---
 
+## Offener Backlog (Stand 08.11.2026 abends, nach dem ersten vollständigen Durchstich)
+
+| # | Punkt | Abhängigkeit | Größe |
+|---|---|---|---|
+| B1 | Rezeptquellen anzeigen (Lehrer/Händler/Drop) aus `sourceType` oder Rekorder, Waypoint per Klick | Ergebnis von `/gw probe prof` (Felder) | mittel |
+| B2 | Zehn weitere Berufsprofile mit Rang-Lehrern, Startpfaden und Hinweisen (WP2.4) | Recherche je Beruf | groß |
+| B3 | Kuratierte Highlights je Beruf: wertvolle Rezepte in der Welt und wo sie fallen (`notableRecipes`) | B2 | mittel |
+| B4 | Sammel-Sicht im HUD/Leitfaden: Zonenwert, Skill-Fenster, GatherMate2-Lesen (WP2.6) | Preise, Profile Sammelberufe | mittel |
+| B5 | Taschen-Overlay (Symbol pro Item) für Blizzard-Taschen und Bagnon/Baganator | Glyphen aus `11-ASSETS.md` A4 | mittel |
+| B6 | Lernen am Lehrer: nächsten Rang und günstigste Rezepte im Lehrerfenster markieren, Klick = `BuyTrainerService` | B1 | mittel |
+| B7 | Einkaufsliste als Auctionator-Shopping-Liste exportieren (`CreateShoppingList`) | Auctionator installiert | klein |
+| B8 | Kalibrierung: Skill-up-Chancen und Entzauber-Ausbeuten aus `observations` zurückrechnen (F11) | Spielzeit | mittel |
+| B9 | Unterbietungs-Check eigener Auktionen (WP3.5) throttle-bewusst | AH-Beobachtung | mittel |
+| B10 | Lokalisierung enUS/deDE (Strings extrahieren), Settings-Panel in Blizzard-Optionen | – | mittel |
+| B11 | Packaging-Test: Tag `v0.1.0`, GitHub-Release, CurseForge/Wago-Secrets, Repo public | Abnahme | klein |
+| B12 | Grafiken nach `11-ASSETS.md` (Icon, Minimap, Rollen, Glyphen) | Codex/Grafik | klein |
+| B13 | Kistenbündel und Favor-Sätze aus Tooltips bestätigen (F7), Einzahlungsformel aus Rechnung (F6), Post-Empfängerformat (F10) | Spielzeit | klein |
+| B14 | Audit-Wiederholung für Post/Zerlegen/AH-Code (`07-AUDIT.md` Abschnitt 5) | Abnahme | klein |
+
 ## Parallele Sessions: Spielregeln
 
 1. **Eine Session = ein oder mehrere WPs mit exklusivem Dateibesitz** laut Tabellen oben. Fremde Dateien nur lesen. Gemeinsame Schnittstellen (`ns.Price`, `ns.Graph`, `ns.Events`, `ns.Recipes`, `ns.UI`) werden in `docs/06-SCHNITTSTELLEN.md` dokumentiert, bevor zwei Sessions davon abhängen.

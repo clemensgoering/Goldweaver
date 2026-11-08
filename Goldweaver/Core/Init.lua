@@ -16,8 +16,18 @@ function ns.Print(...)
   DEFAULT_CHAT_FRAME:AddMessage("|cffd4a94eGoldweaver|r: " .. table.concat(parts, " "))
 end
 
+-- Debug log: always kept in a ring buffer (last 200 lines) for the report; printed only with /gw debug on.
 function ns.Log(...)
-  if ns.db and ns.db.settings and ns.db.settings.debug then ns.Print("[debug]", ...) end
+  local parts = {}
+  for i = 1, select("#", ...) do parts[#parts + 1] = tostring((select(i, ...))) end
+  local line = (date and date("%H:%M:%S") or "") .. " " .. table.concat(parts, " ")
+  if ns.db then
+    ns.db.debug = ns.db.debug or {}
+    ns.db.debug.log = ns.db.debug.log or {}
+    table.insert(ns.db.debug.log, line)
+    while #ns.db.debug.log > 200 do table.remove(ns.db.debug.log, 1) end
+  end
+  if ns.db and ns.db.settings and ns.db.settings.debug then ns.Print("[debug]", table.concat(parts, " ")) end
 end
 
 -- Modules register here; Init() is called once after ADDON_LOADED for this addon (see Core/DB.lua).

@@ -117,6 +117,12 @@ ns:RegisterModule("Minimap", {
     create()
     if ns.Chars and ns.Chars.Unassigned then Minimap_.SetBadge(ns.Chars.Unassigned()) end
   end,
+  SelfTest = function()
+    return {
+      { name = "Button erzeugt", ok = button ~= nil, detail = button and (button:IsShown() and "sichtbar" or "versteckt") or "nein" },
+      { name = "Winkel gespeichert", ok = true, detail = tostring(angleFromSettings()) },
+    }
+  end,
 })
 
 ns.Slash.Register("minimap", function(arg)

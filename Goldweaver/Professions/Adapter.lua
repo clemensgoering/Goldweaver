@@ -183,6 +183,18 @@ function Adapter.RebuildGraph()
 end
 
 ns:RegisterModule("Adapter", {
+  SelfTest = function()
+    local results = {}
+    local books = 0
+    for sl, book in pairs(ns.db.recipes or {}) do
+      books = books + 1
+      results[#results + 1] = { name = "Rezeptbuch " .. tostring(book.name), ok = #(book.list or {}) > 0, detail = ("%d Rezepte, line %s, gelesen vor %d s"):format(#(book.list or {}), tostring(sl), time() - (book.when or time())) }
+    end
+    if books == 0 then results[#results + 1] = { name = "Rezeptbücher", ok = false, warn = true, detail = "noch keins (Berufefenster öffnen)" } end
+    results[#results + 1] = { name = "Berufefenster offen", ok = Adapter.IsOpen(), warn = true, detail = Adapter.current and ("skill line " .. Adapter.current) or "nein" }
+    results[#results + 1] = { name = "Legacy-Berufe-API", ok = GetTradeSkillInfo == nil, detail = GetTradeSkillInfo and "vorhanden (unerwartet)" or "abwesend wie erwartet" }
+    return results
+  end,
   Init = function()
     ns.Events:On("PLAYER_LOGIN", function() C_Timer.After(2, function() pcall(Adapter.RebuildGraph) end) end)
     local pending = false

@@ -103,6 +103,17 @@ function Inventory.Count(itemID, opts)
 end
 
 ns:RegisterModule("Inventory", {
+  SelfTest = function()
+    local me = ns.Chars.Current()
+    local inv = me and me.inventory
+    local n = 0
+    for _ in pairs(inv and inv.bags or {}) do n = n + 1 end
+    return {
+      { name = "Taschen-Snapshot", ok = inv ~= nil and inv.when ~= nil, detail = inv and inv.when and (n .. " Itemarten, " .. (time() - inv.when) .. " s alt") or "noch keiner" },
+      { name = "Bank-Snapshot", ok = inv ~= nil and inv.bankWhen ~= nil, warn = true, detail = inv and inv.bankWhen and ((time() - inv.bankWhen) .. " s alt") or "Bank noch nicht besucht" },
+      { name = "Freie Taschenplätze", ok = true, detail = tostring(Inventory.FreeBagSlots()) },
+    }
+  end,
   Init = function()
     ns.Events:On("PLAYER_LOGIN", function() C_Timer.After(3, record) end)
     ns.Events:On("BAG_UPDATE_DELAYED", function()

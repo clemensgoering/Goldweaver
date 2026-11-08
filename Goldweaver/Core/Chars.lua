@@ -205,9 +205,21 @@ end
 
 ns:RegisterModule("Chars", {
   Init = function()
-    ns.Events:On("PLAYER_LOGIN", function() Chars.Register() end)
-    ns.Events:On("SKILL_LINES_CHANGED", function() Chars.UpdateProfessions() end)
-    ns.Events:On("PLAYER_LEVEL_UP", function() local rec = Chars.Current() if rec then rec.level = UnitLevel("player") end end)
+    ns.Events:On("PLAYER_LOGIN", function() Chars.Register() end, "Chars")
+    ns.Events:On("SKILL_LINES_CHANGED", function() Chars.UpdateProfessions() end, "Chars")
+    ns.Events:On("PLAYER_LEVEL_UP", function() local rec = Chars.Current() if rec then rec.level = UnitLevel("player") end end, "Chars")
+  end,
+  SelfTest = function()
+    local me = Chars.Current()
+    local first, surname = Chars.Names()
+    local region = Chars.ParseRealm(GetRealmName and GetRealmName() or nil)
+    return {
+      { name = "Charakter registriert", ok = me ~= nil, detail = me and me.name or "fehlt (PLAYER_LOGIN noch nicht gelaufen?)" },
+      { name = "Namensformat Vorname + Nachname", ok = surname ~= nil, warn = true, detail = tostring(first) .. " / " .. tostring(surname) },
+      { name = "Markt-Key aus Realmname", ok = region ~= nil or ns.db.settings.marketKey ~= nil, detail = Chars.MarketKey() },
+      { name = "Verarbeiter auf diesem Markt", ok = #Chars.ByRole("processor", Chars.MarketKey()) > 0, warn = true, detail = #Chars.ByRole("processor", Chars.MarketKey()) .. " Charakter(e)" },
+      { name = "Charaktere ohne Rolle", ok = Chars.Unassigned() == 0, warn = true, detail = tostring(Chars.Unassigned()) },
+    }
   end,
 })
 

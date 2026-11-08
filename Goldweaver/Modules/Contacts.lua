@@ -82,6 +82,16 @@ function Contacts.Trainers()
 end
 
 ns:RegisterModule("Contacts", {
+  SelfTest = function()
+    local trainers, merchants, vendors = 0, 0, 0
+    for _, c in pairs(ns.db.contacts or {}) do if c.kind == "trainer" then trainers = trainers + 1 else merchants = merchants + 1 end end
+    for _ in pairs(ns.db.vendors or {}) do vendors = vendors + 1 end
+    local mapID, zone = position()
+    return {
+      { name = "Position lesbar", ok = mapID ~= nil, detail = tostring(zone) .. " (" .. tostring(mapID) .. ")" },
+      { name = "Kontakte", ok = true, detail = ("%d Lehrer, %d Händler, %d Händlerpreise"):format(trainers, merchants, vendors) },
+    }
+  end,
   Init = function()
     ns.Events:On("TRAINER_SHOW", function() pcall(record, "trainer") end)
     ns.Events:On("MERCHANT_SHOW", function() C_Timer.After(0.3, recordMerchantSafe) end)

@@ -129,6 +129,17 @@ end
 -- Calibration log: what a disenchant produced (LOOT_OPENED right after our cast).
 local lastCastAt
 ns:RegisterModule("Destroy", {
+  SelfTest = function()
+    local can = Destroy.CanDisenchant()
+    local queue = can and Destroy.Queue() or {}
+    local obs = ns.db.observations.disenchant or {}
+    return {
+      { name = "Verzauberkunst auf diesem Charakter", ok = can, warn = true, detail = can and "ja" or "nein" },
+      { name = "Zauber-Name", ok = spellName() ~= "Disenchant" or GetLocale() == "enUS", warn = true, detail = spellName() },
+      { name = "Queue", ok = true, detail = #queue .. " Item(s)" },
+      { name = "Entzauber-Beobachtungen", ok = true, detail = #obs .. " geloggt" },
+    }
+  end,
   Init = function()
     ns.Events:On("UNIT_SPELLCAST_SUCCEEDED", function(_, unit, _, spellID)
       if unit == "player" and spellID == DISENCHANT_SPELL then lastCastAt = GetTime() end

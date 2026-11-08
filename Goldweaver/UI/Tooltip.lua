@@ -120,13 +120,23 @@ local function onItemTooltip(tooltip, data)
   for _, l in ipairs(lines) do tooltip:AddLine(l.text, l.color[1], l.color[2], l.color[3], true) end
 end
 
+local registered = false
 ns:RegisterModule("Tooltip", {
   Init = function()
-    if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
+    local ok, why = ns.Features.Available("tooltip")
+    if ok and Enum and Enum.TooltipDataType then
       TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, onItemTooltip)
+      registered = true
     else
-      ns.Print("Tooltip-API nicht gefunden; Tooltip-Zeilen aus.")
+      ns.Print("Tooltip-Zeilen aus: " .. tostring(why or "Enum.TooltipDataType fehlt"))
     end
+  end,
+  SelfTest = function()
+    local ok, lines = pcall(Tooltip.Lines, 2589, 20, false)
+    return {
+      { name = "Tooltip-Hook registriert", ok = registered, detail = registered and "TooltipDataProcessor" or "nein" },
+      { name = "Zeilen für Leinenstoff", ok = ok and lines ~= nil, warn = true, detail = ok and (lines and lines[1].text or "keine (Item nicht gecacht?)") or tostring(lines) },
+    }
   end,
 })
 

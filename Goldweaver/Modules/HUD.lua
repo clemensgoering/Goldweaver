@@ -61,7 +61,10 @@ end
 
 ns:RegisterModule("HUD", {
   Init = function()
-    ns.Events:On("PLAYER_LOGIN", function() C_Timer.After(4, HUD.Refresh) end)
+    ns.Events:On("PLAYER_LOGIN", function() C_Timer.After(4, HUD.Refresh) end, "HUD")
+  end,
+  SelfTest = function()
+    return { { name = "HUD", ok = true, detail = HUD.ShouldShow() and ("sichtbar: " .. (text and text:GetText() or "")) or "aus (nur für Mains oder /gw hud on)" } }
   end,
 })
 

@@ -33,5 +33,5 @@ read_globals = {
   "Minimap", "GetCursorPosition", "tinsert", "CreateFrame", "GetMoney", "AuctionHouseFrame",
   "IsShiftKeyDown", "ItemRefTooltip", "BankFrame", "MailFrameTab2", "SendMailSubjectEditBox", "GetSendMailItem",
   "ATTACHMENTS_MAX_SEND", "GetNumLootItems", "GetLootSlotInfo", "GetLootSlotLink", "C_Map",
-  "GetMerchantNumItems", "GetMerchantItemInfo", "GetMerchantItemLink", "UnitName",
+  "GetMerchantNumItems", "GetMerchantItemInfo", "GetMerchantItemLink", "UnitName", "unpack",
 }

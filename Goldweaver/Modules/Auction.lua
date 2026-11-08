@@ -111,6 +111,15 @@ local function hookSellFrames()
 end
 
 ns:RegisterModule("Auction", {
+  SelfTest = function()
+    local hooked = Auction.hooked and (Auction.hooked.CommoditiesSellFrame or Auction.hooked.ItemSellFrame)
+    local s = Auction.Suggest(2589, 20, 2)
+    return {
+      { name = "C_AuctionHouse", ok = C_AuctionHouse ~= nil, detail = C_AuctionHouse and "vorhanden" or "fehlt" },
+      { name = "Verkaufsfenster gehookt", ok = hooked and true or false, warn = true, detail = hooked and "ja" or "erst nach dem ersten AH-Besuch" },
+      { name = "Vorschlag Leinenstoff x20", ok = s ~= nil, warn = true, detail = s and ("%s je Stück, Einzahlung %s"):format(ns.Util.Money(s.unitPrice), s.deposit and ns.Util.Money(s.deposit) or "?") or "kein Preis" },
+    }
+  end,
   Init = function()
     if not C_AuctionHouse then return end
     ns.Events:On("COMMODITY_SEARCH_RESULTS_UPDATED", function(_, itemID) if itemID then pcall(observeCommodity, itemID) end end)

@@ -19,6 +19,7 @@ Core\Init.lua
 Core\Util.lua
 Core\Secret.lua
 Core\Events.lua
+Core\API.lua
 Core\DB.lua
 Core\Chars.lua
 Core\Inventory.lua
@@ -53,3 +54,4 @@ Modules\Ledger.lua
 Modules\Dashboard.lua
 Modules\Onboarding.lua
 Modules\Contacts.lua
+Modules\Debug.lua

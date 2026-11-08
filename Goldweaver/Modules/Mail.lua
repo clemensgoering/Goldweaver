@@ -213,6 +213,19 @@ local function createButtons()
 end
 
 ns:RegisterModule("Mail", {
+  SelfTest = function()
+    local plan = Mail.Plan()
+    local targets, items = 0, 0
+    for _, p in pairs(plan) do targets = targets + 1; items = items + p.count end
+    local sample = ns.Inventory.BagItems()[1]
+    local target, reason = sample and Mail.TargetFor(sample) or nil, nil
+    if sample then target, reason = Mail.TargetFor(sample) end
+    return {
+      { name = "Versandplan", ok = true, detail = ("%d Ziel(e), %d Items"):format(targets, items) },
+      { name = "Regelprüfung erstes Taschenitem", ok = sample ~= nil, warn = true, detail = sample and (tostring(sample.itemID) .. " -> " .. (target and target.name or "bleibt") .. " (" .. tostring(reason) .. ")") or "Taschen leer" },
+      { name = "Briefkasten-Knöpfe erzeugt", ok = sendButton ~= nil, warn = true, detail = sendButton and "ja" or "erst nach dem ersten Öffnen" },
+    }
+  end,
   Init = function()
     ns.Events:On("MAIL_SHOW", function()
       createButtons()

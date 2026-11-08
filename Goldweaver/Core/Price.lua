@@ -151,4 +151,17 @@ ns:RegisterModule("Price", {
   Init = function()
     Price.Prune(ns.db.settings.priceHistoryDays or 30)
   end,
+  SelfTest = function()
+    local results = {}
+    local auct = Auctionator and Auctionator.API and Auctionator.API.v1 and Auctionator.API.v1.GetAuctionPriceByItemID
+    results[#results + 1] = { name = "Auctionator-API", ok = auct ~= nil, warn = true, detail = auct and "verfügbar" or "nicht installiert (Preise nur aus eigenen AH-Suchen)" }
+    local market = ns.db.prices[ns.Chars.MarketKey()]
+    local n = 0
+    for _ in pairs(market or {}) do n = n + 1 end
+    results[#results + 1] = { name = "Eigene Preise auf diesem Markt", ok = n > 0, warn = true, detail = n .. " Items" }
+    local p = Price.Get(2589)
+    results[#results + 1] = { name = "Preis Leinenstoff (2589)", ok = p ~= nil, warn = true, detail = p and (ns.Util.Money(p.copper) .. " via " .. p.source) or "unbekannt" }
+    results[#results + 1] = { name = "Vendor-Deckel Grober Faden", ok = Price.VendorBuy(2320) == 10 or (Price.VendorBuy(2320) or 0) > 0, detail = tostring(Price.VendorBuy(2320)) }
+    return results
+  end,
 })

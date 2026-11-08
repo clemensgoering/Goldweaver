@@ -22,6 +22,12 @@ Der Projektordner heißt historisch `Auctionator`; das Addon heißt **Goldweaver
 - **Vor Veröffentlichung:** Repo auf public stellen (Richtlinie „Code vollständig sichtbar"), Audit-Checkliste in `docs/07-AUDIT.md` erneut durchgehen.
 - **Dateibesitz:** Nur die Dateien des eigenen WP ändern. Neue Dateien: erst als Stub anlegen und in `Goldweaver.toc` eintragen (Besitzer Core), dann füllen. Schnittstellen in `docs/06-SCHNITTSTELLEN.md` eintragen, bevor andere darauf aufbauen.
 
+## Kompatibilität (docs/10-KOMPATIBILITAET.md)
+- Spiel-APIs über `ns.API` oder nach `ns.API.Has(...)`-Prüfung aufrufen; neue Abhängigkeiten in `Features.Define` eintragen. Nie auf Build, Interface-Nummer oder `WOW_PROJECT_ID` verzweigen.
+- `ns.Events:On(event, fn, "Modulname")` immer mit Modulname; jedes Modul liefert `SelfTest()` für `/gw debug run`.
+- SavedVariables-Strukturänderungen nur mit neuer `SCHEMA`-Nummer und Migration in `Core/DB.lua`.
+- Frame-Template-Kinder (z. B. `.Inset`) nie voraussetzen; eigene Frames bauen.
+
 ## Konventionen
 - Dateikopf: `local ADDON, ns = ...`. Nur ein Global: `Goldweaver`.
 - SavedVariables: `GoldweaverDB` (Account), `GoldweaverCharDB` (Charakter). Init nur in `ADDON_LOADED`. Preise unter `GoldweaverDB.prices[marketKey][itemID]`, `marketKey` = Regelsatz + Fraktion (Fallback Realm), nie `Name-Realm` für Charaktere ohne Prüfung des Namensformats (F3).
