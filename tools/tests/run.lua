@@ -21,7 +21,12 @@ GetNormalizedRealmName = function() return "Forever" end
 GetProfessions = function() return nil end
 GetProfessionInfo = function() return nil end
 InCombatLockdown = function() return false end
-GetBuildInfo = function() return "1.60.1", "70338", "Nov 4 2026", 16001 end
+GetBuildInfo = function() return "1.60.1", "70862", "Nov 6 2026", 16001 end
+GetLocale = function() return "enUS" end
+GetMoney = function() return 1421800 end
+UISpecialFrames = {}
+tinsert = table.insert
+Minimap = nil -- UI files are not loaded headless
 CreateFrame = function()
   local f = { events = {} }
   function f:RegisterEvent(e) self.events[e] = true end

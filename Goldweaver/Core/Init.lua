@@ -36,13 +36,27 @@ end
 
 SLASH_GOLDWEAVER1 = "/gw"
 SLASH_GOLDWEAVER2 = "/goldweaver"
+local function printHelp()
+  ns.Print("Befehle:")
+  local names = {}
+  for name in pairs(ns.Slash.handlers) do names[#names + 1] = name end
+  table.sort(names)
+  for _, name in ipairs(names) do
+    local entry = ns.Slash.handlers[name]
+    ns.Print("  /gw " .. name .. (entry.help and (" - " .. entry.help) or ""))
+  end
+end
+
 SlashCmdList.GOLDWEAVER = function(msg)
   local cmd, rest = msg:match("^(%S*)%s*(.-)$")
   cmd = (cmd or ""):lower()
+  if cmd == "" then
+    if ns.UI and ns.UI.Toggle then return ns.UI.Toggle() end
+    return printHelp()
+  end
+  if cmd == "help" then return printHelp() end
   local h = ns.Slash.handlers[cmd]
   if h then return h.fn(rest) end
-  ns.Print("Commands:")
-  for name, entry in pairs(ns.Slash.handlers) do
-    ns.Print("  /gw " .. name .. (entry.help and (" - " .. entry.help) or ""))
-  end
+  ns.Print("Unbekannter Befehl: " .. cmd)
+  printHelp()
 end

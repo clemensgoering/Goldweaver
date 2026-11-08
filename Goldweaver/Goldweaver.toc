@@ -1,5 +1,6 @@
 ## Interface: 16001
 ## Title: Goldweaver
+## IconTexture: Interface\Icons\INV_Misc_Coin_01
 ## Notes: Professions, mail pipeline and auction house as one decision engine: what to craft, how to level cheapest, what earns gold. Built for WoW: Forever.
 ## Author: Clemens
 ## Version: 0.1.0-dev
@@ -36,6 +37,7 @@ Professions\Tailoring.lua
 Professions\Enchanting.lua
 
 UI\Kit.lua
+UI\MainWindow.lua
 UI\Tooltip.lua
 UI\Minimap.lua
 

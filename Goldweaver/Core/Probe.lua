@@ -121,16 +121,28 @@ function Probe.Items()
     end
   end
   lines[#lines + 1] = ("%d ids, %d resolved now, %d requested from server (run again in a few seconds)"):format(#ids, #ids - pending, pending)
+  -- Expected names are English; a name comparison is only meaningful on an enUS client. Elsewhere list the
+  -- resolved names so they can be checked by eye (verified 08.11.2026 on deDE: all IDs correct).
+  local english = GetLocale and GetLocale() == "enUS"
+  local shown = 0
   for _, id in ipairs(ids) do
     local expected = ns.Data.ExpectedName and ns.Data.ExpectedName(id)
     local got = result[id]
-    if got and expected and got ~= expected then
-      lines[#lines + 1] = ("MISMATCH %d: expected %s, got %s"):format(id, expected, got)
+    if got and expected then
+      if english and got ~= expected then
+        lines[#lines + 1] = ("MISMATCH %d: expected %s, got %s"):format(id, expected, got)
+      elseif not english and shown < 12 then
+        shown = shown + 1
+        lines[#lines + 1] = ("%d: %s = %s"):format(id, expected, got)
+      end
     end
   end
+  if not english and shown == 12 then lines[#lines + 1] = "... (full list in GoldweaverDB.probe.items)" end
   store("items", result)
   report("items", lines)
 end
+
+local waitingForTradeSkill = false
 
 function Probe.Profession()
   local lines, result = {}, {}
@@ -138,6 +150,19 @@ function Probe.Profession()
     local ids = C_TradeSkillUI.GetAllRecipeIDs()
     result.modernCount = type(ids) == "table" and #ids or 0
     lines[#lines + 1] = "C_TradeSkillUI.GetAllRecipeIDs: " .. tostring(result.modernCount)
+    if result.modernCount == 0 and not waitingForTradeSkill then
+      -- Verified 08.11.2026: the list is empty until ONE profession is opened (not just the professions book).
+      waitingForTradeSkill = true
+      local function onList()
+        waitingForTradeSkill = false
+        ns.Events:Off("TRADE_SKILL_LIST_UPDATE", onList)
+        ns.Print("probe prof: profession window detected, dumping")
+        Probe.Profession()
+      end
+      ns.Events:On("TRADE_SKILL_LIST_UPDATE", onList)
+      ns.Print("probe prof: no recipes loaded. Open one profession (click it in the professions book); the dump runs automatically.")
+      return
+    end
     if C_TradeSkillUI.GetBaseProfessionInfo then
       local info = C_TradeSkillUI.GetBaseProfessionInfo()
       if type(info) == "table" then
@@ -281,23 +306,30 @@ function Probe.Secure()
   if InCombatLockdown() then return ns.Print("probe secure: leave combat first") end
   local result = {}
   local ok, err = pcall(function()
-    local b = CreateFrame("Button", "GoldweaverProbeSecureButton", UIParent, "SecureActionButtonTemplate")
-    b:SetAttribute("type", "macro")
-    -- Two signals: PreClick (insecure handler) proves the click arrives; the macro line proves secure attribute
-    -- execution and whether /run is still allowed in macros on this client (F12). Nothing is cast or sent.
-    b:SetAttribute("macrotext", "/run print('Goldweaver probe: secure macro ran')")
-    b:SetScript("PreClick", function() ns.Print("probe secure: click received (PreClick)") end)
-    b:RegisterForClicks("AnyUp", "AnyDown")
-    b:SetSize(120, 24)
-    b:SetPoint("CENTER")
-    b:SetNormalFontObject("GameFontNormal")
-    b:SetText("probe: click me")
+    local b = _G.GoldweaverProbeSecureButton
+    if not b then
+      -- UIPanelButtonTemplate gives the visible button art; SecureActionButtonTemplate the secure click handling.
+      b = CreateFrame("Button", "GoldweaverProbeSecureButton", UIParent, "UIPanelButtonTemplate, SecureActionButtonTemplate")
+      b:SetAttribute("type", "macro")
+      -- Two signals: PreClick (insecure handler) proves the click arrives; the macro line proves secure attribute
+      -- execution and whether /run is still allowed in macros on this client (F12). Nothing is cast or sent.
+      b:SetAttribute("macrotext", "/run print('Goldweaver probe: secure macro ran')")
+      b:SetScript("PreClick", function() ns.Print("probe secure: click received (PreClick)") end)
+      b:SetScript("PostClick", function() ns.Print("probe secure: PostClick (if no 'secure macro ran' line appeared, /run in macros is blocked or the attribute did not fire)") end)
+      b:RegisterForClicks("AnyUp", "AnyDown")
+      b:SetSize(260, 32)
+      b:SetPoint("CENTER", UIParent, "CENTER", 0, 120)
+      b:SetFrameStrata("FULLSCREEN_DIALOG")
+      b:SetText("Goldweaver Probe: hier klicken")
+    end
     b:Show()
-    C_Timer.After(20, function() if not InCombatLockdown() then b:Hide() end end)
+    result.shown = b:IsShown()
+    result.strata = b:GetFrameStrata()
+    C_Timer.After(30, function() if not InCombatLockdown() then b:Hide() end end)
   end)
   result.created, result.error = ok, err and tostring(err) or nil
   store("secure", result)
-  ns.Print("probe secure: " .. (ok and "button created in the screen center, click it within 20 s and watch the chat" or ("failed: " .. tostring(err))))
+  ns.Print("probe secure: " .. (ok and ("button shown=" .. tostring(result.shown) .. " above the screen center, click it within 30 s and watch the chat") or ("failed: " .. tostring(err))))
 end
 
 local SUB = {
