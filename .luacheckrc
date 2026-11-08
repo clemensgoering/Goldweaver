@@ -1,0 +1,33 @@
+std = "lua51"
+max_line_length = 160
+self = false
+ignore = { "212/_.*", "213", "211/ADDON" }  -- unused args starting with _, unused loop vars, unused ADDON name from `local ADDON, ns = ...`
+
+exclude_files = { "tools/tests/**" }
+
+globals = {
+  "Goldweaver", "GoldweaverDB", "GoldweaverCharDB",
+  "SLASH_GOLDWEAVER1", "SLASH_GOLDWEAVER2", "SlashCmdList",
+}
+
+read_globals = {
+  -- Lua / WoW basics
+  "DEFAULT_CHAT_FRAME", "CreateFrame", "C_Timer", "C_AddOns", "GetLocale", "GetBuildInfo",
+  "issecretvalue", "InCombatLockdown", "hooksecurefunc", "UIParent", "GameTooltip", "WOW_PROJECT_ID",
+  "UnitName", "UnitFullName", "UnitFactionGroup", "GetNormalizedRealmName", "GetRealmName",
+  "GetProfessions", "GetProfessionInfo", "GetMoney",
+  -- Namespaces
+  "C_Item", "C_Spell", "C_Container", "C_TradeSkillUI", "C_AuctionHouse", "C_TooltipInfo", "C_Mail",
+  "TooltipDataProcessor", "Enum", "Item",
+  -- Legacy tradeskill / craft fallbacks (see Professions/Adapter.lua)
+  "GetNumTradeSkills", "GetTradeSkillInfo", "GetTradeSkillReagentInfo", "GetTradeSkillNumReagents",
+  "GetTradeSkillItemLink", "GetTradeSkillRecipeLink", "GetTradeSkillLine", "GetTradeSkillTools", "DoTradeSkill",
+  "GetNumCrafts", "GetCraftInfo", "GetCraftReagentInfo", "GetCraftNumReagents", "GetCraftItemLink", "DoCraft",
+  -- Mail
+  "SendMail", "GetInboxNumItems", "GetInboxHeaderInfo", "GetInboxInvoiceInfo", "TakeInboxItem", "AutoLootMailItem",
+  "SendMailNameEditBox", "SendMailFrame", "MailFrame", "InboxFrame",
+  -- Optional addons
+  "Auctionator", "TSM_API", "Syndicator", "GatherMate2",
+  -- Misc UI
+  "BackdropTemplateMixin", "UISpecialFrames", "StaticPopup_Show", "StaticPopupDialogs",
+}

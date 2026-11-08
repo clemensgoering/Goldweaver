@@ -1,0 +1,17 @@
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+
+# Build output and packager artefacts
+/.release/
+*.zip
+
+# Local scratch and WoW saved variables copied for analysis
+/scratch/
+/WTF/
+*.lua.bak
+
+# Claude local settings
+.claude/settings.local.json

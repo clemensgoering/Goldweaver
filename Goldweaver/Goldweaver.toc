@@ -1,0 +1,51 @@
+## Interface: 16001
+## Title: Goldweaver
+## Notes: Professions, mail pipeline and auction house as one decision engine: what to craft, how to level cheapest, what earns gold. Built for WoW: Forever.
+## Author: Clemens
+## Version: 0.1.0-dev
+## SavedVariables: GoldweaverDB
+## SavedVariablesPerCharacter: GoldweaverCharDB
+## OptionalDeps: Auctionator, Syndicator, GatherMate2, TradeSkillMaster
+## AllowLoadGameType: camelot, forever
+## X-License: MIT
+## X-Category: Professions, Auction House
+
+# Load order = module order. Core first, data second, professions third, modules last.
+Locales\enUS.lua
+Locales\deDE.lua
+
+Core\Init.lua
+Core\Util.lua
+Core\Secret.lua
+Core\Events.lua
+Core\DB.lua
+Core\Chars.lua
+Core\Inventory.lua
+Core\Price.lua
+Core\Graph.lua
+Core\Probe.lua
+
+Data\Disenchant.lua
+Data\Crates.lua
+Data\VendorReagents.lua
+Data\Conversions.lua
+
+Professions\Registry.lua
+Professions\Adapter.lua
+Professions\Tailoring.lua
+Professions\Enchanting.lua
+
+UI\Kit.lua
+UI\Tooltip.lua
+UI\Minimap.lua
+
+Modules\Advisor.lua
+Modules\HUD.lua
+Modules\Mail.lua
+Modules\Destroy.lua
+Modules\Planner.lua
+Modules\CraftProfit.lua
+Modules\Compare.lua
+Modules\Auction.lua
+Modules\Ledger.lua
+Modules\Dashboard.lua
