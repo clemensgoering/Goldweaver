@@ -17,6 +17,8 @@ Der Projektordner heißt historisch `Auctionator`; das Addon heißt **Goldweaver
 - **Berufsneutral:** Engine-Code (`Core/`, `Modules/`) kennt keine Berufsnamen. Alles Berufsspezifische steht in `Professions/<Beruf>.lua` und wird über `ns.Professions:Register(profile)` eingebunden.
 - **Fremdcode:** Kein Code, keine Daten, keine Texte aus ForeverArtisan (proprietär). Auctionator/TSM/Syndicator/GatherMate2 nur über deren öffentliche API lesen, immer optional (`if Auctionator and Auctionator.API then`).
 - **Keine Netzwerk-, Chat- oder Werbefunktionen.** Keine Spendenhinweise im Spiel.
+- **Datenschutz:** In SavedVariables landen nur Daten des eigenen Accounts (eigene Charaktere, eigene Verkäufe, gesehene Preise). Nie Namen anderer Spieler speichern (AH-Verkäufer, Käufer aus Rechnungen nur als „vorhanden ja/nein").
+- **Vor Veröffentlichung:** Repo auf public stellen (Richtlinie „Code vollständig sichtbar"), Audit-Checkliste in `docs/07-AUDIT.md` erneut durchgehen.
 - **Dateibesitz:** Nur die Dateien des eigenen WP ändern. Neue Dateien: erst als Stub anlegen und in `Goldweaver.toc` eintragen (Besitzer Core), dann füllen. Schnittstellen in `docs/06-SCHNITTSTELLEN.md` eintragen, bevor andere darauf aufbauen.
 
 ## Konventionen

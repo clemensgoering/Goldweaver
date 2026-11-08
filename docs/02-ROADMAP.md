@@ -129,3 +129,4 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 | F9 | AH-Budget pro Minute | offen, kein Fix erwartet | Konservatives Design |
 | F10 | Post nach Vorname | offen | Testsendung vor erster echter Sendung |
 | F11 | Skill-up-Wahrscheinlichkeiten | offen | Kalibrierung in Phase 4 |
+| F12 | Ist `/run` in Makrotext eines Secure-Buttons auf Forever erlaubt (Midnight-Makro-Einschränkungen)? | offen | `/gw probe secure` zeigt PreClick und Makro getrennt; Zerlegen-Queue nutzt ohnehin `/cast`, nicht `/run` |

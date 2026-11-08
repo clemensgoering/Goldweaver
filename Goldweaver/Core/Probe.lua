@@ -241,7 +241,8 @@ function Probe.Replicate()
     result.count = C_AuctionHouse.GetNumReplicateItems and C_AuctionHouse.GetNumReplicateItems() or "?"
     if type(result.count) == "number" and result.count > 0 and C_AuctionHouse.GetReplicateItemInfo then
       local name, _, count, _, _, _, _, _, _, buyout, _, _, _, owner, _, _, itemID, hasAllInfo = C_AuctionHouse.GetReplicateItemInfo(0)
-      result.sample = { name = show(name), count = show(count), buyout = show(buyout), owner = show(owner), itemID = show(itemID), hasAllInfo = show(hasAllInfo) }
+      -- privacy: never store other players' names, only whether the field is filled
+      result.sample = { name = show(name), count = show(count), buyout = show(buyout), ownerPresent = (owner ~= nil), itemID = show(itemID), hasAllInfo = show(hasAllInfo) }
     end
     ns.Print(("probe replicate: %s items after %d ms"):format(tostring(result.count), result.answeredMs))
     store("replicate", result)
@@ -282,7 +283,10 @@ function Probe.Secure()
   local ok, err = pcall(function()
     local b = CreateFrame("Button", "GoldweaverProbeSecureButton", UIParent, "SecureActionButtonTemplate")
     b:SetAttribute("type", "macro")
-    b:SetAttribute("macrotext", "/run print('Goldweaver secure button works')")
+    -- Two signals: PreClick (insecure handler) proves the click arrives; the macro line proves secure attribute
+    -- execution and whether /run is still allowed in macros on this client (F12). Nothing is cast or sent.
+    b:SetAttribute("macrotext", "/run print('Goldweaver probe: secure macro ran')")
+    b:SetScript("PreClick", function() ns.Print("probe secure: click received (PreClick)") end)
     b:RegisterForClicks("AnyUp", "AnyDown")
     b:SetSize(120, 24)
     b:SetPoint("CENTER")
