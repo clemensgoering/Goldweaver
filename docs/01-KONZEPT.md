@@ -75,6 +75,8 @@ Recherchiert am 08.11.2026 (Quellen und Vertrauensgrad in `03-RECHERCHE-QUELLEN.
 
 ### 4.2 Module
 
+> **UX-Review 08.11.2026:** Die Darstellung der Module wurde in `08-UX.md` gegen Auctionator, TSM, Baganator, Postal und Gold Forever geprüft. Verbindlich sind seitdem: Tooltip als Hauptanzeige, Knöpfe und Seitenleiste in den Blizzard-Fenstern statt eigener Fenster, ein einziges `/gw`-Fenster mit vier Tabs, einzeiliges HUD (Standard aus), kein Dashboard (ersetzt durch Tab „Heute" mit drei Empfehlungen), Erstlauf mit genau einer Frage. Wo die Modultexte unten davon abweichen, gilt `08-UX.md`.
+
 **M0 Core**
 - Namespace, Event-Bus (ein Frame, Handler-Tabelle, kein `OnUpdate`-Polling), SavedVariables-Verwaltung, Secret-Guard, Logging, Slash `/gw`.
 - Charakter-Registry: Rollen **Main / Verarbeiter / Bank**, pro Regelsatz + Fraktion. Berufe jedes Charakters werden beim Öffnen des Berufefensters erfasst (Beruf, Skill, bekannte Rezepte, Werkzeuge).

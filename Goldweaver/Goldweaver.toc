@@ -49,3 +49,4 @@ Modules\Compare.lua
 Modules\Auction.lua
 Modules\Ledger.lua
 Modules\Dashboard.lua
+Modules\Onboarding.lua

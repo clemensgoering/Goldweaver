@@ -49,8 +49,11 @@ Arbeitspakete:
 | WP1.4 Bestand | Taschen/Bank/Post je Charakter, optional Syndicator | `Core/Inventory.lua` | WP0.1 |
 | WP1.5 Post | Sende-Listen je Zielcharakter, ein Klick pro Brief, Abholen, Ledger | `Modules/Mail.lua` | WP1.3, WP1.4 |
 | WP1.6 Zerlegen-Queue | Sortierte Liste, Secure-Button, Loot-Log zur Kalibrierung | `Modules/Destroy.lua` | WP1.3, Ergebnis F4 |
-| WP1.7 UI-Kit | Fenster, Liste, Button, Zahlenfeld, Geldformat, Minimap | `UI/Kit.lua`, `UI/Minimap.lua` | WP0.1 |
+| WP1.7 UI-Kit | Tooltip-Zeile, Taschen-Overlay, Knopf-Vorlage „Verb + Objekt + Zahl", Seitenleisten-Container für Blizzard-Fenster, ein `/gw`-Fenster mit vier Tabs (Heute · Berufe · Charaktere · Einstellungen). Vorgaben: `08-UX.md` | `UI/Kit.lua`, `UI/Minimap.lua` | WP0.1 |
 | WP1.8 Profile Schneiderei/Verzauberkunst (Startwerte) | Rang-Anforderungen, Vendor-Reagenzien, Standardpfad, Kisten-Kategorien | `Professions/Tailoring.lua`, `Professions/Enchanting.lua`, `Professions/Registry.lua` | WP1.2 |
+| WP1.9 Onboarding | Erstlauf-Karte (eine Frage: Rolle), `/gw`-Kurzhilfe mit vier Zeilen, Hinweis bei fehlender Preisquelle | `Modules/Onboarding.lua` | WP1.7, Chars |
+
+**Abnahmetest für jede Ansicht (aus `08-UX.md`):** eine Person ohne Vorwissen versteht in 30 Sekunden, was sie tun soll. Post (WP1.5) als Knöpfe im Blizzard-Briefkasten, Berufe (WP2.x) als Seitenleiste am Berufefenster, AH (WP3.x) im MVP nur Preisvorschlag im Verkaufen-Tab. WP4.2 Dashboard entfällt zugunsten des Tabs „Heute".
 
 **Abnahme:** Eine echte Sammelrunde mit dem Main, Versand an den Twink, Verarbeitung mit Empfehlungen. Headless-Tests für Preis-Engine, Graph, Advisor-Formel und DE-Erwartungswert grün.
 
