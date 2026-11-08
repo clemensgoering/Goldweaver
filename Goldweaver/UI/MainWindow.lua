@@ -1,49 +1,72 @@
 -- Goldweaver: the four tabs of the /gw window (docs/08-UX.md section 4.7): Heute · Berufe · Charaktere · Einstellungen.
+-- Layout: grouped boxes with real columns; text never overlaps (UI.Lines/UI.Pairs/UI.Table anchor each row below the last).
 local ADDON, ns = ...
 
 local UI = ns.UI
 local Chars = ns.Chars
 
+local W = 584 -- usable width inside the body (window 620 minus paddings)
+
 local function money(copper) return ns.Util.Money(copper or 0) end
+
+local function professionSummary(rec)
+  local profs = {}
+  for _, p in pairs(rec.professions or {}) do profs[#profs + 1] = (p.name or "?") .. " " .. tostring(p.rank or 0) end
+  table.sort(profs)
+  return #profs > 0 and table.concat(profs, ", ") or "keine Berufe erfasst"
+end
 
 -- Heute --------------------------------------------------------------------------------------
 UI.RegisterTab("heute", "Heute", function(frame)
   local content = {}
-  local header = UI.Header(frame, "HEUTE")
-  header:SetPoint("TOPLEFT", 0, 0)
-  local lines = {}
-  for i = 1, 8 do
-    local fs = UI.Text(frame, "")
-    fs:SetPoint("TOPLEFT", 0, -22 - (i - 1) * 18)
-    fs:SetWidth(560)
-    lines[i] = fs
-  end
-  local footer = UI.Text(frame, "", "GameFontDisableSmall")
-  footer:SetPoint("BOTTOMLEFT", 0, 0)
-  footer:SetWidth(560)
+
+  local steps = UI.Group(frame, "NÄCHSTE SCHRITTE", W, 120)
+  steps:SetPoint("TOPLEFT", 0, 0)
+  local stepLines = UI.Lines(steps, 3, W - 20)
+
+  local me = UI.Group(frame, "DIESER CHARAKTER", 280, 128)
+  me:SetPoint("TOPLEFT", steps, "BOTTOMLEFT", 0, -10)
+  local mePairs = UI.Pairs(me, 4, 70, 190)
+
+  local team = UI.Group(frame, "DEIN TEAM AUF DIESEM MARKT", W - 290, 128)
+  team:SetPoint("TOPLEFT", me, "TOPRIGHT", 10, 0)
+  local teamTable = UI.Table(team, { { "Charakter", 0, 130 }, { "Rolle", 134, 80 }, { "Berufe", 218, 60 } }, 4)
+
+  local tip = UI.Text(frame, "", "GameFontDisableSmall")
+  tip:SetPoint("BOTTOMLEFT", 0, 0)
+  tip:SetWidth(W)
 
   function content:Refresh()
-    local me = Chars.Current()
-    local role = me and Chars.ROLE_LABELS[me.role or "none"] or "unbekannt"
+    local rec = Chars.Current()
     local unassigned = Chars.Unassigned()
-    local i = 0
-    local function add(text, r, g, b)
-      i = i + 1
-      if lines[i] then lines[i]:SetText(text); lines[i]:SetTextColor(r or 1, g or 1, b or 1) end
-    end
+    local market = Chars.MarketKey()
+    local list = {}
     if unassigned > 0 then
-      add(("1. %d Charakter(e) haben noch keine Rolle. Tab 'Charaktere' öffnen und Main / Verarbeiter wählen."):format(unassigned), 1, 0.6, 0.2)
+      list[#list + 1] = { ("1. %d Charakter(e) ohne Rolle: im Tab Charaktere Main oder Verarbeiter wählen."):format(unassigned), 1, 0.6, 0.2 }
     else
-      add("1. Rollen sind gesetzt. Empfehlungen erscheinen hier, sobald Tooltip, Post und Berufe-Seitenleiste fertig sind (WP1.3, WP1.5, WP2.x).")
+      list[#list + 1] = { "1. Rollen sind gesetzt.", 0.6, 1, 0.6 }
     end
-    add(("Dieser Charakter: %s · Rolle: %s · Markt: %s"):format(Chars.FullName(), role, Chars.MarketKey()), 0.8, 0.8, 0.8)
-    add(("Gold: %s"):format(money(GetMoney and GetMoney() or 0)), 0.8, 0.8, 0.8)
-    local processors = Chars.ByRole("processor", Chars.MarketKey())
-    local names = {}
-    for _, rec in ipairs(processors) do names[#names + 1] = rec.name end
-    add(("Verarbeiter auf diesem Markt: %s"):format(#names > 0 and table.concat(names, ", ") or "keiner"), 0.8, 0.8, 0.8)
-    for j = i + 1, #lines do lines[j]:SetText("") end
-    footer:SetText("Tipp: /gw probe prüft die Spiel-APIs, /gw help listet alle Befehle. Zahlen tragen immer Quelle und Alter.")
+    list[#list + 1] = { "2. Empfehlungen (entzaubern, herstellen, Kiste füllen) erscheinen hier, sobald Tooltip, Post und Berufe-Seitenleiste fertig sind.", 0.8, 0.8, 0.8 }
+    list[#list + 1] = { "3. Bis dahin: /gw probe liefert die Spiel-API-Antworten für die Entwicklung.", 0.8, 0.8, 0.8 }
+    stepLines:Set(list)
+
+    mePairs:Set({
+      { "Name", Chars.FullName() },
+      { "Rolle", rec and Chars.ROLE_LABELS[rec.role or "none"] or "unbekannt" },
+      { "Markt", market },
+      { "Gold", money(GetMoney and GetMoney() or 0) },
+    })
+
+    local rows = {}
+    for _, c in ipairs(Chars.All(market)) do
+      local n = 0
+      for _ in pairs(c.professions or {}) do n = n + 1 end
+      rows[#rows + 1] = { c.name, Chars.ROLE_LABELS[c.role or "none"]:gsub(" %(.*%)", ""), tostring(n) }
+    end
+    if #rows == 0 then rows[1] = { "noch niemand", "", "" } end
+    teamTable:Set(rows)
+
+    tip:SetText("Tipp: Zahlen tragen immer Quelle und Alter. /gw help listet alle Befehle.")
   end
   return content
 end)
@@ -51,41 +74,43 @@ end)
 -- Berufe -------------------------------------------------------------------------------------
 UI.RegisterTab("berufe", "Berufe", function(frame)
   local content = {}
-  local header = UI.Header(frame, "BERUFE DIESES CHARAKTERS UND BEKANNTE PROFILE")
-  header:SetPoint("TOPLEFT", 0, 0)
-  local cols = UI.Text(frame, "Beruf                          Skill         Profil            Startpfad", "GameFontDisableSmall")
-  cols:SetPoint("TOPLEFT", 0, -20)
-  local rows = {}
-  for i = 1, 14 do
-    local fs = UI.Text(frame, "")
-    fs:SetPoint("TOPLEFT", 0, -38 - (i - 1) * 17)
-    fs:SetWidth(560)
-    rows[i] = fs
-  end
-  local note = UI.Text(frame, "Kosten bis 300 und beste Rezepte folgen mit WP2.5 (Berufs-Vergleich). Skill-up-Planer und Seitenleiste am Berufefenster mit WP2.1/2.2.", "GameFontDisableSmall")
+
+  local mine = UI.Group(frame, "BERUFE DIESES CHARAKTERS", W, 150)
+  mine:SetPoint("TOPLEFT", 0, 0)
+  local mineTable = UI.Table(mine, { { "Beruf", 0, 180 }, { "Skill", 184, 70 }, { "Rang", 258, 100 }, { "Profil", 362, 90 }, { "Startpfad", 456, 100 } }, 6)
+
+  local known = UI.Group(frame, "WEITERE PROFILE (für Berufswechsel oder Zweitberuf)", W, 150)
+  known:SetPoint("TOPLEFT", mine, "BOTTOMLEFT", 0, -10)
+  local knownTable = UI.Table(known, { { "Beruf", 0, 180 }, { "Kategorie", 184, 120 }, { "Startpfad", 308, 120 }, { "Kosten bis 300", 432, 140 } }, 6)
+
+  local note = UI.Text(frame, "Kosten bis 300 zu aktuellen Preisen und beste Rezepte folgen mit dem Berufs-Vergleich (WP2.5). Skill-up-Planer und Seitenleiste am Berufefenster mit WP2.1/2.2.", "GameFontDisableSmall")
   note:SetPoint("BOTTOMLEFT", 0, 0)
-  note:SetWidth(560)
+  note:SetWidth(W)
+
+  local CATEGORY = { crafting = "Herstellung", gathering = "Sammeln", secondary = "Sekundär" }
 
   function content:Refresh()
-    local me = Chars.Current()
-    local mine = me and me.professions or {}
-    local i = 0
-    local function add(text) i = i + 1 if rows[i] then rows[i]:SetText(text) end end
-    -- professions the character has
-    local seen = {}
-    for skillLine, p in pairs(mine) do
+    local rec = Chars.Current()
+    local rows, seen = {}, {}
+    for skillLine, p in pairs(rec and rec.professions or {}) do
       local profile = ns.Professions:BySkillLine(skillLine)
       seen[skillLine] = true
-      add(("%-30s %3d/%-3d       %-16s %s"):format(p.name or "?", p.rank or 0, p.maxRank or 0,
-        profile and "ja" or "noch nicht", profile and (#profile.seedPath .. " Schritte") or "–"))
+      local rank = profile and ns.Professions.RankFor(profile, p.rank or 0) or nil
+      rows[#rows + 1] = { p.name or "?", ("%d / %d"):format(p.rank or 0, p.maxRank or 0), rank and rank.name or "–",
+        profile and "vorhanden" or "folgt", profile and (#profile.seedPath .. " Schritte") or "–" }
     end
-    -- profiles the character does not have
+    table.sort(rows, function(a, b) return a[1] < b[1] end)
+    if #rows == 0 then rows[1] = { "keine Berufe erfasst", "", "", "", "" } end
+    mineTable:Set(rows)
+
+    local others = {}
     for _, profile in ipairs(ns.Professions:All()) do
       if not seen[profile.skillLineID] then
-        add(("%-30s %-13s %-16s %s"):format(profile.name, "–", "ja", #profile.seedPath .. " Schritte"))
+        others[#others + 1] = { profile.name, CATEGORY[profile.category] or profile.category, #profile.seedPath .. " Schritte", "folgt (WP2.5)" }
       end
     end
-    for j = i + 1, #rows do rows[j]:SetText("") end
+    if #others == 0 then others[1] = { "alle bekannten Profile sind erlernt", "", "", "" } end
+    knownTable:Set(others)
   end
   return content
 end)
@@ -93,64 +118,60 @@ end)
 -- Charaktere ---------------------------------------------------------------------------------
 UI.RegisterTab("chars", "Charaktere", function(frame)
   local content = { rows = {} }
-  local header = UI.Header(frame, "CHARAKTERE UND ROLLEN")
-  header:SetPoint("TOPLEFT", 0, 0)
-  local hint = UI.Text(frame, "Main sammelt unterwegs und schickt Material. Verarbeiter stellt her, entzaubert und verkauft. Bank lagert. Jeder Charakter wird beim ersten Login automatisch eingetragen.", "GameFontDisableSmall")
-  hint:SetPoint("TOPLEFT", 0, -18)
-  hint:SetWidth(580)
-  local cols = UI.Text(frame, "Charakter                      Markt                 Berufe", "GameFontDisableSmall")
-  cols:SetPoint("TOPLEFT", 0, -46)
+
+  local help = UI.Group(frame, "ROLLEN", W, 62)
+  help:SetPoint("TOPLEFT", 0, 0)
+  local helpLines = UI.Lines(help, 1, W - 20, "GameFontHighlightSmall")
+  helpLines:Set({ { "Main sammelt unterwegs und schickt Material. Verarbeiter stellt her, entzaubert und verkauft. Bank lagert. Jeder Charakter wird beim ersten Login automatisch eingetragen.", 0.85, 0.85, 0.85 } })
+
+  local list = UI.Group(frame, "CHARAKTERE", W, 300)
+  list:SetPoint("TOPLEFT", help, "BOTTOMLEFT", 0, -10)
+  local colName = UI.Text(list, "Charakter", "GameFontDisableSmall"); colName:SetPoint("TOPLEFT", 10, -26)
+  local colMarket = UI.Text(list, "Markt", "GameFontDisableSmall"); colMarket:SetPoint("TOPLEFT", 200, -26)
+  local colProfs = UI.Text(list, "Berufe", "GameFontDisableSmall"); colProfs:SetPoint("TOPLEFT", 330, -26)
 
   local ROLE_ORDER = { "main", "processor", "bank", "none" }
   local ROLE_SHORT = { main = "Main", processor = "Verarbeiter", bank = "Bank", none = "–" }
 
   local function row(i)
     if content.rows[i] then return content.rows[i] end
-    local r = CreateFrame("Frame", nil, frame)
-    r:SetSize(580, 40)
-    r:SetPoint("TOPLEFT", 0, -62 - (i - 1) * 44)
-    r.name = UI.Text(r, "", "GameFontNormal")
-    r.name:SetPoint("TOPLEFT", 0, 0)
-    r.name:SetWidth(200)
-    r.market = UI.Text(r, "")
-    r.market:SetPoint("TOPLEFT", 200, 0)
-    r.market:SetWidth(150)
-    r.profs = UI.Text(r, "", "GameFontHighlightSmall")
-    r.profs:SetPoint("TOPLEFT", 350, 0)
-    r.profs:SetWidth(230)
+    local r = CreateFrame("Frame", nil, list)
+    r:SetSize(W - 20, 44)
+    r:SetPoint("TOPLEFT", 10, -42 - (i - 1) * 48)
+    local line = r:CreateTexture(nil, "BACKGROUND")
+    line:SetColorTexture(1, 1, 1, 0.06)
+    line:SetPoint("BOTTOMLEFT", 0, -2); line:SetPoint("BOTTOMRIGHT", 0, -2); line:SetHeight(1)
+    r.name = UI.Text(r, "", "GameFontNormal"); r.name:SetPoint("TOPLEFT", 0, 0); r.name:SetWidth(185)
+    r.market = UI.Text(r, ""); r.market:SetPoint("TOPLEFT", 190, 0); r.market:SetWidth(125)
+    r.profs = UI.Text(r, "", "GameFontHighlightSmall"); r.profs:SetPoint("TOPLEFT", 320, 0); r.profs:SetWidth(W - 20 - 320); r.profs:SetWordWrap(true)
     r.buttons = {}
     local x = 0
     for _, role in ipairs(ROLE_ORDER) do
-      local b = UI.Button(r, ROLE_SHORT[role], role == "processor" and 90 or 60, function()
-        if r.rec then Chars.SetRole(r.rec.name, role) end
-      end)
-      b:SetPoint("TOPLEFT", x, -18)
+      local width = role == "processor" and 90 or 60
+      local b = UI.Button(r, ROLE_SHORT[role], width, function() if r.rec then Chars.SetRole(r.rec.name, role) end end)
+      b:SetPoint("TOPLEFT", x, -20)
       r.buttons[role] = b
-      x = x + (role == "processor" and 92 or 62)
+      x = x + width + 4
     end
     content.rows[i] = r
     return r
   end
 
   function content:Refresh()
-    local list = Chars.All()
-    for i, rec in ipairs(list) do
-      if i > 8 then break end
+    local all = Chars.All()
+    for i, rec in ipairs(all) do
+      if i > 5 then break end
       local r = row(i)
       r.rec = rec
       r:Show()
-      local me = rec.name == Chars.FullName() and " (du)" or ""
-      r.name:SetText(rec.name .. me)
+      r.name:SetText(rec.name .. (rec.name == Chars.FullName() and " (du)" or ""))
       r.market:SetText(rec.market or "?")
-      local profs = {}
-      for _, p in pairs(rec.professions or {}) do profs[#profs + 1] = (p.name or "?") .. " " .. tostring(p.rank or 0) end
-      table.sort(profs)
-      r.profs:SetText(#profs > 0 and table.concat(profs, ", ") or "keine Berufe erfasst")
+      r.profs:SetText(professionSummary(rec))
       for role, b in pairs(r.buttons) do
         if (rec.role or "none") == role then b:Disable() else b:Enable() end
       end
     end
-    for i = #list + 1, #content.rows do content.rows[i]:Hide() end
+    for i = #all + 1, #content.rows do content.rows[i]:Hide() end
   end
   return content
 end)
@@ -158,35 +179,34 @@ end)
 -- Einstellungen ------------------------------------------------------------------------------
 UI.RegisterTab("settings", "Einstellungen", function(frame)
   local content = {}
-  local header = UI.Header(frame, "EINSTELLUNGEN")
-  header:SetPoint("TOPLEFT", 0, 0)
   local s = ns.db.settings
 
-  local minimap = UI.Check(frame, "Minimap-Button anzeigen", not s.minimapHidden, function(on)
+  local display = UI.Group(frame, "ANZEIGE", W, 90)
+  display:SetPoint("TOPLEFT", 0, 0)
+  local minimap = UI.Check(display, "Minimap-Button anzeigen", not s.minimapHidden, function(on)
     s.minimapHidden = not on
     if ns.Minimap then ns.Minimap.SetShown(on) end
   end)
-  minimap:SetPoint("TOPLEFT", 0, -22)
+  minimap:SetPoint("TOPLEFT", 10, -26)
+  local debug = UI.Check(display, "Debug-Ausgaben im Chat", s.debug, function(on) s.debug = on end)
+  debug:SetPoint("TOPLEFT", 10, -52)
 
-  local debug = UI.Check(frame, "Debug-Ausgaben im Chat", s.debug, function(on) s.debug = on end)
-  debug:SetPoint("TOPLEFT", 0, -48)
+  local calc = UI.Group(frame, "RECHENGRUNDLAGEN", W, 110)
+  calc:SetPoint("TOPLEFT", display, "BOTTOMLEFT", 0, -10)
+  local calcPairs = UI.Pairs(calc, 3, 150, W - 190)
 
-  local favorLabel = UI.Text(frame, ("Wert eines Merchant's Favor für die Kisten-Empfehlung: %s (Standard 5s, ändern mit /gw favor <Kupfer>)"):format(ns.Util.Money(s.favorValueCopper or 500)), "GameFontHighlightSmall")
-  favorLabel:SetPoint("TOPLEFT", 0, -82)
-  favorLabel:SetWidth(580)
-
-  local market = UI.Text(frame, "", "GameFontHighlightSmall")
-  market:SetPoint("TOPLEFT", 0, -104)
-  market:SetWidth(580)
-
-  local note = UI.Text(frame, "Höchstens zehn Einstellungen, alle mit funktionierendem Standard (docs/08-UX.md Regel 7).", "GameFontDisableSmall")
+  local note = UI.Text(frame, "Höchstens zehn Einstellungen, alle mit funktionierendem Standard (docs/08-UX.md Regel 7). Ändern per Befehl: /gw favor <Kupfer>, /gw market <Key>|auto.", "GameFontDisableSmall")
   note:SetPoint("BOTTOMLEFT", 0, 0)
+  note:SetWidth(W)
 
   function content:Refresh()
     minimap:SetChecked(not s.minimapHidden)
     debug:SetChecked(s.debug and true or false)
-    favorLabel:SetText(("Wert eines Merchant's Favor für die Kisten-Empfehlung: %s (ändern mit /gw favor <Kupfer>)"):format(ns.Util.Money(s.favorValueCopper or 500)))
-    market:SetText(("Markt-Key: %s%s (ändern mit /gw market <Region-Regelsatz-Fraktion>, zurücksetzen mit /gw market auto)"):format(Chars.MarketKey(), s.marketKey and " (manuell)" or " (automatisch)"))
+    calcPairs:Set({
+      { "Wert je Favor", ns.Util.Money(s.favorValueCopper or 500) .. "  (für die Kisten-Empfehlung)" },
+      { "AH-Cut", ("%d %%"):format(math.floor((s.ahCut or 0.05) * 100 + 0.5)) .. "  (Fraktions-AH; Goblin-AH 15 %)" },
+      { "Markt-Key", Chars.MarketKey() .. (s.marketKey and "  (manuell)" or "  (automatisch aus Realmname)") },
+    })
   end
   return content
 end)

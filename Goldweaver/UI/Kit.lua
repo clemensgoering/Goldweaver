@@ -52,6 +52,101 @@ function UI.Check(parent, label, checked, onChange)
   return c
 end
 
+-- Group box with a gold title; content is anchored inside with 10 px padding. Uses BackdropTemplate (Mainline).
+function UI.Group(parent, title, width, height)
+  local g = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+  g:SetSize(width, height)
+  if g.SetBackdrop then
+    g:SetBackdrop({
+      bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+      tile = true, tileSize = 16, edgeSize = 12,
+      insets = { left = 3, right = 3, top = 3, bottom = 3 },
+    })
+    g:SetBackdropColor(0.05, 0.05, 0.05, 0.6)
+    g:SetBackdropBorderColor(0.5, 0.42, 0.25, 0.9)
+  end
+  g.title = UI.Header(g, title)
+  g.title:SetPoint("TOPLEFT", 10, -8)
+  g.pad = 10
+  g.top = -26
+  return g
+end
+
+-- A column of text lines that never overlap: each line is anchored below the previous one, wrapped text included.
+function UI.Lines(parent, count, width, template, firstY)
+  local lines = {}
+  for i = 1, count do
+    local fs = parent:CreateFontString(nil, "OVERLAY", template or "GameFontHighlight")
+    fs:SetJustifyH("LEFT")
+    fs:SetWidth(width)
+    fs:SetWordWrap(true)
+    if i == 1 then fs:SetPoint("TOPLEFT", parent, "TOPLEFT", parent.pad or 0, firstY or (parent.top or 0))
+    else fs:SetPoint("TOPLEFT", lines[i - 1], "BOTTOMLEFT", 0, -4) end
+    lines[i] = fs
+  end
+  function lines:Set(values)
+    for i, fs in ipairs(self) do
+      local v = values[i]
+      if type(v) == "table" then fs:SetText(v[1] or ""); fs:SetTextColor(v[2] or 1, v[3] or 1, v[4] or 1)
+      else fs:SetText(v or ""); fs:SetTextColor(1, 1, 1) end
+    end
+  end
+  return lines
+end
+
+-- Label/value pairs ("Rolle:  Verarbeiter") inside a group.
+function UI.Pairs(parent, count, labelWidth, valueWidth, firstY)
+  local rows = {}
+  for i = 1, count do
+    local label = parent:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+    label:SetJustifyH("LEFT"); label:SetWidth(labelWidth)
+    local value = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    value:SetJustifyH("LEFT"); value:SetWidth(valueWidth); value:SetWordWrap(false)
+    if i == 1 then label:SetPoint("TOPLEFT", parent, "TOPLEFT", parent.pad or 0, firstY or (parent.top or 0))
+    else label:SetPoint("TOPLEFT", rows[i - 1].label, "BOTTOMLEFT", 0, -6) end
+    value:SetPoint("LEFT", label, "RIGHT", 6, 0)
+    rows[i] = { label = label, value = value }
+  end
+  function rows:Set(values)
+    for i, r in ipairs(self) do
+      local v = values[i]
+      r.label:SetText(v and v[1] or ""); r.value:SetText(v and v[2] or "")
+    end
+  end
+  return rows
+end
+
+-- Table with fixed column x offsets. columns = { {title, x, width}, ... }. Returns object with :Set(rows).
+function UI.Table(parent, columns, rowCount, firstY)
+  local t = { columns = columns, rows = {} }
+  local y = firstY or (parent.top or 0)
+  t.header = {}
+  for c, col in ipairs(columns) do
+    local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    fs:SetPoint("TOPLEFT", parent, "TOPLEFT", (parent.pad or 0) + col[2], y)
+    fs:SetWidth(col[3]); fs:SetJustifyH("LEFT"); fs:SetText(col[1])
+    t.header[c] = fs
+  end
+  for r = 1, rowCount do
+    local cells = {}
+    for c, col in ipairs(columns) do
+      local fs = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+      fs:SetPoint("TOPLEFT", parent, "TOPLEFT", (parent.pad or 0) + col[2], y - 16 - (r - 1) * 18)
+      fs:SetWidth(col[3]); fs:SetJustifyH("LEFT"); fs:SetWordWrap(false)
+      cells[c] = fs
+    end
+    t.rows[r] = cells
+  end
+  function t:Set(data)
+    for r, cells in ipairs(self.rows) do
+      local row = data[r]
+      for c, fs in ipairs(cells) do fs:SetText(row and row[c] or "") end
+    end
+  end
+  return t
+end
+
 -- Window --------------------------------------------------------------------------------------
 
 local function selectTab(key)

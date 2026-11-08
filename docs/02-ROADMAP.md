@@ -81,7 +81,7 @@ Arbeitspakete:
 | WP3.1 Beobachtete Preise | Hook auf Suchergebnisse, Übernahme in Preis-DB ohne Zusatzanfragen | `Modules/Auction.lua` (Teil Observe) |
 | WP3.2 Post-Helfer | Preisvorschlag, Unterbieten, Stückelung, Einzahlung/Cut, ein Klick pro Posten | `Modules/Auction.lua` (Teil Sell) |
 | WP3.3 Einkaufslisten | Aus Planer, Suche per Klick, Rohstoff vs. Zwischenprodukt | `Modules/Auction.lua` (Teil Shop) |
-| WP3.4 Vollscan (opt-in) | Nur wenn F1 positiv: 15-Min-Sperre persistiert, Batches, Abbruch | `Modules/Auction.lua` (Teil Scan) |
+| ~~WP3.4 Vollscan (opt-in)~~ | **Entfällt** (F1/F13: `ReplicateItems` liefert auf Forever keine Daten). Ersatz: Auctionator-API als Massenquelle, WP3.1 für eigene Beobachtungen | – |
 | WP3.5 Unterbietungs-Check | Eigene Auktionen, eine Suche pro Item, Klick zum Abbrechen | `Modules/Auction.lua` (Teil Undercut) |
 | WP3.6 Ledger | Verkäufe/Einzahlungen/Cuts aus Rechnungen, pro Charakter und Markt | `Modules/Ledger.lua` |
 
@@ -121,10 +121,10 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 ## Offene Fragen (laufend gepflegt)
 | # | Frage | Status | Antwort / Entscheidung |
 |---|---|---|---|
-| F1 | `ReplicateItems` auf 1.60 | offen | API vorhanden (Probe 08.11.); Aufruf noch nicht getestet |
+| F1 | `ReplicateItems` auf 1.60 | **beantwortet: nein** | API existiert, Aufruf wirft keinen Fehler, liefert aber nie Daten (siehe F13) |
 | F2 | Berufe-API je Beruf | **beantwortet** | Nur `C_TradeSkillUI` (Kochkunst 132, Lederverarbeitung 592 Rezepte). `GetRecipeInfo` liefert `name`, `difficulty` als Zahl (Enum.TradeskillRelativeDifficulty), `learned`; `GetRecipeSchematic` liefert `reagentSlotSchematics`, `quantityMin/Max`. `GetRecipeTools` fehlt. Verzauberkunst noch zu bestätigen, aber keine Legacy-API vorhanden |
 | F3 | Namensformat, Realm-Funktionen, Regelsatz | **beantwortet** | `UnitFullName` = Vorname, Nachname. Realmname „CAMWOW EU4 Realm 5 PvE" → Markt-Key `EU-PvE-Horde`. Key „Vorname Nachname" |
-| F4 | Secure-Button mit `macrotext` | offen | Lauf 2: Button sichtbar, PreClick und PostClick feuern, `/run` im Makrotext lief nicht. Lauf 3 testet `/dance` |
+| F4 | Secure-Button mit `macrotext` | **beantwortet: ja** | Lauf 3: `/dance` im Makrotext eines `SecureActionButtonTemplate`-Buttons wird ausgeführt. Zerlegen-Queue kann `/cast Entzaubern` + Item-Ziel nutzen |
 | F5 | `TooltipDataProcessor` | **beantwortet** | vorhanden |
 | F6 | Laufzeiten und Einzahlung | **teilweise beantwortet** | 2 / 8 / 24 h. Einzahlung 1 Silber pauschal für 1× Leinenstoff; Formel über Rechnung prüfen |
 | F7 | Favor pro Kiste, Bündel je Kategorie | offen | |
@@ -132,5 +132,5 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 | F9 | AH-Budget pro Minute | offen, kein Fix erwartet | Konservatives Design |
 | F10 | Post nach Vorname | offen | Testsendung vor erster echter Sendung |
 | F11 | Skill-up-Wahrscheinlichkeiten | offen | Kalibrierung in Phase 4 |
-| F12 | Ist `/run` in Makrotext eines Secure-Buttons auf Forever erlaubt (Midnight-Makro-Einschränkungen)? | **vermutlich nein** | Lauf 2: Klick kam an, `/run print` ohne Wirkung. Zerlegen-Queue nutzt `/cast`, nicht `/run`; Lauf 3 mit `/dance` trennt F4 von F12 |
-| F13 | `REPLICATE_ITEM_LIST_UPDATE` kommt nach `ReplicateItems()` nicht (Lauf 2, AH offen) | offen | Probe prüft nach 15/45/90 s `GetNumReplicateItems`; falls dauerhaft nichts kommt, ist der Vollscan auf Forever tot und WP3.4 entfällt (Auctionator als einzige Massen-Preisquelle) |
+| F12 | Ist `/run` in Makrotext eines Secure-Buttons auf Forever erlaubt? | **beantwortet: nein** | `/run print` ohne Wirkung, `/dance` läuft. Nie `/run` oder `/script` in Makrotext verwenden |
+| F13 | `REPLICATE_ITEM_LIST_UPDATE` nach `ReplicateItems()` | **beantwortet: kommt nicht** | Lauf 3: AH offen, Throttle bereit, nach 90 s kein Event und `GetNumReplicateItems() = 0`. **Entscheidung: WP3.4 Vollscan entfällt.** Massenpreise nur aus Auctionator-API; eigene Preise aus mitgelesenen Suchseiten (WP3.1) |

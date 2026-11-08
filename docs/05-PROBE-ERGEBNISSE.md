@@ -10,7 +10,13 @@ Stand: erster Lauf am 08.11.2026 auf Build 1.60.1.70862 (deDE, Horde, „CAMWOW 
 - Items: alle 95 IDs lösen auf (deutsche Namen, IDs korrekt).
 - AH: Throttle bereit, Laufzeiten **2 / 8 / 24 Stunden** (`AUCTION_DURATION_*`), Time-Left-Bands Short 0 · Medium 1 · Long 2 · VeryLong 3. Einzahlung 1× Leinenstoff = **1 Silber** für alle drei Laufzeiten (pauschales Minimum, bekannter Beta-Befund). → F6 teilweise: Laufzeiten ja, Einzahlungsformel durch echte Rechnung prüfen.
 - Berufefenster-Dump war leer: `C_TradeSkillUI.GetAllRecipeIDs` liefert erst Daten, wenn ein konkreter Beruf geöffnet ist. Probe wartet jetzt auf `TRADE_SKILL_LIST_UPDATE`.
-- Secure-Button erschien nicht sichtbar (Ursache offen, vermutlich kein Button-Artwork). Probe zeigt jetzt einen großen Button mit PreClick/PostClick-Meldungen. Ablauf: im Spiel `/console scriptErrors 1`, dann die Befehle unten in dieser Reihenfolge ausführen, Chat-Ausgabe hier eintragen (oder nach `/reload` aus `WTF\Account\<Account>\SavedVariables\Goldweaver.lua` den Block `probe` kopieren).
+- Secure-Button erschien nicht sichtbar (Ursache offen, vermutlich kein Button-Artwork). Probe zeigt jetzt einen großen Button mit PreClick/PostClick-Meldungen.
+
+**Ergebnisse Lauf 2 und 3 (08.11.2026)**
+- Berufefenster: `C_TradeSkillUI.GetAllRecipeIDs` liefert 132 (Kochkunst), 592 (Lederverarbeitung), 471 (Schneiderei) Rezept-IDs. `GetRecipeInfo` → `name`, `difficulty` (Zahl), `learned`; `GetRecipeSchematic` → 3 Reagenz-Slots, `quantityMin/Max`. → F2 beantwortet.
+- Secure: `/run print(...)` im Makrotext ohne Wirkung, `/dance` wird ausgeführt (Charakter tanzt). → F4 ja, F12 `/run` gesperrt.
+- Replicate: AH offen, Throttle bereit, Aufruf ohne Fehler, nach 15/45/90 s kein `REPLICATE_ITEM_LIST_UPDATE`, `GetNumReplicateItems() = 0`. → F1/F13: kein Vollscan auf Forever, WP3.4 gestrichen.
+- Fenster: `BasicFrameTemplateWithInset` hat kein nutzbares `.Inset`; eigener Body-Frame eingebaut. Ablauf: im Spiel `/console scriptErrors 1`, dann die Befehle unten in dieser Reihenfolge ausführen, Chat-Ausgabe hier eintragen (oder nach `/reload` aus `WTF\Account\<Account>\SavedVariables\Goldweaver.lua` den Block `probe` kopieren).
 
 | Schritt | Befehl | Wo | Beantwortet |
 |---|---|---|---|
