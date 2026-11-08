@@ -121,14 +121,14 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 ## Offene Fragen (laufend gepflegt)
 | # | Frage | Status | Antwort / Entscheidung |
 |---|---|---|---|
-| F1 | `ReplicateItems` auf 1.60 | offen | |
-| F2 | Berufe-API je Beruf | offen | |
-| F3 | Namensformat, Realm-Funktionen, Regelsatz | offen | |
-| F4 | Secure-Button mit `macrotext` | offen | |
-| F5 | `TooltipDataProcessor` | offen | |
-| F6 | Laufzeiten und Einzahlung | offen | |
+| F1 | `ReplicateItems` auf 1.60 | offen | API vorhanden (Probe 08.11.); Aufruf noch nicht getestet |
+| F2 | Berufe-API je Beruf | **teilweise beantwortet** | Nur `C_TradeSkillUI`; Legacy-APIs existieren nicht. `GetRecipeTools` fehlt. Rezeptfelder noch zu dumpen (Beruf öffnen) |
+| F3 | Namensformat, Realm-Funktionen, Regelsatz | **beantwortet** | `UnitFullName` = Vorname, Nachname. Realmname „CAMWOW EU4 Realm 5 PvE" → Markt-Key `EU-PvE-Horde`. Key „Vorname Nachname" |
+| F4 | Secure-Button mit `macrotext` | offen | Erster Versuch: Button nicht sichtbar; zweiter Versuch mit sichtbarem Template ausstehend |
+| F5 | `TooltipDataProcessor` | **beantwortet** | vorhanden |
+| F6 | Laufzeiten und Einzahlung | **teilweise beantwortet** | 2 / 8 / 24 h. Einzahlung 1 Silber pauschal für 1× Leinenstoff; Formel über Rechnung prüfen |
 | F7 | Favor pro Kiste, Bündel je Kategorie | offen | |
-| F8 | Interface 16001 nach Patch | offen | |
+| F8 | Interface 16001 nach Patch | **beantwortet** | Live-Build 70862 nutzt 16001 |
 | F9 | AH-Budget pro Minute | offen, kein Fix erwartet | Konservatives Design |
 | F10 | Post nach Vorname | offen | Testsendung vor erster echter Sendung |
 | F11 | Skill-up-Wahrscheinlichkeiten | offen | Kalibrierung in Phase 4 |

@@ -1,6 +1,16 @@
 # Phase 0 – Probe-Ergebnisse (in-game)
 
-Stand: noch nicht ausgeführt. Ablauf: im Spiel `/console scriptErrors 1`, dann die Befehle unten in dieser Reihenfolge ausführen, Chat-Ausgabe hier eintragen (oder nach `/reload` aus `WTF\Account\<Account>\SavedVariables\Goldweaver.lua` den Block `probe` kopieren).
+Stand: erster Lauf am 08.11.2026 auf Build 1.60.1.70862 (deDE, Horde, „CAMWOW EU4 Realm 5 PvE"). Ergebnisse unten; offen sind noch Berufefenster-Dump, Replicate, Post mit AH-Rechnung, Secure-Button, Kisten.
+
+**Ergebnisse Lauf 1**
+- Interface 16001 live bestätigt, `WOW_PROJECT_ID` 18. Addon lädt ohne Fehler, 245 kB Speicher. → F8 beantwortet.
+- `UnitFullName("player")` = Vorname, Nachname („Cupedos", „Grel"). `GetRealmName()` = „CAMWOW EU4 Realm 5 PvE", `GetNormalizedRealmName()` = „CAMWOWEU4Realm5PvE", `GetAutoCompleteRealms()` leer. Region und Regelsatz stehen im Realmnamen. → F3 beantwortet: Registry-Key „Vorname Nachname", Markt-Key „EU-PvE-Horde". Postempfänger-Format noch zu prüfen (F10).
+- Fehlende APIs: `C_TradeSkillUI.GetRecipeTools`, alle Legacy-Berufe-APIs (`GetNumTradeSkills`, `GetTradeSkillInfo`, `GetTradeSkillReagentInfo`, `DoTradeSkill`, `GetNumCrafts`, `GetCraftInfo`, `GetCraftReagentInfo`, `DoCraft`), `C_RestrictedActions.IsRestricted`. Vorhanden: `TooltipDataProcessor.AddTooltipPostCall`, `C_TooltipInfo`, `C_AuctionHouse.ReplicateItems`, Post-APIs, `GetProfessions`. → F2: nur `C_TradeSkillUI`, keine Fallback-Kette nötig. F5: TooltipDataProcessor ja.
+- `GetProfessions`/`GetProfessionInfo` liefern Name, Rang, Maximum und Skill-Line (165, 393, 129, 356, 185 bestätigt).
+- Items: alle 95 IDs lösen auf (deutsche Namen, IDs korrekt).
+- AH: Throttle bereit, Laufzeiten **2 / 8 / 24 Stunden** (`AUCTION_DURATION_*`), Time-Left-Bands Short 0 · Medium 1 · Long 2 · VeryLong 3. Einzahlung 1× Leinenstoff = **1 Silber** für alle drei Laufzeiten (pauschales Minimum, bekannter Beta-Befund). → F6 teilweise: Laufzeiten ja, Einzahlungsformel durch echte Rechnung prüfen.
+- Berufefenster-Dump war leer: `C_TradeSkillUI.GetAllRecipeIDs` liefert erst Daten, wenn ein konkreter Beruf geöffnet ist. Probe wartet jetzt auf `TRADE_SKILL_LIST_UPDATE`.
+- Secure-Button erschien nicht sichtbar (Ursache offen, vermutlich kein Button-Artwork). Probe zeigt jetzt einen großen Button mit PreClick/PostClick-Meldungen. Ablauf: im Spiel `/console scriptErrors 1`, dann die Befehle unten in dieser Reihenfolge ausführen, Chat-Ausgabe hier eintragen (oder nach `/reload` aus `WTF\Account\<Account>\SavedVariables\Goldweaver.lua` den Block `probe` kopieren).
 
 | Schritt | Befehl | Wo | Beantwortet |
 |---|---|---|---|
