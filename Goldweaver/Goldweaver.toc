@@ -2,14 +2,18 @@
 ## Title: Goldweaver
 ## IconTexture: Interface\Icons\INV_Misc_Coin_01
 ## Notes: Professions, mail pipeline and auction house as one decision engine: what to craft, how to level cheapest, what earns gold. Built for WoW: Forever.
+## Notes-deDE: Berufe, Post-Pipeline und Auktionshaus als eine Entscheidungskette: was herstellen, wie am günstigsten leveln, was Gold bringt. Für WoW: Forever.
 ## Author: Clemens
-## Version: 0.1.0-dev
+## Version: @project-version@
 ## SavedVariables: GoldweaverDB
 ## SavedVariablesPerCharacter: GoldweaverCharDB
 ## OptionalDeps: Auctionator, Syndicator, GatherMate2, TradeSkillMaster
 ## AllowLoadGameType: camelot, forever
+## Category: Professions
 ## X-License: MIT
+## X-Website: https://github.com/clemensgoering/Goldweaver
 ## X-Category: Professions, Auction House
+# Upload targets: add "## X-Curse-Project-ID: <id>" and "## X-Wago-ID: <id>" once the projects exist (docs/12-CURSEFORGE.md).
 
 # Load order = module order. Core first, data second, professions third, modules last.
 Locales\enUS.lua

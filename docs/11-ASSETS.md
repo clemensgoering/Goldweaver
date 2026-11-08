@@ -10,8 +10,8 @@ Stand: 08.11.2026. Jeder Auftrag ist eigenständig umsetzbar. Ergebnisse kommen 
 - Motivwelt: Weberei, Garnrolle, Nadel, Goldmünze, Stoffbahn. Kein Text in Icons.
 - Dateinamen klein, ohne Leerzeichen; jede Datei auch als PNG-Vorschau mitliefern.
 
-## A1 Addon-Icon (TOC `## IconTexture`, Addon-Liste und CurseForge-Thumbnail)
-- Datei `Goldweaver/Media/icon.tga`, 64×64 (zusätzlich 256×256 PNG für CurseForge).
+## A1 Addon-Icon (TOC `## IconTexture`, Addon-Liste) und CurseForge-Logo
+- Datei `Goldweaver/Media/icon.tga`, 64×64 für die Addon-Liste. Zusätzlich **`docs/assets/logo-400.png`, 400×400, PNG (kein WebP), 1:1** als CurseForge-Projektlogo: muss ein Originalmotiv sein, keine Einfarbfläche, kein Blizzard-Artwork (CurseForge-Moderationsregel).
 - Motiv: Garnrolle mit goldenem Faden, der zu einer Münze ausläuft. Runde Silhouette, dunkler Innenkreis, goldener Rand 3 px.
 - Einbau: `## IconTexture: Interface\AddOns\Goldweaver\Media\icon` in `Goldweaver.toc` (ersetzt `INV_Misc_Coin_01`).
 

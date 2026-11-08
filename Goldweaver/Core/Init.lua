@@ -2,7 +2,9 @@
 local ADDON, ns = ...
 
 ns.name = ADDON
+-- The packager replaces @project-version@ with the git tag; an unpackaged working copy shows "dev".
 ns.version = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
+if type(ns.version) ~= "string" or ns.version:find("@", 1, true) or ns.version == "" then ns.version = "dev" end
 ns.modules = {}
 ns.L = ns.L or {}
 

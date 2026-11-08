@@ -7,6 +7,7 @@ Thumbs.db
 # Build output and packager artefacts
 /.release/
 *.zip
+/Goldweaver/Media/*.psd
 
 # Local scratch and WoW saved variables copied for analysis
 /scratch/

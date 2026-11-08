@@ -1,19 +1,20 @@
 package-as: Goldweaver
 
-# The addon lives in Goldweaver/ inside the repo; move it to the zip root.
+# The addon lives in Goldweaver/ inside the repo; the packager moves it to the zip root so the zip contains a single
+# root folder named like the TOC (CurseForge requirement). Key = source path inside the package dir, value = destination.
 move-folders:
   Goldweaver/Goldweaver: Goldweaver
 
+# Paths relative to the working copy. Dot-files are always ignored.
 ignore:
   - docs
   - tools
-  - .github
   - README.md
   - CHANGELOG.md
   - CLAUDE.md
-  - .luacheckrc
-  - .gitattributes
-  - .gitignore
 
-manual-changelog: CHANGELOG.md
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
 enable-nolib-creation: no

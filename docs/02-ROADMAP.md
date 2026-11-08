@@ -139,7 +139,7 @@ Noch nicht automatisierbar (brauchen Entwicklung, nicht Spielzeit): B2 Profile, 
 | B8 | Kalibrierung: Skill-up-Chancen und Entzauber-Ausbeuten aus `observations` zurückrechnen (F11) | Spielzeit | mittel |
 | B9 | Unterbietungs-Check eigener Auktionen (WP3.5) throttle-bewusst | AH-Beobachtung | mittel |
 | B10 | Lokalisierung enUS/deDE (Strings extrahieren), Settings-Panel in Blizzard-Optionen | – | mittel |
-| B11 | Packaging-Test: Tag `v0.1.0`, GitHub-Release, CurseForge/Wago-Secrets, Repo public | Abnahme | klein |
+| B11 | Packaging: Repo-Seite fertig (`12-CURSEFORGE.md`). Offen nur Kontoinhaber-Schritte: Projekt anlegen, IDs in TOC, Secrets, Repo public, Tag `v0.1.0`; lokaler Packager-Testlauf (`release.sh -d -z`) | Abnahme | klein |
 | B12 | Grafiken nach `11-ASSETS.md` (Icon, Minimap, Rollen, Glyphen) | Codex/Grafik | klein |
 | B13 | Kistenbündel und Favor-Sätze aus Tooltips bestätigen (F7), Einzahlungsformel aus Rechnung (F6), Post-Empfängerformat (F10) | Spielzeit | klein |
 | B14 | Audit-Wiederholung für Post/Zerlegen/AH-Code (`07-AUDIT.md` Abschnitt 5) | Abnahme | klein |
