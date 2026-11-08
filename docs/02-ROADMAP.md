@@ -103,7 +103,7 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 3. **Empfohlene Verteilung Phase 1:** Session A = WP1.1, 1.2, 1.4, 1.8 (Daten und Engine). Session B = WP1.7, 1.3, 1.5, 1.6 (UI und Module). Höchstens zwei bis drei Sessions gleichzeitig.
 4. **Vor dem Coden:** `CLAUDE.md`, `01-KONZEPT.md` Abschnitte 4–5, `04-COMPLIANCE.md` Abschnitt 3 und das eigene WP lesen.
 5. **Nach dem Coden:** `tools/check.ps1` grün, Eintrag unter „Unreleased" in `CHANGELOG.md`, kurze Notiz zu offenen Fragen hier unten.
-6. **Versionskontrolle:** Das Repo ist noch kein Git-Repository. Empfehlung: `git init` vor Phase 0, ein Branch pro WP, Merge nach `tools/check.ps1`.
+6. **Versionskontrolle:** Git-Repo `https://github.com/clemensgoering/Goldweaver.git`, Hauptbranch `main` (seit 08.11.2026). Ein Branch pro WP (`wp1.1-price-engine`), Merge nach grünem `tools/check.ps1`. Commits enden mit der Co-Authored-By-Zeile der jeweiligen Session.
 
 ## Definition of Done (jedes WP)
 - `luac -p` und `luacheck` ohne Fehler; Headless-Tests für reine Logik grün.
