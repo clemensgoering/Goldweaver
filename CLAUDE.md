@@ -22,6 +22,11 @@ Der Projektordner heißt historisch `Auctionator`; das Addon heißt **Goldweaver
 - **Vor Veröffentlichung:** Repo auf public stellen (Richtlinie „Code vollständig sichtbar"), Audit-Checkliste in `docs/07-AUDIT.md` erneut durchgehen.
 - **Dateibesitz:** Nur die Dateien des eigenen WP ändern. Neue Dateien: erst als Stub anlegen und in `Goldweaver.toc` eintragen (Besitzer Core), dann füllen. Schnittstellen in `docs/06-SCHNITTSTELLEN.md` eintragen, bevor andere darauf aufbauen.
 
+## Architektur und Datensicherheit (docs/13-ARCHITEKTUR.md)
+- Modul-Vertrag: `ns:RegisterModule(name, { Init, SelfTest })`, öffentliche Funktionen nur unter `ns.<Modul>`, Dateikopf mit Zweck/API/Datenpfad.
+- Erweiterungen über Registries (Preisquellen, Advisor-Provider, Post-Regeln, Prüfungen, Features, Profile, Tabs), nicht durch Umbauen bestehender Funktionen.
+- **Nutzerdaten nie zurücksetzen.** Strukturänderungen nur als nummerierte, additive Migration in `Core/DB.lua` mit Test in `tools/tests/migration_test.lua`; vor jeder Migration entsteht automatisch ein Backup (`GoldweaverBackupDB`).
+
 ## Kompatibilität (docs/10-KOMPATIBILITAET.md)
 - Spiel-APIs über `ns.API` oder nach `ns.API.Has(...)`-Prüfung aufrufen; neue Abhängigkeiten in `Features.Define` eintragen. Nie auf Build, Interface-Nummer oder `WOW_PROJECT_ID` verzweigen.
 - `ns.Events:On(event, fn, "Modulname")` immer mit Modulname; jedes Modul liefert `SelfTest()` für `/gw debug run`.

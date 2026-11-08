@@ -6,7 +6,7 @@ ignore = { "212/_.*", "213", "211/ADDON" }  -- unused args starting with _, unus
 exclude_files = { "tools/tests/**" }
 
 globals = {
-  "Goldweaver", "GoldweaverDB", "GoldweaverCharDB",
+  "Goldweaver", "GoldweaverDB", "GoldweaverCharDB", "GoldweaverBackupDB",
   "SLASH_GOLDWEAVER1", "SLASH_GOLDWEAVER2", "SlashCmdList",
 }
 
@@ -35,5 +35,5 @@ read_globals = {
   "ATTACHMENTS_MAX_SEND", "GetNumLootItems", "GetLootSlotInfo", "GetLootSlotLink", "C_Map",
   "GetMerchantNumItems", "GetMerchantItemInfo", "GetMerchantItemLink", "UnitName", "unpack",
   "GetNumTrainerServices", "GetTrainerServiceInfo", "GetTrainerServiceSkillReq", "GetTrainerServiceLevelReq",
-  "GetTrainerServiceCost", "ERR_MAIL_TARGET_NOT_FOUND",
+  "GetTrainerServiceCost", "ERR_MAIL_TARGET_NOT_FOUND", "debugstack",
 }

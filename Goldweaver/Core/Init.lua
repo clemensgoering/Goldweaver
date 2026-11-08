@@ -1,4 +1,20 @@
 -- Goldweaver: namespace bootstrap. Loaded first; every other file starts with `local ADDON, ns = ...`.
+--
+-- Module contract (see docs/13-ARCHITEKTUR.md)
+--   ns:RegisterModule(name, module)  module = {
+--     Init     = function(self) end,  -- called once after ADDON_LOADED, SavedVariables are ready (ns.db / ns.cdb)
+--     SelfTest = function(self) -> { {name, ok, warn?, detail?} },  -- rows for /gw debug run (optional)
+--   }
+--   Modules register slash commands with ns.Slash.Register and events with ns.Events:On. They never touch each other's
+--   SavedVariables tables directly; shared data goes through the owning module's functions (ns.Price, ns.Chars, ...).
+--
+-- Public API of this file
+--   ns.name, ns.version                addon name and version ("dev" in an unpackaged checkout)
+--   ns.Print(...)                      chat line with the gold prefix
+--   ns.Log(...)                        debug log (ring buffer in GoldweaverDB.debug.log, printed with /gw debug on)
+--   ns:RegisterModule(name, module)    see contract above; ns.modules[name]
+--   ns.Slash.Register(cmd, fn, help)   /gw <cmd> <rest> -> fn(rest)
+--   ns.L                                localisation table (Locales/*.lua), falls back to the key
 local ADDON, ns = ...
 
 ns.name = ADDON
@@ -32,12 +48,20 @@ function ns.Log(...)
   if ns.db and ns.db.settings and ns.db.settings.debug then ns.Print("[debug]", table.concat(parts, " ")) end
 end
 
--- Modules register here; Init() is called once after ADDON_LOADED for this addon (see Core/DB.lua).
 function ns:RegisterModule(name, module)
   assert(type(name) == "string" and type(module) == "table", "RegisterModule(name, table)")
   assert(not self.modules[name], "module already registered: " .. name)
+  module.name = name
   self.modules[name] = module
   return module
+end
+
+-- Sorted iteration over modules (deterministic Init order and report order).
+function ns:EachModule(fn)
+  local names = {}
+  for name in pairs(self.modules) do names[#names + 1] = name end
+  table.sort(names)
+  for _, name in ipairs(names) do fn(name, self.modules[name]) end
 end
 
 -- Slash: /gw <command> [args]. Commands are registered by modules via ns.Slash.Register.
@@ -46,8 +70,6 @@ function ns.Slash.Register(cmd, fn, help)
   ns.Slash.handlers[cmd] = { fn = fn, help = help }
 end
 
-SLASH_GOLDWEAVER1 = "/gw"
-SLASH_GOLDWEAVER2 = "/goldweaver"
 local function printHelp()
   ns.Print("Befehle:")
   local names = {}
@@ -59,6 +81,8 @@ local function printHelp()
   end
 end
 
+SLASH_GOLDWEAVER1 = "/gw"
+SLASH_GOLDWEAVER2 = "/goldweaver"
 SlashCmdList.GOLDWEAVER = function(msg)
   local cmd, rest = msg:match("^(%S*)%s*(.-)$")
   cmd = (cmd or ""):lower()
@@ -68,7 +92,11 @@ SlashCmdList.GOLDWEAVER = function(msg)
   end
   if cmd == "help" then return printHelp() end
   local h = ns.Slash.handlers[cmd]
-  if h then return h.fn(rest) end
+  if h then
+    local ok, err = pcall(h.fn, rest)
+    if not ok then ns.Health.Record("/gw " .. cmd, err); ns.Print("Befehl fehlgeschlagen: " .. tostring(err)) end
+    return
+  end
   ns.Print("Unbekannter Befehl: " .. cmd)
   printHelp()
 end

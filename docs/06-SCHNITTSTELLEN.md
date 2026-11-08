@@ -1,73 +1,60 @@
 # Goldweaver – Schnittstellen zwischen Modulen
 
-Stand: 08.11.2026. Jede Session, die eine Schnittstelle ändert, aktualisiert diese Datei im selben Commit. Signaturen sind Lua; „→" ist der Rückgabewert.
+Stand: 08.11.2026 (nach dem Architektur-Durchgang). Jede Session, die eine Schnittstelle ändert, aktualisiert diese Datei im selben Commit. „→" ist der Rückgabewert. Erweiterungspunkte sind mit ★ markiert (Details in `13-ARCHITEKTUR.md` §3).
 
 ## Core
-
-### `ns` (Core/Init.lua)
-- `ns.Print(...)`, `ns.Log(...)` (nur mit `/gw debug on`)
-- `ns:RegisterModule(name, tbl)` – `tbl.Init()` wird nach `ADDON_LOADED` aufgerufen
-- `ns.Slash.Register(cmd, fn(rest), help)` – `/gw <cmd> <rest>`
-- `ns.L[key]` – Lokalisierung, fällt auf den Key zurück
-
-### `ns.Events` (Core/Events.lua)
-- `ns.Events:On(event, fn(event, ...))`, `ns.Events:Off(event, fn)`
-- Handler werden übersprungen, wenn ein Argument ein Secret ist (`ns.Events.skipped` zählt)
-
-### `ns.Secret` (Core/Secret.lua)
-- `IsSecret(v)`, `Any(...)`, `Safe(v, fallback)`
-
-### `ns.db`, `ns.cdb` (Core/DB.lua)
-- `ns.db.settings` – `debug, favorValueCopper, ahCut, mailCostCopper, marketKey?, favorPerCrate?, priceHistoryDays?`
-- `ns.db.chars[fullName]` – `{ name, role, market, faction, class, level, lastSeen, professions[skillLine] = { name, rank, maxRank } }`
-- `ns.db.prices[marketKey][itemID]` – `{ min, avg, count, seen, days[dayKey] = { min, sum, units, n } }`
-- `ns.db.observations` – Kalibrierlogs (Entzaubern, Skill-ups), Struktur legt WP1.6 fest
-- `ns.db.probe[section]` – Ergebnisse von `/gw probe`
-
-### `ns.Util` (Core/Util.lua)
-- `Money(copper) → "12g 34s 56c"`, `AfterCut(copper, cut?)`, `Round(x, digits)`
-
-### `ns.Chars` (Core/Chars.lua)
-- `FullName()`, `MarketKey()`, `Current()`, `Register()`, `UpdateProfessions()`
-- `SetRole(name, "main"|"processor"|"bank"|"none")`, `ByRole(role, market?)`, `WithProfession(skillLine, market?)`
-- Slash: `/gw role`, `/gw chars`, `/gw market`
-
-### `ns.Price` (Core/Price.lua)
-- `RegisterSource(name, priority, fn(itemID) → copper, ageSeconds, count)` – kleinere Priorität zuerst. Belegt: auctionator 10, tsm 20, observed 30, vendorSell 90
-- `Get(itemID) → { copper, source, age, confidence }` oder nil; `Copper(itemID) → copper|nil`
-- `Observe(itemID, unitCopper, quantity?, now?)` – vom AH-Modul für jede gesehene Seite aufzurufen
-- `Observed(itemID, now?) → copper, age, count`, `Prune(maxDays, now?)`
-- `VendorSell(itemID)`, `VendorBuy(itemID)` (Deckel aus Data/VendorReagents)
-
-### `ns.Graph` (Core/Graph.lua)
-- Conversion: `{ id, kind, profession, skill, source = "live"|"profile"|"data", inputs = {{item, qty}}, outputs = {{item, qty, prob}}, name, recipeID? }`
-- `Add(conv)`, `Remove(id)`, `RemoveSource(source, profession?)`, `ForInput(itemID)`, `ForOutput(itemID)`, `InputQty(conv, itemID)`
-- `OutputValue(conv, priceFn) → value, coverage`, `InputCost(conv, priceFn, excludeItem?) → cost, missing`, `Margin(conv, priceFn, cut?) → net, coverage, missing`
-- Konvention: Live-Rezepte benutzen `id = "craft:<outputItemID>"`, damit sie Profil-Startwerte gleicher ID ersetzen. Beim Schließen des Fensters bleiben Live-Kanten stehen; `RemoveSource("live", profession)` nur vor einem Neu-Einlesen.
+| Objekt | Funktionen |
+|---|---|
+| `ns` (Init) | `Print(...)`, `Log(...)`, `RegisterModule(name, {Init, SelfTest})`, `EachModule(fn)`, `Slash.Register(cmd, fn, help)` ★, `L[key]`, `version` |
+| `ns.Events` | `On(event, fn, owner?)`, `Off(event, fn)`, `Summary()`, `skipped`; `ns.Health.Record(where, err)`, `.errors`, `.detached` |
+| `ns.Secret` | `IsSecret(v)`, `Any(...)`, `Safe(v, fallback)` |
+| `ns.API` | `Has(path)`, `Resolve(path)`, `Call(path, ...) → ok, ...`, `ItemInfo(id) → {name, quality, reqLevel, equipLoc, sellPrice, classID, subclassID, bindType, icon}`, `ItemInfoInstant(id)`, `ItemName/ItemIcon/ItemCount`, `NumSlots/FreeSlots/ContainerItem(bag, slot)/UseContainerItem`, `failures` |
+| `ns.Features` | `Define(name, {label, requires})` ★, `Available(name) → ok, why`, `Missing(name)`, `SetEnabled(name, on)`, `Status()` |
+| `ns.DB` | `Prepare(db)`, `Backup(reason, db?)`, `HasBackup()`, `RestoreBackup()`, `Stats()`, `MIGRATIONS` ★, `SCHEMA`; `ns.db`, `ns.cdb`, `ns.INTERFACE` |
+| `ns.Util` | `Money(copper)`, `AfterCut(copper, cut?)`, `Round(x, digits)` |
+| `ns.Chars` | `Names() → first, surname`, `FullName()`, `MailName(rec?)`, `ParseRealm(name) → region, ruleset`, `NormalizeMarket(key)`, `MarketKey()`, `Current()`, `Register()`, `Migrate()`, `UpdateProfessions()`, `SetRole(name, role)`, `ByRole(role, market?)`, `All(market?)`, `WithProfession(skillLine, market?)`, `Unassigned()`, `Changed()`, `ROLES`, `ROLE_LABELS` |
+| `ns.Inventory` | `BagItems() → {{bag, slot, itemID, count, quality, isBound, isLocked, link}}`, `FreeBagSlots()`, `Count(itemID, {bank, alts}) → total, {bags, bank, alts}` |
+| `ns.Price` | `RegisterSource(name, priority, fn)` ★, `Get(itemID) → {copper, source, age, confidence}`, `Copper(itemID)`, `Observe(itemID, unit, qty?, now?)`, `Observed(itemID, now?)`, `Prune(days, now?)`, `VendorSell(itemID)`, `VendorBuy(itemID)`, `Confidence(age, count)` |
+| `ns.Graph` | `Add(conv)` ★, `Remove(id)`, `RemoveSource(source, profession?)`, `ForInput/ForOutput(itemID)`, `InputQty(conv, itemID)`, `OutputValue(conv, priceFn) → value, coverage`, `InputCost(conv, priceFn, exclude?) → cost, missing`, `Margin(conv, priceFn, cut?)`, `Count()` |
 
 ## Daten (`ns.Data`)
-- `Data.Item(id, name)`, `Data.ExpectedName(id)`, `Data.AllItemIDs()` – Namensregister für `/gw probe items`
-- `Data.Disenchant.Outcomes(reqLevel, quality, isWeapon) → {{item, qty, prob}}`, `ExpectedValue(reqLevel, quality, isWeapon, priceFn) → copper, coverage`, `Conversion(itemID, reqLevel, quality, isWeapon)`
-- `Data.Crates.For(itemID) → { category, tier, bundleQty, favor }`, `Value(itemID, qty, favorValueCopper, allowPartial) → copper, entry`, `FavorRate(tier)`
-- `Data.VendorReagents[itemID] = { buy }`
-- `Data.Conversions` (statisch), `Data.LoadConversions()`
+`Item(id, name)`, `ExpectedName(id)`, `AllItemIDs()`; `Disenchant.Outcomes/ExpectedValue/Conversion`, `Crates.For/Value/FavorRate`, `VendorReagents[id] = {buy}`, `Conversions`, `LoadConversions()`
 
-## Berufe (`ns.Professions`, Professions/Registry.lua)
-- `Register(profile)`, `Get(key)`, `BySkillLine(id)`, `All()`, `RankFor(profile, skill) → rank, nextRank`, `SeedCost(profile, from, to, priceFn) → copper, coverage`
-- `SKILL_LINES`, `DEFAULT_RANKS`
-- Profil-Felder siehe Dateikopf von Registry.lua. **Noch offen (WP2.1):** `ns.Recipes[professionKey]` als normierte Live-Rezeptliste aus `Professions/Adapter.lua`:
-  `{ recipeID, name, difficulty = "optimal"|"medium"|"easy"|"trivial", reagents = {{item, qty}}, output = { item, qtyMin, qtyMax }, tools, station, learned }`
-  und Events `ns.Events` → `GOLDWEAVER_RECIPES_UPDATED` (per `ns.Events.frame`-Callback oder eigene Callback-Liste, legt WP2.1 fest).
+## Berufe
+| Objekt | Funktionen |
+|---|---|
+| `ns.Professions` | `Register(profile)` ★, `Get(key)`, `BySkillLine(id)`, `All()`, `RankFor(profile, skill) → rank, next`, `SeedCost(profile, from, to, priceFn)`, `SKILL_LINES`, `DEFAULT_RANKS` |
+| `ns.Adapter` | `Read() → skillLine, name`, `Book(skillLine) → {name, list, byID, when}`, `Learned/Unlearned(skillLine, rec?)`, `IsOpen()`, `Craft(recipeID, count) → ok, err`, `ChanceFor(difficulty)`, `RebuildGraph()`, `current`, `DIFFICULTY_NAMES` |
+| Rezept (normalisiert) | `{ id, name, icon, outputItemID, qtyMin, qtyMax, reagents = {{item, qty}}, difficulty, numSkillUps, sourceType, craftable, hyperlink, isEnchant }` |
 
-## Advisor (`ns.Advisor`, Modules/Advisor.lua)
-- `Evaluate(item, ctx) → options[]` sortiert nach `value` absteigend; `Best(item, ctx) → best, options`
-- `item = { id, quantity, reqLevel, quality, isWeapon, vendorSell, soulbound }`
-- `ctx = { price, graph, settings, needsMail, canDisenchant, keepFor, crates, disenchant }`; `LiveContext(overrides)` baut ihn aus dem Spiel
-- Aktionen: `vendor | auction | convert | crate | keep`
+## Module
+| Objekt | Funktionen |
+|---|---|
+| `ns.Checks` | `Define(id, {group, title, hint})` ★, `Pass/Fail/Skip(id, detail)`, `Get(id)`, `Status()`, `Summary()`, `NextPending(limit)`, `Reset()` |
+| `ns.Learn` | `DepositSample(...)`, `CrateTooltip(itemID, name, lines)`, `MailResult(variant, ok)`, `MailVariant()`, `Craft(difficulty, skill)`, `SkillChanged(skill)`, `SkillupChance(difficulty)`, `RecipeFields(info, schematic)`, `EnumName(value, pattern)`, `TrainerServices(npc)`, `RecipeSource(recipe) → text, kind, itemID?`, `TrainerFor(skillLine, reqSkill)`, `Status()` |
+| `ns.Advisor` | `RegisterProvider(name, fn)` ★, `Evaluate(item, ctx) → options[]`, `Best(item, ctx)`, `LiveContext(overrides)`; Aktionen `vendor | auction | convert | crate | keep` |
+| `ns.Mail` | `AddRule(name, fn, position?)` ★, `rules`, `TargetFor(item) → rec, reason`, `Plan() → {[name] = {rec, items, value, count}}`, `Pending() → count, value, target` |
+| `ns.Destroy` | `CanDisenchant()`, `Queue()`, `Show()`, `Toggle()`, `Refresh()` |
+| `ns.Planner` | `CraftCost(recipe)`, `Candidates(skillLine, rec?)`, `Shopping(recipe, crafts)`, `NextRank(skillLine, rec?)`, `Plan(skillLine, rec?)`, `KeepReason(itemID)`, `Profitable(skillLine, rec?, limit)` |
+| `ns.CraftProfit` | `Top(limit)` |
+| `ns.Compare` | `Rows()` |
+| `ns.Auction` | `Suggest(itemID, qty, duration?) → {unitPrice, market, source, age, deposit, net}`, `SearchFor(itemID)` |
+| `ns.Ledger` | `RecordInvoice(index)`, `Totals(days)`, `TrackGold()`, `GoldDelta(day?)`, `SessionDelta()` |
+| `ns.Dashboard` | `Recommendations(limit) → {{text, value, action, color}}` |
+| `ns.HUD` | `Refresh()`, `ShouldShow()` |
+| `ns.Onboarding` | `Check()` |
+| `ns.Contacts` | `VendorFor(itemID)`, `Trainers()` |
+| `ns.Debug` | `Build() → text`, `Show(text?)`, `Run()` |
+| `ns.Tooltip` | `Lines(itemID, qty?, isBound?) → {{text, color}}` |
 
-## Noch zu definieren (durch das jeweilige WP, hier eintragen)
-- `ns.Inventory` (WP1.4): `Count(itemID, scope)`, `Snapshot(char)`, Events bei Taschenänderung
-- `ns.UI` (WP1.7): `Window`, `List`, `Button`, `Tooltip.AddLines(tooltip, lines)`
-- `ns.Mail` (WP1.5): `SendList(targetChar) → items[]`, `SendNext()`
-- `ns.Planner` (WP2.2): `KeepReason(itemID) → string|nil`, `Plan(professionKey, targetSkill) → steps[]`
-- `ns.Auction` (WP3.x): `Observe`-Hook auf Suchergebnisse, `Suggest(itemID) → { unitPrice, stack, deposit }`
+## UI
+| Objekt | Funktionen |
+|---|---|
+| `ns.UI` | `RegisterTab(key, title, builder)` ★, `Open(key?)`, `Toggle(key?)`, `IsOpen()`, `Refresh()`, `SelectProfession(skillLine)`; Widgets `Text`, `Header`, `Button`, `Check`, `Group`, `Lines`, `Pairs`, `Table`, `IconRows`, `ItemName` |
+| `ns.Minimap` | `SetBadge(n)`, `SetShown(bool)` |
+
+## SavedVariables (Besitzer in Klammern)
+`GoldweaverDB`: `schema`, `settings`, `chars` (Chars/Inventory/Adapter), `prices` (Price), `recipes` (Adapter), `observations` (Destroy), `learned` (Learn), `checks` (Checks), `contacts`/`vendors` (Contacts), `probe` (Probe), `debug` (Init/Events/Debug). `GoldweaverCharDB`: `ledger` (Ledger). `GoldweaverBackupDB`: eine Generation Backup (DB).
+
+## Slash-Befehle
+`/gw` Fenster · `help` · `show <tab>` · `role` · `chars` · `market` · `favor` · `undercut` · `hud` · `minimap` · `tooltip` · `de` · `mail` · `contacts` · `checks [reset]` · `feature` · `probe …` · `debug run|show|on|off` · `backup` · `restore confirm`

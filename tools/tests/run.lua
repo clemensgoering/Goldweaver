@@ -53,12 +53,12 @@ for _, rel in ipairs({
   "Data/Disenchant.lua", "Data/Crates.lua", "Data/VendorReagents.lua", "Data/Conversions.lua",
   "Professions/Registry.lua", "Professions/Adapter.lua", "Professions/Tailoring.lua", "Professions/Enchanting.lua",
   "Modules/Checks.lua", "Modules/Learn.lua",
-  "Modules/Advisor.lua", "Modules/Planner.lua", "Modules/CraftProfit.lua", "Modules/Compare.lua", "Modules/Ledger.lua",
-  "Modules/Dashboard.lua",
+  "Modules/Advisor.lua", "Modules/Mail.lua", "Modules/Planner.lua", "Modules/CraftProfit.lua", "Modules/Compare.lua",
+  "Modules/Ledger.lua", "Modules/Dashboard.lua",
 }) do loadAddonFile(rel) end
 
 -- Simulate the client: ADDON_LOADED initialises SavedVariables and module Init().
-GoldweaverDB, GoldweaverCharDB = nil, nil
+GoldweaverDB, GoldweaverCharDB, GoldweaverBackupDB = nil, nil, nil
 ns.Events.frame.onEvent(nil, "ADDON_LOADED", ADDON)
 assert(ns.db and ns.db.settings, "DB not initialised")
 

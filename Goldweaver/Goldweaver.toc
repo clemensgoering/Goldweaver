@@ -5,7 +5,7 @@
 ## Notes-deDE: Berufe, Post-Pipeline und Auktionshaus als eine Entscheidungskette: was herstellen, wie am günstigsten leveln, was Gold bringt. Für WoW: Forever.
 ## Author: Clemens
 ## Version: @project-version@
-## SavedVariables: GoldweaverDB
+## SavedVariables: GoldweaverDB, GoldweaverBackupDB
 ## SavedVariablesPerCharacter: GoldweaverCharDB
 ## OptionalDeps: Auctionator, Syndicator, GatherMate2, TradeSkillMaster
 ## AllowLoadGameType: camelot, forever

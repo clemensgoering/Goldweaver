@@ -35,36 +35,62 @@ local function processors()
   return ns.Chars.ByRole("processor", ns.Chars.MarketKey())
 end
 
+-- Routing rules ------------------------------------------------------------------------------------
+-- Extension point: Mail.AddRule(name, fn) where fn(item, info, me, processors) returns
+--   target rec, reason   -> send to that processor
+--   false, reason        -> keep here (decided)
+--   nil                  -> rule does not apply, try the next one
+-- item = { itemID, quality, isBound }; info = { classID, subclassID } from GetItemInfoInstant.
+Mail.rules = {}
+
+function Mail.AddRule(name, fn, position)
+  local rule = { name = name, fn = fn }
+  if position then table.insert(Mail.rules, position, rule) else Mail.rules[#Mail.rules + 1] = rule end
+end
+
+Mail.AddRule("bound", function(item) if item.isBound then return false, "gebunden" end end)
+Mail.AddRule("grey", function(item) if (item.quality or 1) == 0 then return false, "Händler" end end)
+
+Mail.AddRule("tradegoods", function(_, info, me, list)
+  if info.classID ~= CLASS_TRADEGOODS then return nil end
+  local users = TRADEGOOD_USERS[info.subclassID] or {}
+  if ns.db.settings.keepOwnMaterials ~= false and hasAny(me, users) then return false, "eigener Beruf" end
+  for _, rec in ipairs(list) do if hasAny(rec, users) then return rec, "Material für " .. rec.name end end
+  return list[1], "Material"
+end)
+
+Mail.AddRule("recipes", function(_, info, me, list)
+  if info.classID ~= CLASS_RECIPE then return nil end
+  local sl = RECIPE_USERS[info.subclassID]
+  if sl and me.professions and me.professions[sl] then return false, "eigener Beruf" end
+  for _, rec in ipairs(list) do if sl and rec.professions and rec.professions[sl] then return rec, "Rezept für " .. rec.name end end
+  return list[1], "Rezept"
+end)
+
+Mail.AddRule("gear", function(item, info, me, list)
+  if not ((info.classID == CLASS_WEAPON or info.classID == CLASS_ARMOR) and (item.quality or 1) >= 2) then return nil end
+  if me.professions and me.professions[ENCHANTING] then return false, "selbst entzaubern" end
+  for _, rec in ipairs(list) do if rec.professions and rec.professions[ENCHANTING] then return rec, "entzaubern bei " .. rec.name end end
+  return false, "selbst verkaufen"
+end)
+
 -- Which processor should receive an item and why. Returns rec, reason or nil, reason.
--- item = { itemID, quality, isBound }
 function Mail.TargetFor(item)
   local me = ns.Chars.Current()
   if not me or me.role == "processor" then return nil, "hier verarbeiten" end
-  if item.isBound then return nil, "gebunden" end
-  if not (C_Item and C_Item.GetItemInfoInstant) then return nil end
-  local _, _, _, _, _, classID, subclassID = C_Item.GetItemInfoInstant(item.itemID)
-  if ns.Secret.Any(classID, subclassID) then return nil end
-  local quality = item.quality or 1
-  if quality == 0 then return nil, "Händler" end
+  local instant = ns.API.ItemInfoInstant(item.itemID)
+  if not instant then return nil end
   local list = processors()
   if #list == 0 then return nil, "kein Verarbeiter" end
-
-  if classID == CLASS_TRADEGOODS then
-    local users = TRADEGOOD_USERS[subclassID] or {}
-    if ns.db.settings.keepOwnMaterials ~= false and hasAny(me, users) then return nil, "eigener Beruf" end
-    for _, rec in ipairs(list) do if hasAny(rec, users) then return rec, "Material für " .. rec.name end end
-    return list[1], "Material"
-  end
-  if classID == CLASS_RECIPE then
-    local sl = RECIPE_USERS[subclassID]
-    if sl and me.professions and me.professions[sl] then return nil, "eigener Beruf" end
-    for _, rec in ipairs(list) do if sl and rec.professions and rec.professions[sl] then return rec, "Rezept für " .. rec.name end end
-    return list[1], "Rezept"
-  end
-  if (classID == CLASS_WEAPON or classID == CLASS_ARMOR) and quality >= 2 then
-    if me.professions and me.professions[ENCHANTING] then return nil, "selbst entzaubern" end
-    for _, rec in ipairs(list) do if rec.professions and rec.professions[ENCHANTING] then return rec, "entzaubern bei " .. rec.name end end
-    return nil, "selbst verkaufen"
+  for _, rule in ipairs(Mail.rules) do
+    local ok, target, reason = pcall(rule.fn, item, instant, me, list)
+    if not ok then
+      ns.Health.Record("mail rule " .. rule.name, target)
+    elseif target then
+      return target, reason
+    elseif target == false then
+      return nil, reason
+    end
   end
   return nil
 end
