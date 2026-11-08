@@ -149,7 +149,8 @@ ns:RegisterModule("Auction", {
     if not C_AuctionHouse then return end
     ns.Events:On("COMMODITY_SEARCH_RESULTS_UPDATED", function(_, itemID) if itemID then pcall(observeCommodity, itemID) end end)
     ns.Events:On("ITEM_SEARCH_RESULTS_UPDATED", function(_, itemKey) pcall(observeItem, itemKey) end)
-    ns.Events:On("BROWSE_SEARCH_RESULTS_UPDATED", function() pcall(observeBrowse) end)
+    -- Mainline name (verified: "BROWSE_SEARCH_RESULTS_UPDATED" does not exist on Forever 1.60.1)
+    ns.Events:On("AUCTION_HOUSE_BROWSE_RESULTS_UPDATED", function() pcall(observeBrowse) end)
     ns.Events:On("AUCTION_HOUSE_SHOW", function() C_Timer.After(0.5, function() pcall(hookSellFrames) end) end)
     ns.Events:On("ADDON_LOADED", function(_, name) if name == "Blizzard_AuctionHouseUI" then C_Timer.After(0.5, function() pcall(hookSellFrames) end) end end)
   end,

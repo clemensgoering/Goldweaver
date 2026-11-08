@@ -40,13 +40,24 @@ local function inferOwner()
   return "?"
 end
 
+-- Returns true when registered. An event unknown to this client (renamed or removed by a patch) is recorded in
+-- ns.Health and skipped instead of raising, so the registering module still starts (verified need: Forever has no
+-- BROWSE_SEARCH_RESULTS_UPDATED).
 function ns.Events:On(event, fn, owner)
   assert(type(event) == "string" and type(fn) == "function", "Events:On(event, fn, owner?)")
+  owner = owner or inferOwner()
   if not handlers[event] then
+    local ok, err = pcall(frame.RegisterEvent, frame, event)
+    if not ok then
+      ns.Health.Record("RegisterEvent " .. event .. " (" .. owner .. ")", err)
+      ns.Events.unknown = ns.Events.unknown or {}
+      ns.Events.unknown[#ns.Events.unknown + 1] = event .. " (" .. owner .. ")"
+      return false
+    end
     handlers[event] = {}
-    frame:RegisterEvent(event)
   end
-  table.insert(handlers[event], { fn = fn, owner = owner or inferOwner(), errors = 0 })
+  table.insert(handlers[event], { fn = fn, owner = owner, errors = 0 })
+  return true
 end
 
 function ns.Events:Off(event, fn)

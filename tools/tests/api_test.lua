@@ -45,6 +45,14 @@ eq(ns.Health.detached[1], "BROKEN_EVENT (Test)", "detached list names the handle
 eq(#ns.Health.errors >= 5, true, "errors recorded")
 eq(#ns.db.debug.errors >= 5, true, "errors persisted to db")
 
+-- unknown events are recorded, not raised
+local realRegister = ns.Events.frame.RegisterEvent
+ns.Events.frame.RegisterEvent = function(self, e) if e == "NOPE_EVENT" then error("Attempt to register unknown event") end return realRegister(self, e) end
+eq(ns.Events:On("NOPE_EVENT", function() end, "Test"), false, "unknown event returns false")
+eq(ns.Events.unknown[1], "NOPE_EVENT (Test)", "unknown event recorded")
+eq(ns.Events:On("FINE_EVENT", function() end, "Test"), true, "known event registers")
+ns.Events.frame.RegisterEvent = realRegister
+
 -- schema
 eq(ns.db.schema, 2, "schema migrated to 2")
 local stats = ns.DB.Stats()

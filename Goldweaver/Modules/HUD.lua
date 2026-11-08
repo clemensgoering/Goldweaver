@@ -50,8 +50,14 @@ function HUD.Refresh()
   create()
   local parts = {}
   local count, value, target = ns.Mail.Pending()
-  if target then parts[#parts + 1] = ("Für %s: %s (%d)"):format(target.firstName or target.name, ns.Util.Money(value), count)
-  else parts[#parts + 1] = "Kein Verarbeiter gesetzt" end
+  local processors = ns.Chars.ByRole("processor", ns.Chars.MarketKey())
+  if target then
+    parts[#parts + 1] = ("Für %s: %s (%d)"):format(target.firstName or target.name, ns.Util.Money(value), count)
+  elseif #processors > 0 then
+    parts[#parts + 1] = ("Nichts für %s"):format(processors[1].firstName or processors[1].name)
+  else
+    parts[#parts + 1] = "Kein Verarbeiter gesetzt"
+  end
   local delta = ns.Ledger.SessionDelta()
   parts[#parts + 1] = ("Session %s%s"):format(delta >= 0 and "+" or "", ns.Util.Money(delta))
   text:SetText(table.concat(parts, "  ·  "))

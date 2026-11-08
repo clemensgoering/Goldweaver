@@ -103,6 +103,7 @@ local function events()
   for _, r in ipairs(rows) do parts[#parts + 1] = r.event .. "(" .. r.handlers .. ")" end
   add("%d Events registriert: %s", #rows, table.concat(parts, " "))
   add("Durch Secret-Guard übersprungen: %d", ns.Events.skipped)
+  add("Unbekannte Events (vom Client abgelehnt): %s", ns.Events.unknown and table.concat(ns.Events.unknown, ", ") or "keine")
   add("Abgeschaltete Handler: %s", #ns.Health.detached > 0 and table.concat(ns.Health.detached, ", ") or "keine")
 end
 
