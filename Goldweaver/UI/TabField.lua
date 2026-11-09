@@ -194,10 +194,10 @@ UI.RegisterTab("field", "Unterwegs", function(frame)
     end
     for _, def in ipairs({ { "herb", G.HERBALISM }, { "ore", G.MINING } }) do
       local rank = skill(def[2])
-      local best = report.best and report.best[def[1]]
-      if rank and best then
+      local bestZone = report.best and report.best[def[1]]
+      if rank and bestZone then
         nrows[#nrows + 1] = { icon = def[1] == "herb" and "Interface\\Icons\\INV_Misc_Herb_07" or "Interface\\Icons\\INV_Ore_Copper_01",
-          text = ("%s %d: am meisten orange/gelb in"):format(PROF[def[1]], rank), sub = best.name }
+          text = ("%s %d: am meisten orange/gelb in"):format(PROF[def[1]], rank), sub = bestZone.name }
       end
     end
     if #nrows == 0 then nrows[1] = { icon = "Interface\\Icons\\INV_Misc_Book_09", text = "Kein Sammelberuf", sub = "Stoff droppt trotzdem von Humanoiden.", color = { 0.7, 0.7, 0.7 } } end
