@@ -87,7 +87,7 @@ R("panel", function(add)
   if left and top and w and h and (left > w - 20 or top < 20 or left < -200 or top > h + 50) then
     ns.db.settings.panelPos = nil
     f:ClearAllPoints()
-    f:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -16, -280)
+    f:SetPoint("RIGHT", UIParent, "RIGHT", -16, -150)
     add({ id = "panelPos", severity = "info", title = "Seitenpanel war außerhalb des Bildschirms", detail = "Position zurückgesetzt.", fixed = true })
   end
 end)

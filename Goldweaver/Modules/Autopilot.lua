@@ -45,7 +45,7 @@ local function autoRoles()
   if role then
     ns.Chars.SetRole(me.name, role, "auto")
     me.onboarded = true
-    ns.Print(("%s ist als %s eingestuft. Ändern: Fenster → Team."):format(me.name, ns.Chars.ROLE_LABELS[role]))
+    ns.Print(("%s ist als %s eingestuft. Ändern: Fenster » Team."):format(me.name, ns.Chars.ROLE_LABELS[role]))
     Autopilot.status.roles = "auto: " .. role
   end
 end

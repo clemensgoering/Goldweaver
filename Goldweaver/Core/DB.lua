@@ -16,7 +16,7 @@
 local ADDON, ns = ...
 
 ns.INTERFACE = 16001
-local SCHEMA = 3
+local SCHEMA = 4
 
 local DEFAULTS = {
   schema = SCHEMA,
@@ -78,6 +78,10 @@ local MIGRATIONS = {
     end
     -- the client blocks background reading: keep it off unless the player enables it on purpose
     if db.settings and db.settings.autoReadProfessions ~= true then db.settings.autoReadProfessions = nil end
+  end,
+  [4] = function(db)
+    -- 3 -> 4: the "bank" role was merged into "processor" (the processing twink is also the bank)
+    for _, rec in pairs(db.chars or {}) do if rec.role == "bank" then rec.role = "processor" end end
   end,
 }
 

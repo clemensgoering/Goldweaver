@@ -63,7 +63,7 @@ function Tooltip.Lines(itemID, quantity, isBound)
     local who = best.action == "convert" and whoCan(best.conversion) or nil
     main = ("Goldweaver: %s ≈ %s"):format(label, ns.Util.Money(best.value))
     if who then main = main .. " (" .. who .. ")" end
-    if target then main = ("Goldweaver: an %s schicken → %s ≈ %s"):format(target.firstName or target.name, label, ns.Util.Money(best.value)) end
+    if target then main = ("Goldweaver: an %s schicken » %s ≈ %s"):format(target.firstName or target.name, label, ns.Util.Money(best.value)) end
   end
   lines[#lines + 1] = { text = main, color = GOLD }
 

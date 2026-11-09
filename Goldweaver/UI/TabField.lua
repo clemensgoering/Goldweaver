@@ -227,10 +227,8 @@ UI.RegisterTab("field", "Unterwegs", function(frame)
           button = { "Ansehen", function() browse(z.id) end } }
       end
     end
-    if #rrows == 0 then
-      routeTitle:SetText("DEINE RESTEDXP-ROUTE")
-      rrows[1] = { icon = "Interface\\Icons\\INV_Misc_QuestionMark", text = "RestedXP nicht aktiv", sub = "Mit RestedXP siehst du hier die nächsten Zonen.", color = { 0.7, 0.7, 0.7 } }
-    end
+    -- the RestedXP box exists only while RestedXP has an active guide
+    route:SetShown(#rrows > 0)
     routeRows:Set(rrows)
   end
   return content

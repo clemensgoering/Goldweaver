@@ -116,9 +116,13 @@ UI.RegisterTab("guide", "Leitfaden", function(frame)
         end
         routeLines:Set(lines)
         routeTitle:SetText("AUF DEINER ROUTE (RestedXP)")
+        routeTitle:Show(); routeTitle.line:Show()
+        todayTitle:SetPoint("TOPLEFT", 10, -300); todayPairs[1].label:SetPoint("TOPLEFT", side, "TOPLEFT", 10, -320)
       else
-        routeLines:Set({ { "RestedXP nicht aktiv. Mit RestedXP zeigt Goldweaver hier die nächsten Zonen deines Guides.", 0.6, 0.6, 0.6 } })
-        routeTitle:SetText("AUF DEINER ROUTE")
+        -- RestedXP not installed or no guide active: the section is not shown at all
+        routeLines:Set({})
+        routeTitle:Hide(); routeTitle.line:Hide()
+        todayTitle:SetPoint("TOPLEFT", 10, -192); todayPairs[1].label:SetPoint("TOPLEFT", side, "TOPLEFT", 10, -212)
       end
     end
 

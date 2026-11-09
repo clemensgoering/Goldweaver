@@ -23,7 +23,7 @@ local function create()
   hint:SetPoint("TOPLEFT", 14, -34); hint:SetWidth(410); hint:SetJustifyH("LEFT")
   hint:SetText("Main sammelt unterwegs und schickt Material. Verarbeiter stellt her, entzaubert und verkauft. Später änderbar im Fenster (Reiter Team).")
   local x = 14
-  for _, def in ipairs({ { "main", "Sammelt unterwegs", 140 }, { "processor", "Verarbeitet & verkauft", 150 }, { "bank", "Bank", 60 }, { "none", "Später", 60 } }) do
+  for _, def in ipairs({ { "main", "Sammelt unterwegs", 140 }, { "processor", "Verarbeiter & Bank", 150 }, { "none", "Später", 70 } }) do
     local b = ns.UI.Button(card, def[2], def[3], function()
       ns.Chars.SetRole(ns.Chars.FullName(), def[1])
       local me = ns.Chars.Current()

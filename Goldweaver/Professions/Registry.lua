@@ -13,10 +13,11 @@ ns.Professions = Registry
 
 -- Forever: four ranks, apprentice has no level requirement (community guides, to be confirmed by trainers in game).
 Registry.DEFAULT_RANKS = {
-  { name = "Apprentice", max = 75,  reqSkill = 0,   reqLevel = 0 },
-  { name = "Journeyman", max = 150, reqSkill = 50,  reqLevel = 10 },
-  { name = "Expert",     max = 225, reqSkill = 125, reqLevel = 20 },
-  { name = "Artisan",    max = 300, reqSkill = 200, reqLevel = 35 },
+  -- name = key for profile.trainers, label = what the German client calls the rank
+  { name = "Apprentice", label = "Lehrling",  max = 75,  reqSkill = 0,   reqLevel = 0 },
+  { name = "Journeyman", label = "Geselle",   max = 150, reqSkill = 50,  reqLevel = 10 },
+  { name = "Expert",     label = "Experte",   max = 225, reqSkill = 125, reqLevel = 20 },
+  { name = "Artisan",    label = "Fachmann",  max = 300, reqSkill = 200, reqLevel = 35 },
 }
 
 Registry.SKILL_LINES = {

@@ -75,6 +75,54 @@ function UI.Check(parent, label, checked, onChange)
   return c
 end
 
+-- Dropdown: a button showing the current value; a click opens a small list below it. Own implementation on
+-- purpose (no dependency on Blizzard's changing menu API). options = { {value, label} }, onSelect(value).
+local openMenu
+function UI.Dropdown(parent, width, options, onSelect)
+  local d = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+  d:SetSize(width, 22)
+  d.arrow = d:CreateTexture(nil, "OVERLAY")
+  d.arrow:SetSize(12, 12)
+  d.arrow:SetPoint("RIGHT", -6, 0)
+  d.arrow:SetTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
+  d.menu = CreateFrame("Frame", nil, d, "BackdropTemplate")
+  d.menu:SetPoint("TOPLEFT", d, "BOTTOMLEFT", 0, -2)
+  d.menu:SetSize(width, #options * 22 + 8)
+  d.menu:SetFrameStrata("FULLSCREEN_DIALOG")
+  if d.menu.SetBackdrop then
+    d.menu:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+      tile = true, tileSize = 16, edgeSize = 12, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
+    d.menu:SetBackdropColor(0.05, 0.05, 0.05, 0.95)
+  end
+  d.menu:Hide()
+  for i, opt in ipairs(options) do
+    local item = CreateFrame("Button", nil, d.menu)
+    item:SetSize(width - 8, 22)
+    item:SetPoint("TOPLEFT", 4, -4 - (i - 1) * 22)
+    item.text = item:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    item.text:SetPoint("LEFT", 8, 0)
+    item.text:SetText(opt[2])
+    local hl = item:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints(); hl:SetColorTexture(1, 0.82, 0, 0.15)
+    item:SetScript("OnClick", function()
+      d.menu:Hide(); openMenu = nil
+      d:SetValue(opt[1])
+      if onSelect then onSelect(opt[1]) end
+    end)
+  end
+  d:SetScript("OnClick", function()
+    if d.menu:IsShown() then d.menu:Hide(); openMenu = nil; return end
+    if openMenu and openMenu ~= d.menu then openMenu:Hide() end
+    d.menu:Show(); openMenu = d.menu
+  end)
+  d:SetScript("OnHide", function() d.menu:Hide() end)
+  function d:SetValue(value)
+    self.value = value
+    for _, opt in ipairs(options) do if opt[1] == value then self:SetText(opt[2]) end end
+  end
+  return d
+end
+
 local BACKDROP = {
   bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
   edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -117,13 +165,15 @@ function UI.Group(parent, title, width, height)
   return g
 end
 
-function UI.Lines(parent, count, width, template, firstY)
+-- oneLine = true: each line is cut with "..." instead of wrapping, so fixed-height boxes never overflow
+function UI.Lines(parent, count, width, template, firstY, oneLine)
   local lines = {}
   for i = 1, count do
     local fs = parent:CreateFontString(nil, "OVERLAY", template or "GameFontHighlight")
     fs:SetJustifyH("LEFT")
     fs:SetWidth(width)
-    fs:SetWordWrap(true)
+    fs:SetWordWrap(not oneLine)
+    if oneLine then fs:SetHeight(14) end
     if i == 1 then fs:SetPoint("TOPLEFT", parent, "TOPLEFT", parent.pad or 0, firstY or (parent.top or 0))
     else fs:SetPoint("TOPLEFT", lines[i - 1], "BOTTOMLEFT", 0, -4) end
     lines[i] = fs

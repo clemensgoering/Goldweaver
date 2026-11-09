@@ -16,15 +16,18 @@ local function create()
   if frame then return end
   frame = CreateFrame("Frame", "GoldweaverPanel", UIParent, "BackdropTemplate")
   frame:SetSize(WIDTH, 60)
-  frame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -16, -280)
+  -- default: right edge below the middle, clear of the quest tracker under the minimap (playtest 09.11.2026)
+  frame:SetPoint("RIGHT", UIParent, "RIGHT", -16, -150)
   frame:SetClampedToScreen(true)
   frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag("LeftButton")
-  frame:SetScript("OnDragStart", function(self) if IsShiftKeyDown and IsShiftKeyDown() then self:StartMoving() end end)
-  frame:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
-    local point, _, rel, x, y = self:GetPoint()
+  local function startMove() frame:StartMoving() end
+  local function stopMove()
+    frame:StopMovingOrSizing()
+    local point, _, rel, x, y = frame:GetPoint()
     ns.db.settings.panelPos = { point, rel, x, y }
-  end)
+  end
+  frame:SetScript("OnDragStart", startMove)
+  frame:SetScript("OnDragStop", stopMove)
   if frame.SetBackdrop then
     frame:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground", tile = true, tileSize = 16, insets = { left = 0, right = 0, top = 0, bottom = 0 } })
     frame:SetBackdropColor(0, 0, 0, 0.35)
@@ -45,10 +48,14 @@ local function create()
     Panel.Refresh()
   end)
   header:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  -- the header covers the frame, so it must carry the drag itself (Shift+drag on the frame never reached it)
+  header:RegisterForDrag("LeftButton")
+  header:SetScript("OnDragStart", startMove)
+  header:SetScript("OnDragStop", stopMove)
   header:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
     GameTooltip:AddLine("Goldweaver · Unterwegs", 1, 0.82, 0)
-    GameTooltip:AddLine("Linksklick: ein-/ausklappen · Rechtsklick: Details · Shift+Ziehen: verschieben", 1, 1, 1, true)
+    GameTooltip:AddLine("Klick: ein-/ausklappen · Rechtsklick: Details · Ziehen: verschieben · /gw panel reset: Startposition", 1, 1, 1, true)
     GameTooltip:Show()
   end)
   header:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -110,7 +117,7 @@ function Panel.Refresh()
   if report.route and report.route.zones[1] then
     local names = {}
     for i = 1, math.min(3, #report.route.zones) do names[#names + 1] = report.route.zones[i].name end
-    routeLine = "Route: " .. table.concat(names, " → ")
+    routeLine = "Route: " .. table.concat(names, " » ")
   elseif report.zone and report.fit == "low" then
     routeLine = "Zu leicht für dich. Bessere Zonen: Rechtsklick auf die Kopfzeile."
   end
@@ -145,4 +152,11 @@ ns:RegisterModule("Panel", {
   end,
 })
 
-ns.Slash.Register("panel", function() Panel.Toggle() end, "toggle the side panel 'Unterwegs'")
+ns.Slash.Register("panel", function(arg)
+  if arg == "reset" then
+    ns.db.settings.panelPos = nil
+    if frame then frame:ClearAllPoints(); frame:SetPoint("RIGHT", UIParent, "RIGHT", -16, -150) end
+    return ns.Print("Seitenpanel auf Startposition gesetzt.")
+  end
+  Panel.Toggle()
+end, "toggle the side panel (reset = back to the start position)")

@@ -362,6 +362,12 @@ local function newClient(opts)
   env._tooltipCalls = {}
   env.TooltipDataProcessor = { AddTooltipPostCall = function(_, fn) env._tooltipCalls[#env._tooltipCalls + 1] = fn end }
 
+  -- optional price addons (public APIs only)
+  if opts.auctionator then
+    env.Auctionator = { API = { v1 = { GetAuctionPriceByItemID = function(_, id) return id == 2589 and 55 or nil end, GetAuctionAgeByItemID = function() return 0 end } } }
+  end
+  if opts.tsm then env.TSM_API = { GetCustomPriceValue = function(_, key) return key == "i:7026" and 160 or nil end } end
+
   -- RestedXP (optional)
   if opts.rxp then
     env.RXP = { currentGuide = { name = "23-25 Brachland", steps = { { elements = { { zone = 1413 } } }, { elements = { { zone = 1442 } } } } } }
@@ -538,6 +544,21 @@ local function session(label, opts, savedDB)
     local h = ns.Autopilot.QuickHealth()
     if h.red > 0 then fail(label .. ": self test red: " .. table.concat(h.rows, "; ")) end
   end)
+  s("optional price addons", function()
+    if opts.auctionator then
+      local p = ns.Price.Get(2589)
+      if not (p and p.source == "auctionator") then fail(label .. ": Auctionator price not used") end
+    end
+    if opts.tsm then
+      local p = ns.Price.Get(7026)
+      if not (p and p.source == "tsm") then fail(label .. ": TSM price not used") end
+    end
+    if not opts.rxp and ns.Field.Route() then fail(label .. ": route shown without RestedXP") end
+  end)
+  s("role dropdown", function()
+    ns.UI.Open("team")
+    for _, f in ipairs(env._frames) do if f.SetValue and f.menu and f._scripts.OnClick then f:Click(); f:Click(); break end end
+  end)
   s("blocked background reading", function()
     if opts.blockOpen and not ns.db.learned.autoReadBlocked then fail(label .. ": blocked reading not remembered") end
   end)
@@ -564,7 +585,7 @@ local function deepCopy(t) if type(t) ~= "table" then return t end local o = {} 
 for _, mode in ipairs({ { name = "modern", minimal = false }, { name = "minimal", minimal = true } }) do
   -- main logs in first (fresh install), then the twink with RestedXP, then the main again on a new patch
   local db = session(mode.name .. " · Main, Neuinstallation", { minimal = mode.minimal, char = MAIN }, nil)
-  db = session(mode.name .. " · Bank, RestedXP aktiv", { minimal = mode.minimal, char = BANK, rxp = true, mapID = 1454 }, deepCopy(db))
+  db = session(mode.name .. " · Bank, RestedXP aktiv", { minimal = mode.minimal, char = BANK, rxp = true, mapID = 1454, auctionator = true, tsm = true }, deepCopy(db))
   session(mode.name .. " · Main, neuer Patch, Spiel blockiert", { minimal = mode.minimal, char = MAIN, interface = 16002, blockOpen = true,
     unknownEvents = { AUCTION_HOUSE_BROWSE_RESULTS_UPDATED = true } }, deepCopy(db))
 end

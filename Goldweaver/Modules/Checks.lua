@@ -74,7 +74,7 @@ local D = Checks.Define
 D("load", { group = "A", title = "Addon lädt ohne Fehler", hint = "Einloggen; Fehler erscheinen im Chat und im Bericht." })
 D("interface", { group = "A", title = "Interface-Nummer passt zum Client", hint = "Automatisch beim Login." })
 D("char", { group = "A", title = "Charakter registriert (Vorname Nachname, Markt-Key)", hint = "Automatisch beim Login." })
-D("roles", { group = "A", title = "Rollen gesetzt: mindestens ein Main und ein Verarbeiter", hint = "Fenster → Charaktere, Rollen wählen." })
+D("roles", { group = "A", title = "Rollen gesetzt: mindestens ein Main und ein Verarbeiter", hint = "Fenster » Charaktere, Rollen wählen." })
 D("onboarding", { group = "A", title = "Erstlauf-Karte gezeigt oder übersprungen", hint = "Einen Charakter ohne Rolle einloggen." })
 D("hud", { group = "A", title = "HUD-Zeile sichtbar auf dem Main", hint = "Mit dem Main einloggen (oder /gw hud on)." })
 D("tooltip", { group = "A", title = "Tooltip-Zeile erscheint", hint = "Ein Item in der Tasche anschauen." })
@@ -84,9 +84,9 @@ D("mailAttach", { group = "A", title = "Anhängen füllt Empfänger und Anhänge
 D("mailSend", { group = "A", title = "Post an den Verarbeiter zugestellt (Empfängerformat bestätigt)", hint = "Nach dem Anhängen 'Senden an …' klicken." })
 D("mailOpen", { group = "A", title = "Posteingang mit AH-Post geöffnet (Blizzard 'Alle öffnen'), Rechnungen erfasst", hint = "Nach einem Verkauf den Briefkasten öffnen und 'Alle öffnen' klicken." })
 D("ledger", { group = "A", title = "Verkauf aus einer AH-Rechnung erfasst", hint = "Etwas im AH verkaufen, Post öffnen." })
-D("book", { group = "A", title = "Rezeptbuch gelesen (C_TradeSkillUI)", hint = "Fenster → Berufe → 'Rezepte laden' (öffnet den Beruf per Knopf).",
+D("book", { group = "A", title = "Rezeptbuch gelesen (C_TradeSkillUI)", hint = "Fenster » Berufe » 'Rezepte laden' (öffnet den Beruf per Knopf).",
   action = function() ns.UI.Open("berufe") end })
-D("plan", { group = "A", title = "Skill-up-Plan mit Einkaufsliste berechnet", hint = "Beruf mit lernbaren Rezepten laden, dann Fenster → Berufe.",
+D("plan", { group = "A", title = "Skill-up-Plan mit Einkaufsliste berechnet", hint = "Beruf mit lernbaren Rezepten laden, dann Fenster » Berufe.",
   action = function() ns.UI.Open("berufe") end })
 D("craft", { group = "A", title = "Herstellen über den Leitfaden-Knopf", hint = "Im Leitfaden 'Herstellen ×N' bei geladenem Beruf klicken.",
   action = function() ns.UI.Open("berufe") end })
@@ -134,7 +134,7 @@ ns.Slash.Register("checks", function(arg)
   if arg == "reset" then Checks.Reset(); return ns.Print("Prüfungen zurückgesetzt") end
   for _, r in ipairs(Checks.Status()) do
     local mark = r.status == "pass" and "|cff7fd17f✓|r" or (r.status == "fail" and "|cffd9534f✗|r" or (r.status == "skip" and "|cff999999–|r" or "|cffffd27f…|r"))
-    ns.Print(("%s %s%s"):format(mark, r.title, r.status == "pending" and (" → " .. (r.hint or "")) or (r.detail and (" (" .. tostring(r.detail) .. ")") or "")))
+    ns.Print(("%s %s%s"):format(mark, r.title, r.status == "pending" and (" » " .. (r.hint or "")) or (r.detail and (" (" .. tostring(r.detail) .. ")") or "")))
   end
   local s = Checks.Summary()
   ns.Print(("%d/%d bestanden"):format(s.pass, s.total))

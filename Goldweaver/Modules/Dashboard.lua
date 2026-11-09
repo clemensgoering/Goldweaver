@@ -88,7 +88,7 @@ Steps.RegisterSource("professions", 40, function(add, ctx)
       if rank and rank.next and rank.canTrain then
         local npc, contact = ns.Learn.TrainerContact(skillLine, rank.next.reqSkill)
         add({ id = "train" .. skillLine, icon = ICON.train, category = p.name or "Beruf",
-          title = ("%s lernen: %s"):format(rank.next.name, p.name or "?"),
+          title = ("%s lernen: %s"):format(rank.next.label or rank.next.name, p.name or "?"),
           detail = rank.trainer and ("Bei " .. rank.trainer) or "Beim Berufslehrer in der Hauptstadt.",
           actionLabel = contact and contact.x and "Wegpunkt" or nil,
           action = contact and contact.x and function() ns.Field.SetWaypoint(contact.mapID, contact.x, contact.y, npc) end or nil })
@@ -110,12 +110,12 @@ Steps.RegisterSource("professions", 40, function(add, ctx)
         end
         add({ id = "craft" .. skillLine, icon = r.icon, item = r.outputItemID, category = p.name or "Beruf",
           title = ("%s ×%d herstellen"):format(r.name, plan.crafts or 1),
-          detail = ("%s %d → %d · ≈ %s je Punkt"):format(p.name or "", p.rank or 0, math.min(p.maxRank or 0, (p.rank or 0) + (plan.crafts or 1)), ns.Util.Money(plan.best.costPerPoint)),
+          detail = ("%s %d » %d · ≈ %s je Punkt"):format(p.name or "", p.rank or 0, math.min(p.maxRank or 0, (p.rank or 0) + (plan.crafts or 1)), ns.Util.Money(plan.best.costPerPoint)),
           actionLabel = "Zum Beruf", action = function() openGuide(skillLine) end })
       elseif rank and rank.capped and rank.next and not rank.canTrain then
         add({ id = "cap" .. skillLine, icon = p.icon or ICON.train, category = p.name or "Beruf",
           title = ("%s am Limit (%d)"):format(p.name or "?", p.rank or 0),
-          detail = ("Nächster Rang %s ab Level %d."):format(rank.next.name, rank.next.reqLevel) })
+          detail = ("Nächster Rang %s ab Level %d."):format(rank.next.label or rank.next.name, rank.next.reqLevel) })
       end
     end
   end

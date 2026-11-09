@@ -83,11 +83,26 @@ function Planner.NextRank(skillLine, rec)
     info.needLevel = math.max(0, nextRank.reqLevel - level)
     -- a trainer we actually met beats the guide text
     local seen = ns.Learn and ns.Learn.TrainerFor and ns.Learn.TrainerFor(skillLine, nextRank.reqSkill)
-    info.trainer = seen or (profile.trainers and profile.trainers[nextRank.name]) or nil
+    info.trainer = seen or Planner.ForFaction(profile.trainers and profile.trainers[nextRank.name]) or nil
     info.trainerSeen = seen ~= nil
   end
   info.capped = (p.rank or 0) >= (p.maxRank or rank.max)
   return info
+end
+
+-- Guide texts list both factions ("Horde X ...; Allianz Y ..."): keep only the part for the player's faction.
+function Planner.ForFaction(text)
+  if type(text) ~= "string" then return text end
+  local faction = UnitFactionGroup and UnitFactionGroup("player")
+  local word = faction == "Alliance" and "Allianz" or (faction == "Horde" and "Horde" or nil)
+  if not word or not (text:find("Horde") and text:find("Allianz")) then return text end
+  for part in text:gmatch("[^;]+") do
+    if part:find(word) then
+      local cleaned = part:gsub("^%s*[^:]*:%s*", ""):gsub("^%s*" .. word .. ":?%s*", "")
+      return cleaned
+    end
+  end
+  return text
 end
 
 -- The plan: best step now (recipe, suggested crafts until the next rank cap), shopping list, rank info.

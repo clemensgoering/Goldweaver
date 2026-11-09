@@ -9,9 +9,11 @@ local ADDON, ns = ...
 local Chars = {}
 ns.Chars = Chars
 
-local ROLES = { main = true, processor = true, bank = true, none = true }
+-- "bank" was merged into "processor" (one twink stores AND processes; user decision 09.11.2026, schema 4)
+local ROLES = { main = true, processor = true, none = true }
 Chars.ROLES = ROLES
-Chars.ROLE_LABELS = { main = "Main (sammelt)", processor = "Verarbeiter", bank = "Bank", none = "keine Rolle" }
+Chars.ROLE_LABELS = { main = "Main (sammelt)", processor = "Verarbeiter & Bank", none = "Inaktiv" }
+Chars.ROLE_ORDER = { "main", "processor", "none" }
 
 -- Returns firstName, surname (surname may be nil). Secrets are never returned.
 function Chars.Names()
@@ -174,6 +176,7 @@ end
 -- source = "auto" for the Autopilot's guess; anything else (UI, slash) marks the role as chosen by the player,
 -- which the Autopilot never overrides.
 function Chars.SetRole(name, role, source)
+  if role == "bank" then role = "processor" end
   assert(ROLES[role], "unknown role: " .. tostring(role))
   local rec = ns.db.chars[name]
   if not rec then return false end
@@ -255,7 +258,8 @@ ns:RegisterModule("Chars", {
 
 ns.Slash.Register("role", function(arg)
   local role, who = arg:match("^(%S+)%s*(.-)$")
-  if not role or not ROLES[role] then return ns.Print("usage: /gw role main|processor|bank|none [full name]") end
+  if role == "bank" then role = "processor" end
+  if not role or not ROLES[role] then return ns.Print("usage: /gw role main|processor|none [full name]") end
   who = (who ~= "" and who) or Chars.FullName()
   if Chars.SetRole(who, role) then ns.Print(who .. " is now " .. role) else ns.Print("unknown character: " .. who) end
 end, "set this character's role (main|processor|bank)")

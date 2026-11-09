@@ -61,7 +61,7 @@ UI.RegisterTab("berufe", "Berufe", function(frame)
   status:SetPoint("TOPLEFT", nav, "TOPRIGHT", 10, 0)
   local statusTitle = UI.Section(status, "STATUS", DW - 20)
   statusTitle:SetPoint("TOPLEFT", 10, -8)
-  local statusLines = UI.Lines(status, 3, DW - 190, "GameFontHighlightSmall", -28)
+  local statusLines = UI.Lines(status, 3, DW - 190, "GameFontHighlightSmall", -28, true)
   local loadButton = UI.Button(status, "Rezepte laden", 160, nil)
   loadButton:SetPoint("TOPRIGHT", -10, -26)
 
@@ -140,9 +140,9 @@ UI.RegisterTab("berufe", "Berufe", function(frame)
         if rank.canTrain then hint = " |cff80ff80· jetzt lernbar|r"
         elseif rank.needSkill > 0 then hint = (" · noch %d Punkte"):format(rank.needSkill)
         elseif rank.needLevel > 0 then hint = (" · noch %d Level"):format(rank.needLevel) end
-        nextText = (" → %s ab Skill %d, Level %d%s"):format(rank.next.name, rank.next.reqSkill, rank.next.reqLevel, hint)
+        nextText = (" » %s ab Skill %d, Level %d%s"):format((rank.next.label or rank.next.name), rank.next.reqSkill, rank.next.reqLevel, hint)
       end
-      lines[1] = { ("%s · %s%s"):format(p.name or "?", rank and rank.current and rank.current.name or "?", nextText), 1, 1, 1 }
+      lines[1] = { ("%s · %s%s"):format(p.name or "?", rank and rank.current and (rank.current.label or rank.current.name) or "?", nextText), 1, 1, 1 }
       local trainer = rank and rank.next and rank.trainer
       if trainer then
         local label = rank.canTrain and "Lernen bei" or "Nächster Rang bei"
@@ -216,7 +216,7 @@ UI.RegisterTab("berufe", "Berufe", function(frame)
       prows[#prows + 1] = {
         icon = e.recipe.icon, item = e.recipe.outputItemID, text = e.recipe.name,
         right = (e.margin >= 0 and "+" or "") .. money(e.margin), rightColor = e.margin >= 0 and { 0.4, 1, 0.4 } or { 1, 0.5, 0.5 },
-        sub = ("%s → %s"):format(money(e.cost), money(e.value)),
+        sub = ("%s » %s"):format(money(e.cost), money(e.value)),
       }
     end
     if #prows == 0 then prows[1] = { icon = "Interface\\Icons\\INV_Misc_Coin_02", text = "Keine Produktpreise bekannt", sub = "Im AH suchen oder Auctionator scannen.", color = { 0.7, 0.7, 0.7 } } end

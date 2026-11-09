@@ -277,7 +277,7 @@ ns.Slash.Register("mail", function()
   local byReason = {}
   for _, e in ipairs(explained) do
     if e.target then
-      ns.Print(("→ %s: %s x%d (%s)"):format(e.target.firstName or e.target.name, e.item.link or tostring(e.item.itemID), e.item.count, e.reason or ""))
+      ns.Print(("» %s: %s x%d (%s)"):format(e.target.firstName or e.target.name, e.item.link or tostring(e.item.itemID), e.item.count, e.reason or ""))
     else
       byReason[e.reason or "?"] = (byReason[e.reason or "?"] or 0) + 1
     end

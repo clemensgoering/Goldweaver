@@ -7,7 +7,7 @@
 ## Version: @project-version@
 ## SavedVariables: GoldweaverDB, GoldweaverBackupDB
 ## SavedVariablesPerCharacter: GoldweaverCharDB
-## OptionalDeps: Auctionator, Syndicator, GatherMate2, TradeSkillMaster
+## OptionalDeps: Auctionator, TradeSkillMaster, RXPGuides
 ## AllowLoadGameType: camelot, forever
 ## Category: Professions
 ## X-License: MIT

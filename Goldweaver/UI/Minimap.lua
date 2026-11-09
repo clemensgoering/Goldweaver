@@ -76,6 +76,12 @@ local function tooltip(self)
   if unassigned > 0 then
     GameTooltip:AddLine(("%d Charakter(e) ohne Rolle"):format(unassigned), 1, 0.5, 0.2)
   end
+  -- explain the "!" badge right here: the top finding of the automatic diagnosis
+  local finding = alert and ns.Diagnose and ns.Diagnose.Latest()[1]
+  if finding then
+    GameTooltip:AddLine("! " .. finding.title, 1, 0.5, 0.2, true)
+    if finding.detail then GameTooltip:AddLine(finding.detail, 0.8, 0.8, 0.8, true) end
+  end
   if ns.Chars and ns.Chars.MarketKey then
     GameTooltip:AddLine("Markt: " .. ns.Chars.MarketKey(), 0.7, 0.7, 0.7)
   end

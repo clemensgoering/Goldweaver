@@ -5,8 +5,7 @@ local ADDON, ns = ...
 local UI = ns.UI
 local Chars = ns.Chars
 local W = 752
-local ROLE_ORDER = { "main", "processor", "bank", "none" }
-local ROLE_SHORT = { main = "Main", processor = "Verarbeiter", bank = "Bank", none = "–" }
+local ROLE_OPTIONS = { { "main", "Main (sammelt)" }, { "processor", "Verarbeiter & Bank" }, { "none", "Inaktiv" } }
 local ROLE_ICON = {
   main = "Interface\\Icons\\INV_Misc_Bag_08", processor = "Interface\\Icons\\Trade_BlackSmithing",
   bank = "Interface\\Icons\\INV_Misc_Bag_10_Blue", none = "Interface\\Icons\\INV_Misc_QuestionMark",
@@ -19,7 +18,7 @@ UI.RegisterTab("team", "Team", function(frame)
   list:SetPoint("TOPLEFT", 0, 0)
   local listTitle = UI.Section(list, "DEIN TEAM", W - 20)
   listTitle:SetPoint("TOPLEFT", 10, -8)
-  local hint = UI.Text(list, "Rollen werden automatisch vergeben (höchstes Level = Main, Handwerker = Verarbeiter). Ein Klick legt sie fest.", "GameFontDisableSmall")
+  local hint = UI.Text(list, "Rollen werden automatisch vergeben (höchstes Level = Main, Handwerker = Verarbeiter & Bank). Eine Auswahl legt sie fest.", "GameFontDisableSmall")
   hint:SetPoint("TOPLEFT", 10, -26); hint:SetWidth(W - 20)
 
   local function row(i)
@@ -37,17 +36,9 @@ UI.RegisterTab("team", "Team", function(frame)
     r.name:SetWidth(240)
     r.info = UI.Text(r, "", "GameFontDisableSmall")
     r.info:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
-    r.info:SetWidth(330); r.info:SetWordWrap(false)
-    r.buttons = {}
-    local x = -0
-    for k = #ROLE_ORDER, 1, -1 do
-      local role = ROLE_ORDER[k]
-      local width = role == "processor" and 92 or 64
-      local b = UI.Button(r, ROLE_SHORT[role], width, function() if r.rec then Chars.SetRole(r.rec.name, role) end end)
-      b:SetPoint("RIGHT", x, 0)
-      r.buttons[role] = b
-      x = x - width - 4
-    end
+    r.info:SetWidth(W - 20 - 44 - 200); r.info:SetWordWrap(false)
+    r.role = UI.Dropdown(r, 180, ROLE_OPTIONS, function(role) if r.rec then Chars.SetRole(r.rec.name, role) end end)
+    r.role:SetPoint("RIGHT", 0, 0)
     content.rows[i] = r
     return r
   end
@@ -57,7 +48,7 @@ UI.RegisterTab("team", "Team", function(frame)
   status:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
   local statusTitle = UI.Section(status, "FUNKTIONSSTATUS", W - 20)
   statusTitle:SetPoint("TOPLEFT", 10, -8)
-  local statusLines = UI.Lines(status, 4, W - 200, "GameFontHighlightSmall", -28)
+  local statusLines = UI.Lines(status, 4, W - 200, "GameFontHighlightSmall", -28, true)
   local settingsButton = UI.Button(status, "Einstellungen", 170, function() if ns.Settings then ns.Settings.Open() end end)
   settingsButton:SetPoint("TOPRIGHT", -10, -28)
   local reportButton = UI.Button(status, "Debug-Bericht", 170, function() ns.Debug.Run() end)
@@ -79,7 +70,7 @@ UI.RegisterTab("team", "Team", function(frame)
       for _, p in pairs(rec.professions or {}) do if not p.former then profs[#profs + 1] = (p.name or "?") .. " " .. tostring(p.rank or 0) end end
       table.sort(profs)
       r.info:SetText(("Level %s · %s · %s"):format(tostring(rec.level or "?"), rec.market or "?", #profs > 0 and table.concat(profs, ", ") or "keine Berufe"))
-      for role, b in pairs(r.buttons) do b:SetEnabled((rec.role or "none") ~= role) end
+      r.role:SetValue(rec.role or "none")
     end
     for i = #all + 1, #content.rows do content.rows[i]:Hide() end
 
