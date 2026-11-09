@@ -26,7 +26,7 @@ Nicht automatisierbar (braucht einen Besuch im Spiel): Bankinhalt, Lehrer- und H
 
 ## 3. Strang 2: UI, das führt
 
-**Fenster** (`/gw`, Minimap-Linksklick): Porträtrahmen, vier Reiter unten.
+**Fenster** (`/gw`, Minimap-Linksklick): Stil „Forever modern“ (Vorbild: moderne Forever-Addons wie OneForAll, nur als Inspiration, kein Code und keine Grafik übernommen, da GPL): dunkle warme Flächen, 1-px-Rahmen, goldene Eckakzente, Kopfband mit Logo und Untertitel, vier Reiter oben im Browser-Stil mit Symbol, Karten statt Insets, goldene Knöpfe, Schalter statt Häkchen. Alles aus Farbtexturen (`UI.Skin`), daher unabhängig von Blizzard-Templates. Reiter, Schrittkarte und Abläufe bleiben unverändert.
 1. **Leitfaden** – Schrittkarte „JETZT · SCHRITT 1 VON N" mit großem Icon, Titel, einem Satz, Wert und **einem** Aktionsknopf (z. B. „Entzaubern", „Rezepte laden", „Im AH suchen", „Wegpunkt"). Darunter „DANACH" mit bis zu sechs Schritten, jeder mit eigenem kleinen Knopf. Rechts: Unterwegs-Kurzfassung, RestedXP-Route, Heute. Unten: Funktionsstatus („Alles bereit" oder „1 Funktion eingeschränkt").
 2. **Unterwegs** – Zone mit Stufenband und Passung zum Level; „Hier sammeln" mit Item-Icons, Skill-Farbe (orange/gelb/grün/grau wie im Spiel), Preis oder „gefragt ×N"; Gegner (Stoff, Leder, Häuten bis Level X); „Beste Zonen für deine Skills"; RestedXP-Route. Jede Zone ist per „Ansehen" durchblätterbar.
 3. **Berufe** – links Navigationsliste mit Berufsicon und Skillbalken, rechts Status (Rang, Lehrer, „Rezepte laden"), nächster Skill-up mit Material-Icons, habe/brauche und „Im AH suchen" je Zeile, „Lohnt sich", „Noch nicht gelernt". Unten links „Welcher Beruf lohnt sich?".
@@ -38,7 +38,7 @@ Nicht automatisierbar (braucht einen Besuch im Spiel): Bankinhalt, Lehrer- und H
 
 **Tooltip**: zusätzlich „Gefragt: Cupedos braucht 20 (Leinengürtel)", wenn der Verarbeiter das Item für seinen Plan braucht.
 
-Alle Templates werden mit `pcall` versucht; fehlt eines nach einem Patch, fällt das Fenster auf einen schlichten Rahmen zurück, ohne Fehler.
+Blizzard-Templates nur noch, wo nötig (Schließen-Knopf, sichere Knöpfe), über `UI.SafeCreate` mit Ersatz ohne Template.
 
 ## 4. Strang 3: Level und Gebiet
 

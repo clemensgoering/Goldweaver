@@ -20,11 +20,7 @@ local function create()
     ns.db.settings.hudPos = { point, rel, x, y }
   end)
   frame:SetClampedToScreen(true)
-  if frame.SetBackdrop then
-    frame:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 10, insets = { left = 2, right = 2, top = 2, bottom = 2 } })
-    frame:SetBackdropColor(0, 0, 0, 0.55)
-    frame:SetBackdropBorderColor(0.5, 0.42, 0.25, 0.7)
-  end
+  ns.UI.Skin(frame, "tracker")
   text = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   text:SetPoint("CENTER")
   frame:SetScript("OnClick", function() if ns.UI then ns.UI.Open("heute") end end)

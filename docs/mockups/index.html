@@ -5,157 +5,270 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Goldweaver Mockups</title>
 <style>
-:root{--gold:#ffd100;--frame:#6b5a3e;--bg:#0b0907;--panel:#100d09;--inset:#0d0b08;--line:#3a2e20;--grey:#9a9a9a}
-body{margin:0;background:#1b1712;font:13px Arial,Helvetica,sans-serif;color:#fff}
-h1{font:22px Georgia,serif;color:var(--gold);margin:16px 24px 4px}
-p.lead{margin:0 24px 16px;color:#cfc6b0;max-width:900px}
-.stage{padding:24px 24px 60px;display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
-.win{position:relative;width:800px;height:600px;box-sizing:border-box;border:2px solid var(--frame);border-radius:6px;background:#15110c;margin-top:16px}
-.portrait{position:absolute;left:-10px;top:-16px;width:60px;height:60px;border-radius:50%;border:3px solid #c8a24a;background:#2a1d14;display:flex;align-items:center;justify-content:center;font:28px Georgia,serif;color:var(--gold)}
-.title{height:26px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line);font:14px Georgia,serif;color:var(--gold)}
-.close{position:absolute;right:4px;top:3px;width:20px;height:20px;background:#7a1a12;border:1px solid #c8a24a;color:var(--gold);border-radius:3px}
-.sub{position:absolute;left:62px;top:32px;font-size:12px;color:#d0d0d0}
-.body{position:absolute;left:6px;right:6px;top:56px;bottom:6px;background:var(--inset);border:1px solid var(--line);padding:8px;display:flex;gap:10px}
-.col{display:flex;flex-direction:column;gap:8px}
-.box{box-sizing:border-box;border:1px solid var(--line);background:var(--panel);padding:8px 10px}
-.sec{font:13px Georgia,serif;color:var(--gold);border-bottom:1px solid rgba(255,209,0,.25);padding-bottom:3px;margin-bottom:6px}
-.row{display:flex;align-items:center;gap:8px;min-height:36px;border-bottom:1px solid #1f1a12}
-.ic{flex:none;box-sizing:border-box;border:2px solid #9d9d9d;display:flex;align-items:center;justify-content:center;font:700 9px Arial;color:#eee}
+/* Goldweaver "Forever modern": dark warm surfaces, thin gold lines, small radii, one gold accent per element.
+   Own design; idea only taken from the modern Forever addon look (no code or art copied). */
+:root{
+  --bg:#110f0c; --bar:#0d0b09; --plate:#1a1611; --plate2:#221b12; --row:#15120e;
+  --line:#3b2f1f; --gold:#ffd27a; --goldline:#b8801f; --golddim:#8a6a3a; --text:#ece6da; --dim:#9b9283;
+  --green:#5fd35f; --red:#ff7a5c; --blue:#5aa9ff; --orange:#ff9a3c; --yellow:#ffe14d; --grey:#8d8d8d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#1d1a15;font:13px/1.35 "Segoe UI",Arial,sans-serif;color:var(--text)}
+h1{font:600 22px Georgia,serif;color:var(--gold);margin:18px 24px 4px}
+p.lead{margin:0 24px 10px;color:#cfc6b0;max-width:1000px}
+.switch{margin:0 24px 6px;display:flex;gap:8px;align-items:center;color:var(--dim)}
+.seg{display:flex;border:1px solid var(--golddim);border-radius:6px;overflow:hidden}
+.seg button{background:var(--plate);color:var(--dim);border:0;padding:6px 14px;font:inherit;cursor:pointer}
+.seg button.on{background:#3a2a12;color:var(--gold)}
+.stage{padding:16px 24px 50px;display:flex;flex-direction:column;gap:34px}
+.cap{font-size:12px;color:#ffe9a0;margin:0 0 6px}
+
+/* window */
+.win{position:relative;width:1020px;height:640px;background:var(--bg);border:1px solid #6d5430;border-radius:8px;
+  box-shadow:0 0 0 1px #000,0 18px 40px rgba(0,0,0,.6);overflow:hidden}
+.win:before,.win:after{content:"";position:absolute;width:60px;height:60px;pointer-events:none}
+.win:before{left:0;top:0;border-left:2px solid var(--gold);border-top:2px solid var(--gold);border-radius:8px 0 0 0;opacity:.55;
+  -webkit-mask:linear-gradient(135deg,#000 30%,transparent 70%);mask:linear-gradient(135deg,#000 30%,transparent 70%)}
+.win:after{right:0;bottom:0;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);border-radius:0 0 8px 0;opacity:.55;
+  -webkit-mask:linear-gradient(315deg,#000 30%,transparent 70%);mask:linear-gradient(315deg,#000 30%,transparent 70%)}
+.head{height:62px;display:flex;align-items:center;gap:12px;padding:0 14px;background:linear-gradient(180deg,#1c160e,#0f0c09);border-bottom:1px solid var(--line)}
+.logo{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a8,#c58a1c 55%,#5a3a0a);
+  box-shadow:0 0 0 2px #2a1d0c,0 0 14px rgba(255,190,80,.35);display:flex;align-items:center;justify-content:center;font:700 20px Georgia;color:#3a2405}
+.brand{display:flex;flex-direction:column}
+.brand b{font:600 18px Georgia,serif;color:var(--gold);letter-spacing:.5px}
+.brand small{color:var(--dim)}
+.head .sp{flex:1}
+.hbtn{width:26px;height:26px;border-radius:5px;border:1px solid var(--line);background:var(--plate);color:var(--dim);display:flex;align-items:center;justify-content:center;font-size:13px}
+.hbtn:hover{border-color:var(--goldline);color:var(--gold)}
+.gold{color:var(--gold);font-weight:600}
+.tabs{display:flex;gap:4px;padding:8px 14px 0;border-bottom:1px solid #6d5430;background:var(--bar)}
+.tab{position:relative;display:flex;gap:7px;align-items:center;padding:7px 16px 8px;margin-bottom:-1px;border:1px solid var(--line);border-bottom:0;
+  border-radius:7px 7px 0 0;background:#14110d;color:var(--dim);cursor:pointer;font-weight:600}
+.tab i{font-style:normal;font-size:14px;opacity:.8}
+.tab.on{background:linear-gradient(180deg,#3a2810,#1a140c 70%);color:var(--gold);border-color:#c79a4a;border-bottom:1px solid #1a140c}
+.tab.on:after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.tab .badge{background:#7a1a12;color:#fff;border-radius:8px;padding:0 6px;font-size:11px}
+.body{position:absolute;top:104px;left:0;right:0;bottom:0;padding:12px 14px;display:flex;gap:12px}
+
+/* building blocks */
+.col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.card{background:var(--plate);border:1px solid var(--line);border-radius:7px;padding:10px 12px;position:relative}
+.card.hl{border-color:#7a5a28;background:linear-gradient(180deg,#24190c,#17120c)}
+.card h3{margin:0 0 8px;font:600 11px "Segoe UI",Arial;letter-spacing:1.2px;color:var(--gold);text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.card h3 small{letter-spacing:0;text-transform:none;color:var(--dim);font-weight:400;font-size:11px}
+.ic{flex:none;width:30px;height:30px;border-radius:5px;border:1px solid #555;background:#2a241c;display:flex;align-items:center;justify-content:center;font:700 9px Arial;color:#eee;position:relative}
+.ic.q2{border-color:#1eff00}.ic.q3{border-color:#0070dd}.ic.big{width:46px;height:46px;font-size:11px}
+.ic .n{position:absolute;right:2px;bottom:0;font-size:10px;text-shadow:0 0 2px #000}
+.row{display:flex;align-items:center;gap:9px;padding:6px 4px;border-bottom:1px solid #221c14;border-radius:4px}
+.row:hover{background:#1f1912}
 .t{flex:1;min-width:0;display:flex;flex-direction:column}
-.t small{color:var(--grey);font-size:11px}
-.btn{background:#7a1a12;border:1px solid #c8a24a;color:var(--gold);font:700 11px Arial;padding:0 10px;height:22px;border-radius:3px;cursor:pointer;white-space:nowrap}
-.btn.big{height:26px;font-size:12px;padding:0 14px}
-.btn:disabled{background:#2a2420;color:#777;border-color:#555}
-.tabs{display:flex;gap:3px;margin-left:16px}
-.tab{height:30px;padding:0 18px;background:#2a1d14;border:1px solid var(--frame);border-top:none;border-radius:0 0 6px 6px;color:#c9b27a;font:13px Georgia,serif;cursor:pointer}
-.tab.on{background:#3d2a1a;color:var(--gold);height:34px}
-.bar{position:relative;height:12px;background:#000}.bar i{display:block;height:12px;background:#1a8c1a}.bar span{position:absolute;inset:0;font-size:10px;text-align:center;line-height:12px}
-.cap{font-size:11px;color:#ffe9a0}
+.t small{color:var(--dim);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{border:1px solid #c79a4a;background:linear-gradient(180deg,#5a3c12,#36240b);color:var(--gold);font:600 12px "Segoe UI",Arial;height:26px;padding:0 14px;border-radius:5px;cursor:pointer;white-space:nowrap}
+.btn:hover{box-shadow:0 0 10px rgba(255,200,90,.35)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--dim)}
+.btn.sm{height:22px;padding:0 10px;font-size:11px}
+.pill{display:inline-block;border-radius:9px;padding:0 7px;font-size:11px;line-height:17px;border:1px solid}
+.p-here{color:var(--green);border-color:#2f6a2f;background:#132013}
+.p-mail{color:var(--blue);border-color:#2a4e78;background:#101a26}
+.p-need{color:var(--orange);border-color:#6e4a1e;background:#21170c}
+.p-done{color:var(--dim);border-color:#3a3328}
+.bar{position:relative;height:8px;border-radius:4px;background:#0a0907;border:1px solid #2a2219;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8a6a2a,#e2b45a)}
+.bar i.m{background:repeating-linear-gradient(45deg,#2a5e9a,#2a5e9a 4px,#3a75b8 4px,#3a75b8 8px)}
+.bar i.ok{background:linear-gradient(90deg,#2d7a2d,#5fd35f)}
+.dim{color:var(--dim)} .green{color:var(--green)} .orange{color:var(--orange)} .blue{color:var(--blue)}
+.skill{display:flex;align-items:center;gap:8px;font-size:12px;margin:4px 0}
+.skill span{width:96px;color:var(--dim)}
+.skill .bar{flex:1;height:10px}
+.skill .bar i{background:linear-gradient(90deg,#2a6a2a,#4fb84f)}
+.skill b{width:62px;text-align:right;font-weight:600}
+
+/* duo strip */
+.duo{display:grid;grid-template-columns:1fr 210px 1fr;gap:0;align-items:stretch}
+.char{display:flex;gap:10px}
+.char .portrait{width:52px;height:52px;border-radius:50%;border:2px solid #c79a4a;background:#2a1d14;display:flex;align-items:center;justify-content:center;font:600 20px Georgia;color:var(--gold);flex:none}
+.char .who{flex:1;min-width:0}
+.char .name{font:600 15px Georgia,serif}
+.role{font-size:11px;color:var(--dim)}
+.you{font-size:10px;color:#1a1208;background:var(--gold);border-radius:3px;padding:0 4px;margin-left:6px;font-family:"Segoe UI";vertical-align:2px}
+.flow{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;padding:0 6px;text-align:center}
+.flow .arrow{width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--goldline),var(--gold));position:relative}
+.flow .arrow:after{content:"";position:absolute;right:-1px;top:-5px;border:6px solid transparent;border-left:9px solid var(--gold);border-right:0}
+.flow .chip{background:#0d0b08;border:1px solid var(--line);border-radius:14px;padding:3px 10px;font-size:12px}
+.flow .chip b{color:var(--gold)}
+
+/* step */
+.step{display:flex;gap:12px;align-items:center}
+.step .t b{font:600 15px Georgia,serif}
+.kicker{font-size:10px;letter-spacing:1.3px;color:var(--gold);text-transform:uppercase}
+
+/* field grid */
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.cell{background:var(--row);border:1px solid #2a2219;border-radius:6px;padding:6px 4px 5px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;position:relative}
+.cell .sk{width:100%;height:3px;border-radius:2px}
+.cell .for{position:absolute;top:3px;right:3px;width:8px;height:8px;border-radius:50%;background:var(--orange);box-shadow:0 0 6px var(--orange)}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--dim);margin-top:6px;flex-wrap:wrap}
+
+/* world */
+.world{position:relative;width:1020px;height:400px;border-radius:8px;overflow:hidden;background:radial-gradient(ellipse at 40% 70%,#6b6a3a,#3d4426 60%,#262c19);border:1px solid #333}
+.world .lbl{position:absolute;left:380px;top:220px;font:14px Georgia,serif;color:rgba(255,255,255,.35)}
+.tracker{position:absolute;right:16px;top:110px;width:270px;background:rgba(14,11,8,.82);border:1px solid #5b4527;border-radius:7px;padding:8px 10px;backdrop-filter:blur(2px)}
+.tracker .th{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--gold);font-size:12px;margin-bottom:4px}
+.tracker .th .sp{flex:1}
+.tracker .trow{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:12px}
+.tracker .trow .t{gap:2px}
+.tracker .foot{margin-top:6px;padding-top:6px;border-top:1px solid #33291c;font-size:11px;color:var(--dim);display:flex;justify-content:space-between}
+.hud{position:absolute;left:50%;transform:translateX(-50%);top:8px;background:rgba(10,8,6,.8);border:1px solid #6d5430;border-radius:14px;padding:3px 14px;font-size:12px;display:flex;gap:12px}
+.toast{position:absolute;left:50%;top:150px;transform:translateX(-50%);background:linear-gradient(180deg,rgba(42,30,12,.92),rgba(20,15,9,.92));border:1px solid #c79a4a;border-radius:8px;padding:7px 16px;font-size:13px;text-align:center;box-shadow:0 0 18px rgba(255,190,80,.25)}
+.toast small{display:block;color:var(--dim);font-size:11px}
+.minimap{position:absolute;right:18px;top:12px;width:104px;height:104px;border-radius:50%;background:#2f3a20;border:3px solid #8a7444}
+.note{max-width:1020px;color:#cfc6b0;font-size:12.5px;margin:4px 0 0}
+.note li{margin:3px 0}
 .hidden{display:none}
 </style>
 </head>
 <body>
-<h1>Goldweaver – Mockups</h1>
-<p class="lead">Statische Entwürfe zum Besprechen ohne Spiel. Reiter unten wechseln die Ansicht. Beschriftete Kacheln stehen für Spiel-Icons; Farben: Gold = Überschrift, Grün/Blau-Rand = Item-Qualität, Orange/Gelb/Grün/Grau = Skill-Farbe wie im Spiel, Rot = Skill zu niedrig.</p>
+<h1>Goldweaver – Entwurf „Forever modern“</h1>
+<p class="lead">Statischer Entwurf zum Besprechen ohne Spiel. Stilvorlage für den neuen Look; Reiter bleiben Leitfaden · Unterwegs · Berufe · Team. Der Inhalt des Leitfadens hier ist ein <b>Vorschlag</b> für mehr Zusammenspiel: Main und Twink nebeneinander, dazwischen die Post-Pipeline, darunter die <b>gemeinsame Sammelliste</b>, die zeigt, was der Twink für seine nächsten Skillpunkte braucht und was davon der Main gerade hier sammeln kann. Beschriftete Kacheln stehen für Spiel-Icons.</p>
+<div class="switch">Eingeloggt als
+  <div class="seg"><button id="pMain" class="on">Main · Cupedos</button><button id="pTwink">Twink · Grel</button></div>
+  <span>– Ansicht und Texte drehen sich mit, der eigene Charakter steht immer links.</span>
+</div>
+
 <div class="stage">
-  <div>
-    <div class="win">
-      <div class="portrait">G</div><div class="title">Goldweaver</div><button class="close" aria-label="Schließen">x</button>
-      <div class="sub" id="sub"></div>
-      <div class="body" id="view"></div>
+<div>
+  <p class="cap">Hauptfenster (/gw): Kopfband mit Logo, Reiter mit Symbol im Browser-Stil, Karten statt Blizzard-Insets</p>
+  <div class="win">
+    <div class="head">
+      <div class="logo">G</div>
+      <div class="brand"><b>Goldweaver</b><small id="sub"></small></div>
+      <div class="sp"></div>
+      <span class="dim" style="margin-right:6px">Diese Sitzung <span class="green">+1g 18s</span></span>
+      <div class="hbtn" title="Einstellungen">⚙</div><div class="hbtn" title="Bericht">!</div><div class="hbtn" title="Schließen">✕</div>
     </div>
     <div class="tabs" id="tabs"></div>
-  </div>
-
-  <div style="position:relative;width:1000px;height:560px;background:#55603a;border:1px solid #333">
-    <span style="position:absolute;left:420px;top:260px;font:14px Georgia,serif;color:rgba(255,255,255,.4)">Spielwelt (Brachland)</span>
-    <div style="position:absolute;left:330px;top:8px;padding:3px 12px;background:rgba(0,0,0,.55);border:1px solid rgba(200,162,74,.6);font-size:11px">Für Cupedos: 3g 42s (14) · Session +1g 18s 40c</div>
-    <span class="cap" style="position:absolute;left:330px;top:32px">HUD-Zeile (nur Mains)</span>
-    <div style="position:absolute;right:16px;top:12px;width:120px;height:120px;border-radius:50%;background:#27301c;border:4px solid #8a7444"></div>
-    <div style="position:absolute;right:122px;top:96px;width:28px;height:28px;border-radius:50%;background:#2a1d14;border:2px solid #c8a24a;color:var(--gold);display:flex;align-items:center;justify-content:center">G</div>
-    <div style="position:absolute;right:16px;top:150px;width:250px;background:rgba(0,0,0,.4)" id="panel"></div>
-    <div style="position:absolute;left:20px;top:40px;width:300px;background:rgba(10,10,30,.94);border:1px solid #6b6b8a;border-radius:4px;padding:8px 10px;line-height:1.5">
-      <div style="font-size:14px">Mittleres Leder</div><div>Handwerkswaren</div><div style="color:#ccc">Verkaufspreis: 15c</div><br>
-      <div style="color:#d4a94e">Goldweaver: Behalten → Leichte Lederhose (Skill-up)</div>
-      <div style="color:var(--gold)">&nbsp; Gefragt: du brauchst 8 (Lederverarbeitung 81)</div>
-      <div style="color:#999">&nbsp; Bestand: Taschen 6 · Bank 0 · Cupedos 0</div>
-      <div style="color:#777">&nbsp; Shift: alle Optionen</div>
-    </div>
-    <span class="cap" style="position:absolute;left:20px;top:226px">Tooltip</span>
-    <div style="position:absolute;left:20px;top:270px;width:340px;height:220px;background:#d8c49a;border:3px solid var(--frame)">
-      <div style="height:24px;background:#2a1d14;color:var(--gold);display:flex;align-items:center;justify-content:center">Posteingang</div>
-      <div style="padding:10px;color:#4a3820">Auktionshaus: Verkauf erfolgreich (2)</div>
-    </div>
-    <button class="btn big" style="position:absolute;left:40px;top:500px;width:300px">Anhängen für Cupedos: 12 von 14 (3g 42s)</button>
-    <span class="cap" style="position:absolute;left:360px;top:504px">Knopf unter dem Briefkasten; zweiter Klick sendet</span>
+    <div class="body" id="view"></div>
   </div>
 </div>
 
+<div>
+  <p class="cap">Spielwelt: Tracker „Sammelauftrag“ am Bildschirmrand, kurze Meldung beim Sammeln, HUD-Zeile oben</p>
+  <div class="world" id="world"></div>
+  <ul class="note">
+    <li><b>Parallel sammeln</b> heißt hier: der Main levelt und sammelt nebenbei genau das, was der Twink als Nächstes braucht. Jede Beute zählt sofort in die Sammelliste ein, und die Meldung sagt, wie viele Skillpunkte das dem Twink bringt.</li>
+    <li><b>Ehrliche Grenze:</b> Zwei gleichzeitig laufende Spiele können sich nicht live abgleichen (keine Netzwerkfunktionen, SavedVariables werden erst beim Ausloggen oder /reload geschrieben). Der Twink sieht deshalb „Stand von Cupedos: vor 2 Std.“.</li>
+    <li>Ein Klick = eine Aktion bleibt: „Zum Rezept“, „Anhängen“, „Senden“ sind Knöpfe; nichts läuft automatisch.</li>
+  </ul>
+</div>
+</div>
+
 <script>
-// icons: Wowhead icon CDN, only for internal mockups (the addon uses the game's own textures)
-const IMG=n=>`https://wow.zamimg.com/images/wow/icons/medium/${n}.jpg`;
-const tile=(tag,bg,border,size,icon)=>`<div class="ic" style="width:${size||28}px;height:${size||28}px;background:${bg};border-color:${border||'#9d9d9d'};position:relative">${tag}${icon?`<img src="${IMG(icon)}" alt="" style="position:absolute;inset:0;width:100%;height:100%" onerror="this.remove()">`:''}</div>`;
-// compact grid cell (Baganator-style): icon, skill colour bar, demand badge, short label
-const cell=(c)=>`<div style="width:62px;display:flex;flex-direction:column;align-items:center;gap:2px" title="${c.name}">
-  <div style="position:relative">${tile(c.tag,c.bg,c.border,40,c.icon)}${c.badge?`<span style="position:absolute;right:-4px;top:-6px;background:#7a1a12;border:1px solid #c8a24a;color:var(--gold);font:700 10px Arial;padding:0 3px">${c.badge}</span>`:''}</div>
-  <div style="width:40px;height:3px;background:${c.skill||'transparent'}"></div>
-  <span style="font-size:10px;text-align:center;line-height:1.1;color:${c.color||'#ddd'}">${c.name}</span><span style="font-size:10px;color:var(--grey)">${c.price||''}</span></div>`;
-const group=(title,meta,cells,empty)=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--gold)">${title}</span><span style="color:var(--grey)">${meta}</span></div><div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:6px">${cells.length?cells.map(cell).join(''):`<small style="color:var(--grey)">${empty}</small>`}</div></div>`;
-const row=(r)=>`<div class="row">${tile(r.tag,r.bg,r.border,r.size,r.icon)}<div class="t"><span style="color:${r.color||'#fff'}">${r.name}</span><small>${r.sub||''}</small></div>${r.right?`<span style="font-size:11px;color:${r.rc||'#fff'}">${r.right}</span>`:''}${r.btn?`<button class="btn">${r.btn}</button>`:''}</div>`;
-const box=(title,inner,style)=>`<div class="box" style="${style||''}"><div class="sec">${title}</div>${inner}</div>`;
-const HERB='#2f5a2a';
-const views={
- guide:{sub:'Cupedos Grel · Main (sammelt) · EU-PvE-Horde', html:`
-  <div class="col" style="width:490px">
-   <div class="box" style="position:relative;height:104px;background:#1a1408;border-color:#5a4a30;display:flex;gap:12px">
-    ${tile('POST','#3b4a5c','#9d9d9d',52,'inv_letter_15')}
-    <div class="t"><span style="font:700 11px Arial;color:var(--gold)">JETZT · SCHRITT 1 VON 5 · POST</span><span style="font:18px Georgia,serif">14 Items an Cupedos Bank schicken</span><span style="color:#e0e0e0">Am nächsten Briefkasten: „Anhängen“, dann „Senden“.</span></div>
-    <span style="position:absolute;right:12px;top:14px;color:#66ff66;font-weight:700">≈ 3g 42s</span></div>
-   ${box('DANACH',[
-    {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_03',name:'2. 8× Leichtes Leder besorgen',sub:'Lederverarbeitung · für Leichte Lederhose ×8',right:'−1g 04s',rc:'#ff9a66',btn:'Im AH suchen'},
-    {tag:'HOS',icon:'inv_pants_02',bg:'#4a3a28',border:'#1eff00',name:'3. Leichte Lederhose ×8 herstellen',sub:'Lederverarbeitung 81 → 89 · ≈ 13s je Punkt',btn:'Zum Beruf'},
-    {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_05',name:'4. Mittleres Leder häuten',sub:'Unterwegs · Brachland · Cupedos Bank braucht 8',right:'≈ 18s',rc:'#66ff66',btn:'Unterwegs'},
-    {tag:'GLD',icon:'inv_misc_cape_02',bg:'#5a4a1a',border:'#1eff00',name:'5. Grober Lederumhang herstellen und verkaufen',sub:'+42s je Stück nach AH-Cut',right:'≈ 42s',rc:'#66ff66',btn:'Zum Beruf'}].map(row).join(''),'flex:1')}
-   <div class="box" style="display:flex;align-items:center;gap:10px"><span style="color:#80ff80">✓ Alles bereit</span><small style="flex:1;color:var(--grey)">Selbstprüfung beim Login · 18 von 32 Funktionen im Spiel bestätigt</small><button class="btn">Bericht</button></div>
-  </div>
-  <div class="col" style="flex:1">${box('UNTERWEGS · BRACHLAND',`<small style="color:#d0d0d0">Stufe 10–25 · passt zu deinem Level</small>`+[
-    {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_05',name:'Mittleres Leder',sub:'Wildtiere häuten',right:'gefragt ×8',rc:'var(--gold)',size:24},
-    {tag:'WOL',bg:'#4a4a5a',icon:'inv_fabric_wool_01',name:'Wollstoff',sub:'von Humanoiden',right:'8s',size:24}].map(row).join('')+
-    `<div class="sec" style="margin-top:10px">AUF DEINER ROUTE (RestedXP)</div><div>Steinkrallengebirge (15–27)</div><div>Eschental (18–30)</div><div>Tausend Nadeln (25–35)</div>
-     <div class="sec" style="margin-top:10px">HEUTE</div><div>Session +1g 18s 40c</div><div>Verkauft 2g 05s (3)</div><div>Gold 14g 22s 31c</div>`,'flex:1')}</div>`},
- field:{sub:'Cupedos Grel · Main (sammelt) · EU-PvE-Horde', html:`
-  <div class="col" style="flex:1">
-   <div class="box" style="display:flex;align-items:center"><div class="t"><span style="font:18px Georgia,serif;color:var(--gold)">Brachland</span><small style="color:#d0d0d0">Stufe 10–25 · <span style="color:#80ff80">passt zu Level 23</span> · Classic-Daten, ergänzt um deine Funde</small></div><button class="btn">Weltkarte</button></div>
-   <div style="display:flex;gap:10px;flex:1">
-    ${box('HIER FÜR DICH',
-      group('Kürschnerei 142','Wildtiere Stufe 10–25 · <span style="color:#ff8040">orange</span>',[
-        {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_05',name:'Mittleres Leder',badge:'×8',skill:'#ff8040',price:'18s'},
-        {tag:'BAL',bg:'#5c4630',icon:'inv_misc_pelt_wolf_01',name:'Leichter Balg',skill:'#40bf40',price:'11s'},
-        {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_03',name:'Leichtes Leder',skill:'#808080',price:'4s'}])+
-      group('Angeln 50','—',[],'Noch keine eigenen Fänge hier. Wird gelernt, sobald du hier angelst.')+
-      group('Von Gegnern (alle)','Humanoide Stufe 16–25',[
-        {tag:'WOL',bg:'#4a4a5a',icon:'inv_fabric_wool_01',name:'Wollstoff',price:'8s'}])+
-      group('Für deine Herstellung','Lederverarbeitung 81 · Kochkunst 64',[
-        {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_05',name:'Mittleres Leder',badge:'×8',color:'var(--gold)'},
-        {tag:'FLE',bg:'#6a3a2a',icon:'inv_misc_food_14',name:'Ebenenschreiter-Fleisch',price:'Kochen'}])+
-      '<small style="color:var(--grey)">Ausgeblendet: 7 Kräuter, 3 Erze (kein Kräuterkunde/Bergbau). Gelbe Zahl = vom Verarbeiter gebraucht, Farbbalken = Skill-Farbe.</small>','width:470px')}
-    <div class="col" style="flex:1">
-     ${box('NÄCHSTE STUFE FÜR KÜRSCHNEREI',[{tag:'SKN',bg:'#5c4630',icon:'inv_misc_pelt_wolf_01',name:'Bis Skill 150 hier orange',sub:'danach Wildtiere ab Stufe 26: Steinkrallengebirge'}].map(row).join(''))}
-     ${box('BESTE ZONEN FÜR DEINE SKILLS',[{tag:'KÜR',bg:'#5c4630',icon:'inv_misc_pelt_wolf_01',name:'Eschental',sub:'Kürschnerei · Stufe 18–30',btn:'Ansehen'},{tag:'ANG',bg:'#2a4a6a',icon:'trade_fishing',name:'Brachland (Küste)',sub:'Angeln · noch keine eigenen Fänge',btn:'Ansehen'}].map(row).join(''))}
-     ${box('RESTEDXP: 23-25 BRACHLAND',[{tag:'MAP',bg:'#3b4a5c',name:'Steinkrallengebirge',sub:'Stufe 15–27 · ab Schritt 41',btn:'Ansehen'},{tag:'MAP',bg:'#3b4a5c',name:'Eschental',sub:'Stufe 18–30 · ab Schritt 58',btn:'Ansehen'}].map(row).join(''),'flex:1')}
-    </div></div></div>`},
- prof:{sub:'Cupedos Bank · Verarbeiter · EU-PvE-Horde', html:`
-  ${box('DEINE BERUFE',`
-   <div class="row" style="background:rgba(255,209,0,.12)">${tile('SCH','#5a3a5a','#9d9d9d',30,'trade_tailoring')}<div class="t"><span style="color:var(--gold)">Schneiderei</span><div class="bar"><i style="width:71%"></i><span>53 / 75</span></div></div></div>
-   <div class="row">${tile('VZK','#3a3a7a','#9d9d9d',30,'trade_engraving')}<div class="t"><span style="color:var(--gold)">Verzauberkunst</span><div class="bar"><i style="width:33%"></i><span>25 / 75</span></div></div></div>
-   <div style="height:300px"></div><button class="btn big" style="width:100%">Welcher Beruf lohnt sich?</button>`,'width:196px')}
-  <div class="col" style="flex:1;min-width:0">
-   ${box('STATUS · SCHNEIDEREI 53 / 75',`<div style="display:flex"><div class="t"><span>Lehrling → Geselle ab Skill 50, Level 10 · <span style="color:#ff9a66">noch 4 Level</span></span><small>Nächster Rang bei: Magar (Orgrimmar) · selbst gesehen</small><small>Rezepte: 24 von 471 gelernt · gelesen vor 3 min (automatisch)</small></div><button class="btn">Rezepte aktualisieren</button></div>`)}
-   ${box('NÄCHSTER SKILL-UP',[
-    {tag:'TAS',icon:'inv_misc_bag_10',bg:'#4a3a5a',border:'#1eff00',size:34,name:'Leinentasche ×8',sub:'Skill-up 100 % · grau in 8 Punkten · Material 64c je Stück',right:'≈ 64c je Punkt',rc:'var(--gold)',btn:'Herstellen ×8'},
-    {tag:'BLZ',bg:'#4a4a5a',icon:'inv_fabric_linen_02',name:'Bolzen aus Leinenstoff',sub:'brauche 8 · Taschen 2 · Bank 0 · Twinks 0',right:'fehlen 6 · 72c',rc:'#ff9a66',btn:'Im AH suchen'},
-    {tag:'GAR',bg:'#6a6a6a',name:'Grobes Garn',sub:'brauche 8 · Taschen 10',right:'vorhanden',rc:'#80ff80'}].map(row).join('')+'<small style="color:var(--grey)">Alternativen: Leinenstiefel (1s 10c/Pkt) · Bolzen aus Leinenstoff (1s 30c/Pkt)</small>')}
-   <div style="display:flex;gap:8px;flex:1">
-    ${box('LOHNT SICH',[{tag:'BTL',icon:'inv_misc_bag_09',bg:'#4a3a5a',border:'#1eff00',name:'Leinenbeutel',sub:'48s → 60s 40c',right:'+12s 40c',rc:'#66ff66'},{tag:'BLZ',bg:'#4a4a5a',name:'Bolzen aus Leinenstoff',sub:'8s → 12s 30c',right:'+4s 30c',rc:'#66ff66'}].map(row).join(''),'flex:1')}
-    ${box('NOCH NICHT GELERNT (447)',[{tag:'UMH',icon:'inv_misc_cape_02',bg:'#4a3a5a',border:'#1eff00',name:'Wollener Umhang',color:'#ccffcc',sub:'Lehrer Magar (Orgrimmar) ab Skill 75'},{tag:'ROB',icon:'inv_chest_cloth_08',bg:'#4a3a5a',border:'#0070dd',name:'Robe der Macht',sub:'Quelle noch unbekannt'}].map(row).join(''),'flex:1')}
-   </div></div>`},
- team:{sub:'Cupedos Bank · Verarbeiter · EU-PvE-Horde', html:`
-  <div class="col" style="flex:1">
-   ${box('DEIN TEAM','<small style="color:var(--grey)">Rollen werden automatisch vergeben (höchstes Level = Main, Handwerker = Verarbeiter). Ein Klick legt sie fest.</small>'+
-    [['MAIN','#5c4630','Cupedos Grel <small style="color:#999">(automatisch)</small>','Level 23 · Angeln 50, Erste Hilfe 95, Kochkunst 64, Kürschnerei 142, Lederverarbeitung 81',0],
-     ['VER','#3a3a5a','Cupedos Bank <small style="color:#80ff80">(du)</small>','Level 6 · Schneiderei 53, Verzauberkunst 25',1]].map(c=>`<div class="row" style="min-height:52px">${tile(c[0],c[1],'#9d9d9d',36)}<div class="t"><span style="font:14px Georgia,serif;color:var(--gold)">${c[2]}</span><small>${c[3]}</small></div><button class="btn" ${c[4]==0?'disabled':''}>Main</button><button class="btn" ${c[4]==1?'disabled':''}>Verarbeiter</button><button class="btn">Bank</button><button class="btn">–</button></div>`).join(''),'height:340px')}
-   ${box('FUNKTIONSSTATUS',`<div style="display:flex;gap:12px"><div class="t" style="gap:4px"><span style="color:#80ff80">Selbstprüfung beim Login: alles in Ordnung.</span><span>Im Spiel bestätigt: 18 von 32 Funktionen.</span><small>Berufe im Hintergrund gelesen: 2</small><small>Backup: migration 1 → 2, 08.11. 21:00</small></div><div class="col" style="width:170px"><button class="btn big">Einstellungen</button><button class="btn big">Debug-Bericht</button><button class="btn big">Backup anlegen</button></div></div>`,'flex:1')}
-  </div>`}
+const P = {
+  main:{ me:"Cupedos", meRole:"Main · sammelt", mePortrait:"C", other:"Grel", otherRole:"Verarbeiter & Bank", otherPortrait:"G",
+    sub:"Cupedos · Main · EU-PvE-Horde · Brachland",
+    meSkills:[["Kräuterkunde",112,150],["Bergbau",98,150]], otherSkills:[["Schneiderei",81,150],["Verzauberkunst",60,150]],
+    meLine:"Stufe 24 · Taschen 14 Items für Grel", otherLine:"Stufe 12 · zuletzt eingeloggt vor 2 Std.",
+    flow:[["<b>14</b> Items · 3g 42s","in deinen Taschen für Grel"],["<b>1</b> Mail unterwegs","kommt in ≈ 1 Std. an"]],
+    step:{kicker:"Jetzt · 1 von 4 · Sammeln",title:"Wildstahlblume ×8 für Grel",detail:"Wächst hier im Brachland (Skill 70, gelb für dich). Bringt Grel +4 Verzauberkunst über Seltsamer Staub.",btn:"Karte zeigen",icon:"Kraut"},
+    next:[["Post","Senden 14 » Grel","Am nächsten Briefkasten: Crossroads",""],["AH","Grobes Leder ×20 verkaufen","Grel braucht keins · ≈ 1g 10s",""],["Leveln","Bergbau 98 → 125","Beste Zone: Steinkrallengebirge",""]]
+  },
+  twink:{ me:"Grel", meRole:"Verarbeiter & Bank", mePortrait:"G", other:"Cupedos", otherRole:"Main · sammelt", otherPortrait:"C",
+    sub:"Grel · Verarbeiter & Bank · EU-PvE-Horde · Orgrimmar",
+    meSkills:[["Schneiderei",81,150],["Verzauberkunst",60,150]], otherSkills:[["Kräuterkunde",112,150],["Bergbau",98,150]],
+    meLine:"Stufe 12 · Briefkasten: 1 Mail von Cupedos", otherLine:"Stufe 24 · Stand vor 2 Std. · Brachland",
+    flow:[["<b>1</b> Mail im Briefkasten","26 Items · 4g 05s"],["<b>14</b> Items bei Cupedos","noch nicht gesendet"]],
+    step:{kicker:"Jetzt · 1 von 3 · Herstellen",title:"Leinengürtel ×6",detail:"Material aus der Post reicht. Schneiderei 81 → 87, danach verzaubern statt verkaufen (+1g 20s).",btn:"Zum Rezept",icon:"Gürtel"},
+    next:[["Post","Briefkasten leeren","1 Mail von Cupedos · 26 Items",""],["Entzaubern","Leinengürtel ×6 entzaubern","Seltsamer Staub für Verzauberkunst",""],["Lehrer","Geselle Verzauberkunst ab 50","Kurgul, Orgrimmar",""]]
+  }
 };
-const order=[['guide','Leitfaden'],['field','Unterwegs'],['prof','Berufe'],['team','Team']];
-function show(k){document.getElementById('view').innerHTML=views[k].html;document.getElementById('sub').textContent=views[k].sub;
- document.getElementById('tabs').innerHTML=order.map(([key,label])=>`<button class="tab ${key===k?'on':''}" onclick="show('${key}')">${label}</button>`).join('');}
-show('guide');
-document.getElementById('panel').innerHTML=`<div style="height:22px;padding:0 8px;display:flex;align-items:center;justify-content:space-between;font:13px Georgia,serif;color:var(--gold)">Unterwegs · Brachland<span style="color:#ccc">–</span></div>`+
- [{tag:'POST',bg:'#3b4a5c',name:'14 Items an Cupedos Bank schicken',color:'var(--gold)',sub:'Am nächsten Briefkasten'},
-  {tag:'LDR',bg:'#5c4630',name:'Mittleres Leder',right:'×8',rc:'var(--gold)',size:20},
-  {tag:'WOL',bg:'#4a4a5a',name:'Wollstoff',right:'8s',size:20}].map(row).join('')+
- `<div style="padding:4px 8px;font-size:10px;color:#aaa">Route: Steinkrallengebirge → Eschental</div><div class="cap" style="padding:0 8px 6px">Seitenpanel wie die Questverfolgung</div>`;
+const NEED = [
+  // item, quality, need, have (bags of main), inMail, at twink, source pill, sub
+  ["Leinenstoff","Stoff",60,22,10,12,"here","Mobs hier droppen es · Grel: Schneiderei bis 95"],
+  ["Wildstahlblume","Kraut",8,1,0,0,"here","Wächst hier · Grel: Verzauberkunst über Seltsamer Staub"],
+  ["Wollstoff","Stoff",40,0,0,6,"need","Ab Stufe 20 · Brachland Süd, Steinkrallen"],
+  ["Grobes Garn","Händler",12,0,0,12,"done","Grel kauft beim Händler (Orgrimmar)"]
+];
+const tabsDef = [["zs","📖","Leitfaden"],["field","⛏","Unterwegs"],["prof","✂","Berufe"],["team","☰","Team"]];
+let persp="main", tab="zs";
+
+function skills(list){return list.map(s=>`<div class="skill"><span>${s[0]}</span><div class="bar"><i style="width:${s[1]/s[2]*100}%"></i></div><b>${s[1]} / ${s[2]}</b></div>`).join("")}
+function charCard(name,role,portrait,line,sk,you){return `<div class="card ${you?"hl":""}"><div class="char"><div class="portrait">${portrait}</div><div class="who">
+  <div class="name">${name}${you?'<span class="you">DU</span>':''}</div><div class="role">${role} · ${line}</div>${skills(sk)}</div></div></div>`}
+function needRows(){
+  return NEED.map(n=>{
+    const [item,ic,need,bag,mail,twink,src,sub]=n, have=bag+mail+twink, pct=x=>Math.min(100,x/need*100);
+    const pill={here:'<span class="pill p-here">hier sammelbar</span>',need:'<span class="pill p-need">woanders</span>',done:'<span class="pill p-done">Händler</span>'}[src];
+    const done=have>=need;
+    return `<div class="row"><div class="ic">${ic}</div><div class="t"><span>${item} ${pill}</span><small>${sub}</small>
+      <div class="bar" style="margin-top:4px"><i class="${done?"ok":""}" style="width:${pct(have)}%"></i><i class="m" style="left:${pct(twink)}%;width:${pct(mail)}%"></i></div></div>
+      <div style="width:84px;text-align:right"><b class="${done?"green":""}">${have} / ${need}</b><br><small class="dim">${persp==="main"?(bag?"+"+bag+" in Taschen":""):(mail?mail+" in der Post":"")}</small></div></div>`}).join("");
+}
+function viewZs(){
+  const p=P[persp];
+  return `<div class="col" style="flex:1">
+    <div class="duo">${charCard(p.me,p.meRole,p.mePortrait,p.meLine,p.meSkills,true)}
+      <div class="flow"><div class="chip">${p.flow[0][0]}</div><small class="dim">${p.flow[0][1]}</small><div class="arrow"></div><div class="chip">${p.flow[1][0]}</div><small class="dim">${p.flow[1][1]}</small></div>
+      ${charCard(p.other,p.otherRole,p.otherPortrait,p.otherLine,p.otherSkills,false)}</div>
+    <div style="display:flex;gap:12px;flex:1;min-height:0">
+      <div class="card" style="flex:1.35">
+        <h3>Gemeinsame Sammelliste <small>${persp==="main"?"was Grel für Schneiderei 81 → 95 und Verzauberkunst 60 → 75 braucht":"was dir fehlt und wer es besorgt"}</small></h3>
+        ${needRows()}
+        <div class="legend"><span><span class="pill p-here">hier sammelbar</span> in dieser Zone für ${persp==="main"?"dich":"Cupedos"}</span><span>Balken: <span style="color:#e2b45a">■</span> vorhanden <span class="blue">■</span> in der Post</span>
+        <span style="margin-left:auto" class="gold">${persp==="main"?"Deine Beute heute: +11 Skillpunkte für Grel":"Unterwegs zu dir: +11 Skillpunkte"}</span></div>
+      </div>
+      <div class="col" style="width:330px">
+        <div class="card hl"><div class="kicker">${p.step.kicker}</div>
+          <div class="step" style="margin-top:6px"><div class="ic big q2">${p.step.icon}</div><div class="t"><b>${p.step.title}</b><small style="white-space:normal">${p.step.detail}</small></div></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn">${p.step.btn}</button></div></div>
+        <div class="card" style="flex:1"><h3>Danach</h3>${p.next.map(n=>`<div class="row"><span class="pill p-done" style="width:66px;text-align:center">${n[0]}</span><div class="t"><span>${n[1]}</span><small>${n[2]}</small></div></div>`).join("")}</div>
+      </div>
+    </div></div>`;
+}
+function cell(name,ic,price,color,forTwink){return `<div class="cell"><div class="ic">${ic}</div><span>${name}</span><div class="sk" style="background:var(--${color})"></div><small class="dim">${price}</small>${forTwink?'<div class="for" title="Grel braucht das"></div>':''}</div>`}
+function viewField(){
+  return `<div class="col" style="flex:1">
+    <div class="card hl" style="display:flex;align-items:center;gap:12px"><div class="t"><b style="font:600 16px Georgia">Brachland</b><small>Stufe 10–25 · passt zu deiner Stufe 24 · 3 Dinge davon braucht Grel</small></div>
+      <button class="btn ghost sm">Weltkarte</button><button class="btn sm">Aktuelle Zone</button></div>
+    <div style="display:flex;gap:12px;flex:1">
+      <div class="card" style="flex:1"><h3>Hier für dich <small>● = braucht Grel</small></h3>
+        <div class="kicker" style="margin:4px 0">Kräuterkunde 112</div>
+        <div class="grid">${cell("Wildstahlblume","Kraut","18s","yellow",1)+cell("Würgetang","Kraut","9s","green",0)+cell("Königsblut","Kraut","24s","orange",0)+cell("Friedensblume","Kraut","3s","grey",0)}</div>
+        <div class="kicker" style="margin:10px 0 4px">Bergbau 98</div>
+        <div class="grid">${cell("Zinnerz","Erz","35s","yellow",0)+cell("Kupfererz","Erz","8s","grey",0)+cell("Silbererz","Erz","70s","orange",0)}</div>
+        <div class="kicker" style="margin:10px 0 4px">Von Mobs</div>
+        <div class="grid">${cell("Leinenstoff","Stoff","4s","green",1)+cell("Wollstoff","Stoff","11s","green",1)+cell("Grobes Leder","Leder","6s","green",0)}</div>
+        <div class="legend"><span style="color:var(--orange)">▬</span> orange <span style="color:var(--yellow)">▬</span> gelb <span style="color:var(--green)">▬</span> grün <span style="color:var(--grey)">▬</span> grau – Skill-Farben wie im Spiel</div>
+      </div>
+      <div class="col" style="width:300px"><div class="card"><h3>Beste Zonen zum Leveln</h3>
+        <div class="row"><div class="t"><span>Kräuterkunde → Steinkrallen</span><small>Würgetang, Königsblut · 11 Fundorte</small></div></div>
+        <div class="row"><div class="t"><span>Bergbau → Steinkrallen</span><small>Zinn, Silber · 8 Fundorte</small></div></div></div>
+        <div class="card"><h3>Nächste Zonen im Guide</h3><div class="row"><div class="t"><span>Steinkrallengebirge</span><small>RestedXP · danach Eschental</small></div></div></div></div>
+    </div></div>`;
+}
+function viewOther(t){return `<div class="card" style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--dim)">${t}</div>`}
+function render(){
+  const p=P[persp];
+  document.getElementById("sub").textContent=p.sub;
+  document.getElementById("tabs").innerHTML=tabsDef.map(t=>`<div class="tab ${t[0]===tab?"on":""}" data-k="${t[0]}"><i>${t[1]}</i>${t[2]}${t[0]==="zs"?' <span class="badge">1</span>':''}</div>`).join("");
+  document.querySelectorAll(".tab").forEach(e=>e.onclick=()=>{tab=e.dataset.k;render()});
+  document.getElementById("view").innerHTML = tab==="zs"?viewZs(): tab==="field"?viewField():
+    tab==="prof"?viewOther("Berufe: gleicher Stil – Skill-Plan als Kartenliste, „Zum Rezept“ und „Herstellen ×N“ je Zeile, Lehrer-Hinweise oben.")
+    :viewOther("Team: Charakterkarten mit Rolle (Auswahlfeld), Berufe, letzter Stand; Selbsttest und Einstellungen.");
+  const w=document.getElementById("world");
+  w.innerHTML = `<span class="lbl">Spielwelt (${persp==="main"?"Brachland":"Orgrimmar"})</span><div class="minimap"></div>
+    <div class="hud"><span>${persp==="main"?"Für Grel: <b class='gold'>14</b> Items · 3g 42s":"Post von Cupedos: <b class='gold'>26</b> Items"}</span><span class="dim">|</span><span>Sitzung <span class="green">+1g 18s</span></span></div>`
+    + (persp==="main" ? `<div class="toast">+3 Leinenstoff für Grel <span class="gold">· 35 / 60</span><small>reicht Grel für +2 Skillpunkte Schneiderei</small></div>
+    <div class="tracker"><div class="th">⚭ Sammelauftrag für Grel<span class="sp"></span><span class="dim">–</span></div>
+      ${NEED.slice(0,3).map(n=>{const have=n[3]+n[4]+n[5];return `<div class="trow"><div class="ic" style="width:22px;height:22px;font-size:8px">${n[1]}</div><div class="t"><span>${n[0]} <b style="float:right">${have}/${n[2]}</b></span><div class="bar"><i style="width:${have/n[2]*100}%"></i></div></div></div>`}).join("")}
+      <div class="foot"><span>Hier: Wildstahlblume, Leinenstoff</span><span class="gold">+11 Skill</span></div></div>`
+    : `<div class="tracker"><div class="th">⚭ Für dich unterwegs<span class="sp"></span><span class="dim">–</span></div>
+      <div class="trow"><div class="ic" style="width:22px;height:22px;font-size:8px">Post</div><div class="t"><span>1 Mail von Cupedos</span><small class="dim">26 Items · Briefkasten am Tor</small></div></div>
+      <div class="trow"><div class="ic" style="width:22px;height:22px;font-size:8px">Gürtel</div><div class="t"><span>Leinengürtel ×6 herstellen</span><small class="dim">Schneiderei 81 → 87</small></div></div>
+      <div class="foot"><span>Stand von Cupedos: vor 2 Std.</span><span class="gold">+11 Skill</span></div></div>`);
+}
+document.getElementById("pMain").onclick=()=>{persp="main";pMain.classList.add("on");pTwink.classList.remove("on");render()};
+document.getElementById("pTwink").onclick=()=>{persp="twink";pTwink.classList.add("on");pMain.classList.remove("on");render()};
+render();
 </script>
 </body>
 </html>

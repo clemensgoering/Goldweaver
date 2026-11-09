@@ -13,11 +13,7 @@ local function create()
   card:SetSize(440, 120)
   card:SetPoint("CENTER", UIParent, "CENTER", 0, 160)
   card:SetFrameStrata("DIALOG")
-  if card.SetBackdrop then
-    card:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 12, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
-    card:SetBackdropColor(0.05, 0.05, 0.05, 0.92)
-    card:SetBackdropBorderColor(0.83, 0.66, 0.31, 1)
-  end
+  ns.UI.Skin(card, "hl")
   local title = ns.UI.Header(card, L["Goldweaver: What does this character do?"])
   title:SetPoint("TOPLEFT", 14, -12)
   local hint = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")

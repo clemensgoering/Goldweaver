@@ -75,7 +75,9 @@ local function newClient(opts)
     "SetBackdropBorderColor", "SetTexCoord", "SetVertexColor", "SetJustifyH", "SetJustifyV", "SetWordWrap", "SetMinMaxValues",
     "SetStatusBarTexture", "SetStatusBarColor", "SetFontObject", "SetHighlightTexture", "SetNormalFontObject", "SetMultiLine",
     "SetAutoFocus", "SetFocus", "ClearFocus", "HighlightText", "SetScrollChild", "SetDrawLayer", "SetOwner", "SetColorTexture",
-    "SetTextColor", "SetParent", "SetID" }) do m(n, noop) end
+    "SetTextColor", "SetParent", "SetID", "SetHighlightFontObject", "SetDisabledFontObject", "SetPushedTextOffset",
+    "SetHitRectInsets", "SetDesaturated" }) do m(n, noop) end
+  m("SetFontString", function(self, fs) self._fs = fs end)
   m("SetSize", function(self, w, h) self._w, self._h = w, h end)
   m("SetWidth", function(self, w) self._w = w end)
   m("SetHeight", function(self, h) self._h = h end)

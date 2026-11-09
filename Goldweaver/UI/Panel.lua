@@ -29,10 +29,7 @@ local function create()
   end
   frame:SetScript("OnDragStart", startMove)
   frame:SetScript("OnDragStop", stopMove)
-  if frame.SetBackdrop then
-    frame:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground", tile = true, tileSize = 16, insets = { left = 0, right = 0, top = 0, bottom = 0 } })
-    frame:SetBackdropColor(0, 0, 0, 0.35)
-  end
+  ns.UI.Skin(frame, "tracker")
   local pos = ns.db.settings.panelPos
   if pos then frame:ClearAllPoints(); frame:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4]) end
 

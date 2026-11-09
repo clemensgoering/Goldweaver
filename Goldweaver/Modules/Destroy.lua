@@ -61,11 +61,7 @@ local function createFrame()
   frame:SetScript("OnDragStart", frame.StartMoving)
   frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
   frame:SetClampedToScreen(true)
-  if frame.SetBackdrop then
-    frame:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 12, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
-    frame:SetBackdropColor(0.05, 0.05, 0.05, 0.85)
-    frame:SetBackdropBorderColor(0.5, 0.42, 0.25, 0.9)
-  end
+  ns.UI.Skin(frame, "hl")
   title = ns.UI.Header(frame, L["DISENCHANT"])
   title:SetPoint("TOPLEFT", 10, -8)
   local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
