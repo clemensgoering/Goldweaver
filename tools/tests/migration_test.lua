@@ -26,7 +26,7 @@ eq(type(old.checks), "table", "checks table added")
 
 -- backup written before migrating
 eq(ns.DB.HasBackup(), true, "backup exists")
-eq(GoldweaverBackupDB.reason, "migration 1 -> 2", "backup reason")
+eq(GoldweaverBackupDB.reason, "migration 1 -> 3", "backup reason")
 eq(GoldweaverBackupDB.data.version, 1, "backup holds the pre-migration state")
 eq(GoldweaverBackupDB.data.chars["Cupedos-Grel"].role, "main", "backup is a deep copy with data")
 GoldweaverBackupDB.data.chars["Cupedos-Grel"].role = "bank"
@@ -62,4 +62,20 @@ eq(ok, true, "restore ok")
 eq(ns.db.settings.favorValueCopper, 777, "restored value")
 eq(ns.db == GoldweaverDB, true, "ns.db points at the live table after restore")
 ns.db.settings.favorValueCopper = 500
+GoldweaverBackupDB = nil
+
+-- migration 3 removes machine-made false positives only
+local v2 = { schema = 2, settings = { autoReadProfessions = false, favorValueCopper = 300 },
+  learned = { crates = { [247786] = { name = "Magiepartikel", lines = {}, bundles = {} }, [5001] = { favor = 10, bundles = { { qty = 20 } } } } },
+  checks = { f7crate = { status = "pass", detail = "Magiepartikel: 0 Bündelzeilen, Favor ?" }, load = { status = "fail" }, tooltip = { status = "pass" } } }
+GoldweaverBackupDB = nil
+ns.DB.Prepare(v2)
+eq(v2.learned.crates[247786], nil, "false crate removed")
+eq(v2.learned.crates[5001].favor, 10, "real crate kept")
+eq(v2.checks.f7crate, nil, "false F7 pass reset")
+eq(v2.checks.load, nil, "red load check reset")
+eq(v2.checks.tooltip.status, "pass", "other checks kept")
+eq(v2.settings.favorValueCopper, 300, "settings kept")
+eq(v2.settings.autoReadProfessions, nil, "background reading off by default")
+eq(GoldweaverBackupDB.reason, "migration 2 -> 3", "backup before migration 3")
 GoldweaverBackupDB = nil

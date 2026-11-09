@@ -182,11 +182,13 @@ function Adapter.Open(skillLine)
 end
 
 -- Skill lines of this character that have no cached book yet (crafting/secondary only; gathering has no recipes to plan).
+local NO_RECIPES = { [182] = true, [393] = true, [356] = true } -- herbalism, skinning, fishing
 function Adapter.MissingBooks(rec)
   rec = rec or ns.Chars.Current()
   local out = {}
   for skillLine, p in pairs(rec and rec.professions or {}) do
-    if not p.former and not Adapter.Book(skillLine) then out[#out + 1] = { skillLine = skillLine, name = p.name } end
+    -- no book yet, or a book but this character's learned recipes were never recorded
+    if not p.former and not NO_RECIPES[skillLine] and (not Adapter.Book(skillLine) or not p.learned) then out[#out + 1] = { skillLine = skillLine, name = p.name } end
   end
   table.sort(out, function(a, b) return (a.name or "") < (b.name or "") end)
   return out

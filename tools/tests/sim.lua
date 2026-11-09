@@ -255,6 +255,7 @@ local function newClient(opts)
   end
   env.C_TradeSkillUI = {
     OpenTradeSkill = function(line)
+      if opts.blockOpen then env.C_Timer.After(0, function() env._fire("ADDON_ACTION_BLOCKED", "Goldweaver", "C_TradeSkillUI.OpenTradeSkill()") end) return end
       open = line
       env.ProfessionsFrame._shown = true
       env.C_Timer.After(0.1, function() env._fire("TRADE_SKILL_SHOW"); env._fire("TRADE_SKILL_LIST_UPDATE") end)
@@ -449,7 +450,10 @@ local function session(label, opts, savedDB)
   local count = 0
   local function s(name, fn) count = count + 1; step(label .. " / " .. name, fn) end
 
-  s("ADDON_LOADED", function() env._fire("ADDON_LOADED", "Goldweaver") end)
+  s("ADDON_LOADED", function()
+    env._fire("ADDON_LOADED", "Goldweaver")
+    if opts.blockOpen then ns.db.settings.autoReadProfessions = true; ns.db.learned.autoReadBlocked = nil end
+  end)
   s("PLAYER_LOGIN + 40 s autopilot", function() env._fire("PLAYER_LOGIN"); env._advance(40) end)
   s("bags and zone", function() env._fire("BAG_UPDATE_DELAYED"); env._fire("ZONE_CHANGED_NEW_AREA"); env._advance(3) end)
   s("tooltips", function()
@@ -534,6 +538,9 @@ local function session(label, opts, savedDB)
     local h = ns.Autopilot.QuickHealth()
     if h.red > 0 then fail(label .. ": self test red: " .. table.concat(h.rows, "; ")) end
   end)
+  s("blocked background reading", function()
+    if opts.blockOpen and not ns.db.learned.autoReadBlocked then fail(label .. ": blocked reading not remembered") end
+  end)
   s("logout/login keeps data", function()
     local before = 0
     for _ in pairs(ns.db.chars) do before = before + 1 end
@@ -558,7 +565,7 @@ for _, mode in ipairs({ { name = "modern", minimal = false }, { name = "minimal"
   -- main logs in first (fresh install), then the twink with RestedXP, then the main again on a new patch
   local db = session(mode.name .. " · Main, Neuinstallation", { minimal = mode.minimal, char = MAIN }, nil)
   db = session(mode.name .. " · Bank, RestedXP aktiv", { minimal = mode.minimal, char = BANK, rxp = true, mapID = 1454 }, deepCopy(db))
-  session(mode.name .. " · Main, neuer Patch", { minimal = mode.minimal, char = MAIN, interface = 16002,
+  session(mode.name .. " · Main, neuer Patch, Spiel blockiert", { minimal = mode.minimal, char = MAIN, interface = 16002, blockOpen = true,
     unknownEvents = { AUCTION_HOUSE_BROWSE_RESULTS_UPDATED = true } }, deepCopy(db))
 end
 

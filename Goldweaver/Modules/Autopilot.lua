@@ -103,7 +103,14 @@ function Autopilot.ReadNext()
   C_Timer.After(6, function() if reading and reading.skillLine == skillLine then finishRead(false) end end)
 end
 
+-- Forever blocks opening a profession without a hardware click (ADDON_ACTION_BLOCKED, verified 09.11.2026).
+-- Background reading is therefore opt-in and never retried once the client blocked it; by default books are read
+-- when the player opens a profession or clicks "Rezepte laden" in the guide.
 function Autopilot.StartReading()
+  if ns.db.settings.autoReadProfessions ~= true or ns.db.learned.autoReadBlocked then
+    if ns.Checks then ns.Checks.Skip("autoRead", "vom Spiel nicht erlaubt; Bücher werden beim Öffnen des Berufs gelesen") end
+    return
+  end
   queue = Autopilot.ReadQueue()
   Autopilot.ReadNext()
 end
@@ -170,16 +177,21 @@ ns:RegisterModule("Autopilot", {
       blocked = true
       Autopilot.status.blocked = true
       if reading then finishRead(false) end
-      ns.Health.Record("Autopilot", "Aktion vom Client blockiert; Hintergrund-Lesen für diese Sitzung aus")
-      if ns.Checks then ns.Checks.Fail("autoRead", "vom Client blockiert") end
+      -- a known client limit, not a fault: remember it for good and never try again
+      ns.db.learned.autoReadBlocked = true
+      ns.Log("background profession reading blocked by the client; disabled permanently")
+      if ns.Checks then ns.Checks.Skip("autoRead", "vom Spiel nicht erlaubt; Bücher werden beim Öffnen gelesen") end
     end
     ns.Events:On("ADDON_ACTION_BLOCKED", onBlocked, "Autopilot")
     ns.Events:On("ADDON_ACTION_FORBIDDEN", onBlocked, "Autopilot")
   end,
   SelfTest = function()
+    local off = blocked or ns.db.learned.autoReadBlocked or ns.db.settings.autoReadProfessions ~= true
+    local detail = off and "aus (Spiel erlaubt es nicht); Bücher beim Öffnen"
+      or ((Autopilot.status.books or 0) .. " gelesen, " .. #Autopilot.ReadQueue() .. " offen")
     return {
       { name = "Rollen-Automatik", ok = true, detail = Autopilot.status.roles or "nichts zu tun" },
-      { name = "Berufe im Hintergrund", ok = not blocked, detail = blocked and "vom Client blockiert" or ((Autopilot.status.books or 0) .. " gelesen, " .. #Autopilot.ReadQueue() .. " offen") },
+      { name = "Berufe im Hintergrund", ok = true, detail = detail },
     }
   end,
 })

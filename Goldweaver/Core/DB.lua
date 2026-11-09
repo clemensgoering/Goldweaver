@@ -16,7 +16,7 @@
 local ADDON, ns = ...
 
 ns.INTERFACE = 16001
-local SCHEMA = 2
+local SCHEMA = 3
 
 local DEFAULTS = {
   schema = SCHEMA,
@@ -62,6 +62,22 @@ local MIGRATIONS = {
     -- 1 -> 2: "version" became "schema"; nothing else changes here. Character keys and market keys of the first
     -- builds are normalised on login by Chars.Migrate (needs the live realm name).
     db.version = nil
+  end,
+  [3] = function(db)
+    -- 2 -> 3: remove evidence the first detectors produced by mistake (playtest 09.11.2026). Only machine-made
+    -- false positives go; nothing the player entered or collected is touched.
+    local learned = db.learned or {}
+    for itemID, crate in pairs(learned.crates or {}) do
+      if not crate.favor and #(crate.bundles or {}) == 0 then learned.crates[itemID] = nil end
+    end
+    local checks = db.checks or {}
+    if checks.f7crate and tostring(checks.f7crate.detail):find("0 Bündelzeilen, Favor %?") then checks.f7crate = nil end
+    -- the blocked background reading turned these red; they re-evaluate on the next login
+    for _, id in ipairs({ "load", "selftest", "autoRead" }) do
+      if checks[id] and checks[id].status == "fail" then checks[id] = nil end
+    end
+    -- the client blocks background reading: keep it off unless the player enables it on purpose
+    if db.settings and db.settings.autoReadProfessions ~= true then db.settings.autoReadProfessions = nil end
   end,
 }
 
