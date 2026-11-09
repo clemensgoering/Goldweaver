@@ -156,6 +156,12 @@ function Field.Analyze(zoneID, rec)
       end
     end
   end
+  -- only what this character can actually gather (user decision 09.11.2026); the rest is counted, not listed
+  local relevant, hidden = {}, 0
+  for _, r in ipairs(report.gather) do
+    if r.hasProfession then relevant[#relevant + 1] = r else hidden = hidden + 1 end
+  end
+  report.gather, report.hidden = relevant, hidden
   sortRows(report.gather)
 
   -- mobs: cloth from humanoids and leather from beasts at the zone's level range
@@ -166,7 +172,9 @@ function Field.Analyze(zoneID, rec)
     local skin = skillOf(rec, G.SKINNING)
     report.mobs = {
       cloth = cloth, clothDemand = cloth and ns.Demand and ns.Demand.For(cloth), clothPrice = cloth and ns.Price.Copper(cloth),
-      leather = leather, leatherPrice = leather and ns.Price.Copper(leather),
+      -- leather only matters with Skinning; cloth drops for everyone
+      leather = skin and leather or nil, leatherPrice = skin and leather and ns.Price.Copper(leather) or nil,
+      skinColor = skin and G.ColorFor(skin, G.SkinningRequired(z.max)) or nil,
       skinMax = skin and G.SkinningMaxLevel(skin) or nil, skinRequiredTop = G.SkinningRequired(z.max),
       min = z.min, max = z.max,
     }

@@ -41,13 +41,15 @@ ns.Price.Observe(2453, 300, 5, time()) -- Bruiseweed 3s
 local report = ns.Field.Analyze(1413, me) -- The Barrens 10-25
 eq(report.name, "The Barrens", "zone name")
 eq(report.fit, "ok", "level 23 fits 10-25")
-eq(#report.gather, 10, "7 herbs + 3 ores")
+eq(#report.gather, 7, "7 herbs, ores hidden without mining")
+eq(report.hidden, 3, "3 ores hidden")
 local byItem = {}
 for _, r in ipairs(report.gather) do byItem[r.item] = r end
 eq(byItem[2450].color, "orange", "Briarthorn (70) is orange at 80")
 eq(byItem[2453].color, "red", "Bruiseweed (100) too high at 80")
 eq(byItem[2453].price, 300, "price attached")
-eq(byItem[2770].hasProfession, false, "no mining")
+eq(byItem[2770], nil, "copper not listed without mining")
+eq(report.mobs.skinColor, "orange", "level 25 beasts are orange at skinning 142")
 eq(report.gather[1].hasProfession, true, "own profession first")
 eq(report.mobs.cloth, 2592, "wool from humanoids at level 23 in a 10-25 zone")
 eq(report.mobs.skinMax, 28, "skinning reaches level 28")

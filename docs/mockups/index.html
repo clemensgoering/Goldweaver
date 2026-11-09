@@ -55,10 +55,10 @@ p.lead{margin:0 24px 16px;color:#cfc6b0;max-width:900px}
     <div style="position:absolute;right:122px;top:96px;width:28px;height:28px;border-radius:50%;background:#2a1d14;border:2px solid #c8a24a;color:var(--gold);display:flex;align-items:center;justify-content:center">G</div>
     <div style="position:absolute;right:16px;top:150px;width:250px;background:rgba(0,0,0,.4)" id="panel"></div>
     <div style="position:absolute;left:20px;top:40px;width:300px;background:rgba(10,10,30,.94);border:1px solid #6b6b8a;border-radius:4px;padding:8px 10px;line-height:1.5">
-      <div style="font-size:14px">Wilddornrose</div><div>Handwerkswaren</div><div style="color:#ccc">Verkaufspreis: 5c</div><br>
-      <div style="color:#d4a94e">Goldweaver: an Cupedos schicken → AH ≈ 18s</div>
-      <div style="color:var(--gold)">&nbsp; Gefragt: Cupedos braucht 12 (Heiltrank)</div>
-      <div style="color:#999">&nbsp; Bestand: Taschen 6 · Bank 0 · Cupedos 4</div>
+      <div style="font-size:14px">Mittleres Leder</div><div>Handwerkswaren</div><div style="color:#ccc">Verkaufspreis: 15c</div><br>
+      <div style="color:#d4a94e">Goldweaver: Behalten → Leichte Lederhose (Skill-up)</div>
+      <div style="color:var(--gold)">&nbsp; Gefragt: du brauchst 8 (Lederverarbeitung 81)</div>
+      <div style="color:#999">&nbsp; Bestand: Taschen 6 · Bank 0 · Cupedos 0</div>
       <div style="color:#777">&nbsp; Shift: alle Optionen</div>
     </div>
     <span class="cap" style="position:absolute;left:20px;top:226px">Tooltip</span>
@@ -72,60 +72,72 @@ p.lead{margin:0 24px 16px;color:#cfc6b0;max-width:900px}
 </div>
 
 <script>
-const tile=(tag,bg,border,size)=>`<div class="ic" style="width:${size||28}px;height:${size||28}px;background:${bg};border-color:${border||'#9d9d9d'}">${tag}</div>`;
-const row=(r)=>`<div class="row">${tile(r.tag,r.bg,r.border,r.size)}<div class="t"><span style="color:${r.color||'#fff'}">${r.name}</span><small>${r.sub||''}</small></div>${r.right?`<span style="font-size:11px;color:${r.rc||'#fff'}">${r.right}</span>`:''}${r.btn?`<button class="btn">${r.btn}</button>`:''}</div>`;
+// icons: Wowhead icon CDN, only for internal mockups (the addon uses the game's own textures)
+const IMG=n=>`https://wow.zamimg.com/images/wow/icons/medium/${n}.jpg`;
+const tile=(tag,bg,border,size,icon)=>`<div class="ic" style="width:${size||28}px;height:${size||28}px;background:${bg};border-color:${border||'#9d9d9d'};position:relative">${tag}${icon?`<img src="${IMG(icon)}" alt="" style="position:absolute;inset:0;width:100%;height:100%" onerror="this.remove()">`:''}</div>`;
+// compact grid cell (Baganator-style): icon, skill colour bar, demand badge, short label
+const cell=(c)=>`<div style="width:62px;display:flex;flex-direction:column;align-items:center;gap:2px" title="${c.name}">
+  <div style="position:relative">${tile(c.tag,c.bg,c.border,40,c.icon)}${c.badge?`<span style="position:absolute;right:-4px;top:-6px;background:#7a1a12;border:1px solid #c8a24a;color:var(--gold);font:700 10px Arial;padding:0 3px">${c.badge}</span>`:''}</div>
+  <div style="width:40px;height:3px;background:${c.skill||'transparent'}"></div>
+  <span style="font-size:10px;text-align:center;line-height:1.1;color:${c.color||'#ddd'}">${c.name}</span><span style="font-size:10px;color:var(--grey)">${c.price||''}</span></div>`;
+const group=(title,meta,cells,empty)=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--gold)">${title}</span><span style="color:var(--grey)">${meta}</span></div><div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:6px">${cells.length?cells.map(cell).join(''):`<small style="color:var(--grey)">${empty}</small>`}</div></div>`;
+const row=(r)=>`<div class="row">${tile(r.tag,r.bg,r.border,r.size,r.icon)}<div class="t"><span style="color:${r.color||'#fff'}">${r.name}</span><small>${r.sub||''}</small></div>${r.right?`<span style="font-size:11px;color:${r.rc||'#fff'}">${r.right}</span>`:''}${r.btn?`<button class="btn">${r.btn}</button>`:''}</div>`;
 const box=(title,inner,style)=>`<div class="box" style="${style||''}"><div class="sec">${title}</div>${inner}</div>`;
 const HERB='#2f5a2a';
 const views={
  guide:{sub:'Cupedos Grel · Main (sammelt) · EU-PvE-Horde', html:`
   <div class="col" style="width:490px">
    <div class="box" style="position:relative;height:104px;background:#1a1408;border-color:#5a4a30;display:flex;gap:12px">
-    ${tile('POST','#3b4a5c','#9d9d9d',52)}
+    ${tile('POST','#3b4a5c','#9d9d9d',52,'inv_letter_15')}
     <div class="t"><span style="font:700 11px Arial;color:var(--gold)">JETZT · SCHRITT 1 VON 5 · POST</span><span style="font:18px Georgia,serif">14 Items an Cupedos Bank schicken</span><span style="color:#e0e0e0">Am nächsten Briefkasten: „Anhängen“, dann „Senden“.</span></div>
     <span style="position:absolute;right:12px;top:14px;color:#66ff66;font-weight:700">≈ 3g 42s</span></div>
    ${box('DANACH',[
-    {tag:'LDR',bg:'#5c4630',name:'2. 8× Leichtes Leder besorgen',sub:'Lederverarbeitung · für Leichte Lederhose ×8',right:'−1g 04s',rc:'#ff9a66',btn:'Im AH suchen'},
-    {tag:'HOS',bg:'#4a3a28',border:'#1eff00',name:'3. Leichte Lederhose ×8 herstellen',sub:'Lederverarbeitung 81 → 89 · ≈ 13s je Punkt',btn:'Zum Beruf'},
-    {tag:'LDR',bg:'#5c4630',name:'4. Mittleres Leder häuten',sub:'Unterwegs · Brachland · Cupedos Bank braucht 8',right:'≈ 18s',rc:'#66ff66',btn:'Unterwegs'},
-    {tag:'GLD',bg:'#5a4a1a',border:'#1eff00',name:'5. Grober Lederumhang herstellen und verkaufen',sub:'+42s je Stück nach AH-Cut',right:'≈ 42s',rc:'#66ff66',btn:'Zum Beruf'}].map(row).join(''),'flex:1')}
+    {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_03',name:'2. 8× Leichtes Leder besorgen',sub:'Lederverarbeitung · für Leichte Lederhose ×8',right:'−1g 04s',rc:'#ff9a66',btn:'Im AH suchen'},
+    {tag:'HOS',icon:'inv_pants_02',bg:'#4a3a28',border:'#1eff00',name:'3. Leichte Lederhose ×8 herstellen',sub:'Lederverarbeitung 81 → 89 · ≈ 13s je Punkt',btn:'Zum Beruf'},
+    {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_05',name:'4. Mittleres Leder häuten',sub:'Unterwegs · Brachland · Cupedos Bank braucht 8',right:'≈ 18s',rc:'#66ff66',btn:'Unterwegs'},
+    {tag:'GLD',icon:'inv_misc_cape_02',bg:'#5a4a1a',border:'#1eff00',name:'5. Grober Lederumhang herstellen und verkaufen',sub:'+42s je Stück nach AH-Cut',right:'≈ 42s',rc:'#66ff66',btn:'Zum Beruf'}].map(row).join(''),'flex:1')}
    <div class="box" style="display:flex;align-items:center;gap:10px"><span style="color:#80ff80">✓ Alles bereit</span><small style="flex:1;color:var(--grey)">Selbstprüfung beim Login · 18 von 32 Funktionen im Spiel bestätigt</small><button class="btn">Bericht</button></div>
   </div>
   <div class="col" style="flex:1">${box('UNTERWEGS · BRACHLAND',`<small style="color:#d0d0d0">Stufe 10–25 · passt zu deinem Level</small>`+[
-    {tag:'LDR',bg:'#5c4630',name:'Mittleres Leder',sub:'Wildtiere häuten',right:'gefragt ×8',rc:'var(--gold)',size:24},
-    {tag:'WOL',bg:'#4a4a5a',name:'Wollstoff',sub:'von Humanoiden',right:'8s',size:24}].map(row).join('')+
+    {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_05',name:'Mittleres Leder',sub:'Wildtiere häuten',right:'gefragt ×8',rc:'var(--gold)',size:24},
+    {tag:'WOL',bg:'#4a4a5a',icon:'inv_fabric_wool_01',name:'Wollstoff',sub:'von Humanoiden',right:'8s',size:24}].map(row).join('')+
     `<div class="sec" style="margin-top:10px">AUF DEINER ROUTE (RestedXP)</div><div>Steinkrallengebirge (15–27)</div><div>Eschental (18–30)</div><div>Tausend Nadeln (25–35)</div>
      <div class="sec" style="margin-top:10px">HEUTE</div><div>Session +1g 18s 40c</div><div>Verkauft 2g 05s (3)</div><div>Gold 14g 22s 31c</div>`,'flex:1')}</div>`},
  field:{sub:'Cupedos Grel · Main (sammelt) · EU-PvE-Horde', html:`
   <div class="col" style="flex:1">
    <div class="box" style="display:flex;align-items:center"><div class="t"><span style="font:18px Georgia,serif;color:var(--gold)">Brachland</span><small style="color:#d0d0d0">Stufe 10–25 · <span style="color:#80ff80">passt zu Level 23</span> · Classic-Daten, ergänzt um deine Funde</small></div><button class="btn">Weltkarte</button></div>
    <div style="display:flex;gap:10px;flex:1">
-    ${box('HIER SAMMELN (10)',[
-     {tag:'WDR',bg:HERB,name:'Wilddornrose',color:'#ff8040',sub:'Kräuterkunde 70 · orange · selbst gesammelt ×6',right:'gefragt ×12',rc:'var(--gold)'},
-     {tag:'MAG',bg:HERB,name:'Maguskönigskraut',color:'#ffff00',sub:'Kräuterkunde 50 · gelb',right:'22s'},
-     {tag:'ERD',bg:HERB,name:'Erdwurzel',color:'#40bf40',sub:'Kräuterkunde 15 · grün',right:'9s'},
-     {tag:'FRI',bg:HERB,name:'Friedensblume',color:'#808080',sub:'Kräuterkunde 1 · grau',right:'4s'},
-     {tag:'BEU',bg:HERB,name:'Beulengras',color:'#ff3333',sub:'Kräuterkunde 100 · Skill zu niedrig',right:'31s'},
-     {tag:'KUP',bg:'#6a4a2a',name:'Kupfererz',color:'#d9d9d9',sub:'braucht Bergbau 1',right:'15s'},
-     {tag:'ZIN',bg:'#6a6a6a',name:'Zinnerz',color:'#d9d9d9',sub:'braucht Bergbau 65',right:'21s'}].map(row).join(''),'width:470px')}
+    ${box('HIER FÜR DICH',
+      group('Kürschnerei 142','Wildtiere Stufe 10–25 · <span style="color:#ff8040">orange</span>',[
+        {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_05',name:'Mittleres Leder',badge:'×8',skill:'#ff8040',price:'18s'},
+        {tag:'BAL',bg:'#5c4630',icon:'inv_misc_pelt_wolf_01',name:'Leichter Balg',skill:'#40bf40',price:'11s'},
+        {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_03',name:'Leichtes Leder',skill:'#808080',price:'4s'}])+
+      group('Angeln 50','—',[],'Noch keine eigenen Fänge hier. Wird gelernt, sobald du hier angelst.')+
+      group('Von Gegnern (alle)','Humanoide Stufe 16–25',[
+        {tag:'WOL',bg:'#4a4a5a',icon:'inv_fabric_wool_01',name:'Wollstoff',price:'8s'}])+
+      group('Für deine Herstellung','Lederverarbeitung 81 · Kochkunst 64',[
+        {tag:'LDR',bg:'#5c4630',icon:'inv_misc_leatherscrap_05',name:'Mittleres Leder',badge:'×8',color:'var(--gold)'},
+        {tag:'FLE',bg:'#6a3a2a',icon:'inv_misc_food_14',name:'Ebenenschreiter-Fleisch',price:'Kochen'}])+
+      '<small style="color:var(--grey)">Ausgeblendet: 7 Kräuter, 3 Erze (kein Kräuterkunde/Bergbau). Gelbe Zahl = vom Verarbeiter gebraucht, Farbbalken = Skill-Farbe.</small>','width:470px')}
     <div class="col" style="flex:1">
-     ${box('GEGNER HIER',[{tag:'WOL',bg:'#4a4a5a',name:'Wollstoff',sub:'Humanoide · Schneiderei/Erste Hilfe',right:'8s'},{tag:'LDR',bg:'#5c4630',name:'Mittleres Leder',sub:'Wildtiere häuten',right:'gefragt ×8',rc:'var(--gold)'}].map(row).join('')+'<small style="color:var(--grey)">Kürschnerei: du häutest bis Level 28 · alles hier möglich</small>')}
-     ${box('BESTE ZONEN FÜR DEINE SKILLS',[{tag:'KÜR',bg:'#5c4630',name:'Eschental',sub:'Kürschnerei · Stufe 18–30',btn:'Ansehen'}].map(row).join(''))}
+     ${box('NÄCHSTE STUFE FÜR KÜRSCHNEREI',[{tag:'SKN',bg:'#5c4630',icon:'inv_misc_pelt_wolf_01',name:'Bis Skill 150 hier orange',sub:'danach Wildtiere ab Stufe 26: Steinkrallengebirge'}].map(row).join(''))}
+     ${box('BESTE ZONEN FÜR DEINE SKILLS',[{tag:'KÜR',bg:'#5c4630',icon:'inv_misc_pelt_wolf_01',name:'Eschental',sub:'Kürschnerei · Stufe 18–30',btn:'Ansehen'},{tag:'ANG',bg:'#2a4a6a',icon:'trade_fishing',name:'Brachland (Küste)',sub:'Angeln · noch keine eigenen Fänge',btn:'Ansehen'}].map(row).join(''))}
      ${box('RESTEDXP: 23-25 BRACHLAND',[{tag:'MAP',bg:'#3b4a5c',name:'Steinkrallengebirge',sub:'Stufe 15–27 · ab Schritt 41',btn:'Ansehen'},{tag:'MAP',bg:'#3b4a5c',name:'Eschental',sub:'Stufe 18–30 · ab Schritt 58',btn:'Ansehen'}].map(row).join(''),'flex:1')}
     </div></div></div>`},
  prof:{sub:'Cupedos Bank · Verarbeiter · EU-PvE-Horde', html:`
   ${box('DEINE BERUFE',`
-   <div class="row" style="background:rgba(255,209,0,.12)">${tile('SCH','#5a3a5a','#9d9d9d',30)}<div class="t"><span style="color:var(--gold)">Schneiderei</span><div class="bar"><i style="width:71%"></i><span>53 / 75</span></div></div></div>
-   <div class="row">${tile('VZK','#3a3a7a','#9d9d9d',30)}<div class="t"><span style="color:var(--gold)">Verzauberkunst</span><div class="bar"><i style="width:33%"></i><span>25 / 75</span></div></div></div>
+   <div class="row" style="background:rgba(255,209,0,.12)">${tile('SCH','#5a3a5a','#9d9d9d',30,'trade_tailoring')}<div class="t"><span style="color:var(--gold)">Schneiderei</span><div class="bar"><i style="width:71%"></i><span>53 / 75</span></div></div></div>
+   <div class="row">${tile('VZK','#3a3a7a','#9d9d9d',30,'trade_engraving')}<div class="t"><span style="color:var(--gold)">Verzauberkunst</span><div class="bar"><i style="width:33%"></i><span>25 / 75</span></div></div></div>
    <div style="height:300px"></div><button class="btn big" style="width:100%">Welcher Beruf lohnt sich?</button>`,'width:196px')}
   <div class="col" style="flex:1;min-width:0">
    ${box('STATUS · SCHNEIDEREI 53 / 75',`<div style="display:flex"><div class="t"><span>Lehrling → Geselle ab Skill 50, Level 10 · <span style="color:#ff9a66">noch 4 Level</span></span><small>Nächster Rang bei: Magar (Orgrimmar) · selbst gesehen</small><small>Rezepte: 24 von 471 gelernt · gelesen vor 3 min (automatisch)</small></div><button class="btn">Rezepte aktualisieren</button></div>`)}
    ${box('NÄCHSTER SKILL-UP',[
-    {tag:'TAS',bg:'#4a3a5a',border:'#1eff00',size:34,name:'Leinentasche ×8',sub:'Skill-up 100 % · grau in 8 Punkten · Material 64c je Stück',right:'≈ 64c je Punkt',rc:'var(--gold)',btn:'Herstellen ×8'},
-    {tag:'BLZ',bg:'#4a4a5a',name:'Bolzen aus Leinenstoff',sub:'brauche 8 · Taschen 2 · Bank 0 · Twinks 0',right:'fehlen 6 · 72c',rc:'#ff9a66',btn:'Im AH suchen'},
+    {tag:'TAS',icon:'inv_misc_bag_10',bg:'#4a3a5a',border:'#1eff00',size:34,name:'Leinentasche ×8',sub:'Skill-up 100 % · grau in 8 Punkten · Material 64c je Stück',right:'≈ 64c je Punkt',rc:'var(--gold)',btn:'Herstellen ×8'},
+    {tag:'BLZ',bg:'#4a4a5a',icon:'inv_fabric_linen_02',name:'Bolzen aus Leinenstoff',sub:'brauche 8 · Taschen 2 · Bank 0 · Twinks 0',right:'fehlen 6 · 72c',rc:'#ff9a66',btn:'Im AH suchen'},
     {tag:'GAR',bg:'#6a6a6a',name:'Grobes Garn',sub:'brauche 8 · Taschen 10',right:'vorhanden',rc:'#80ff80'}].map(row).join('')+'<small style="color:var(--grey)">Alternativen: Leinenstiefel (1s 10c/Pkt) · Bolzen aus Leinenstoff (1s 30c/Pkt)</small>')}
    <div style="display:flex;gap:8px;flex:1">
-    ${box('LOHNT SICH',[{tag:'BTL',bg:'#4a3a5a',border:'#1eff00',name:'Leinenbeutel',sub:'48s → 60s 40c',right:'+12s 40c',rc:'#66ff66'},{tag:'BLZ',bg:'#4a4a5a',name:'Bolzen aus Leinenstoff',sub:'8s → 12s 30c',right:'+4s 30c',rc:'#66ff66'}].map(row).join(''),'flex:1')}
-    ${box('NOCH NICHT GELERNT (447)',[{tag:'UMH',bg:'#4a3a5a',border:'#1eff00',name:'Wollener Umhang',color:'#ccffcc',sub:'Lehrer Magar (Orgrimmar) ab Skill 75'},{tag:'ROB',bg:'#4a3a5a',border:'#0070dd',name:'Robe der Macht',sub:'Quelle noch unbekannt'}].map(row).join(''),'flex:1')}
+    ${box('LOHNT SICH',[{tag:'BTL',icon:'inv_misc_bag_09',bg:'#4a3a5a',border:'#1eff00',name:'Leinenbeutel',sub:'48s → 60s 40c',right:'+12s 40c',rc:'#66ff66'},{tag:'BLZ',bg:'#4a4a5a',name:'Bolzen aus Leinenstoff',sub:'8s → 12s 30c',right:'+4s 30c',rc:'#66ff66'}].map(row).join(''),'flex:1')}
+    ${box('NOCH NICHT GELERNT (447)',[{tag:'UMH',icon:'inv_misc_cape_02',bg:'#4a3a5a',border:'#1eff00',name:'Wollener Umhang',color:'#ccffcc',sub:'Lehrer Magar (Orgrimmar) ab Skill 75'},{tag:'ROB',icon:'inv_chest_cloth_08',bg:'#4a3a5a',border:'#0070dd',name:'Robe der Macht',sub:'Quelle noch unbekannt'}].map(row).join(''),'flex:1')}
    </div></div>`},
  team:{sub:'Cupedos Bank · Verarbeiter · EU-PvE-Horde', html:`
   <div class="col" style="flex:1">

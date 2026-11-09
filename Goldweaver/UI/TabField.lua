@@ -94,7 +94,7 @@ UI.RegisterTab("field", "Unterwegs", function(frame)
     end
     if #rows == 0 then rows[1] = { icon = "Interface\\Icons\\INV_Misc_Map_01", text = "Keine Kräuter oder Erze bekannt", sub = "Sammle etwas: die Zone wird gelernt.", color = { 0.7, 0.7, 0.7 } } end
     gatherRows:Set(rows)
-    leftTitle:SetText(("HIER SAMMELN (%d)"):format(#report.gather))
+    leftTitle:SetText(report.hidden > 0 and ("HIER SAMMELN (%d) · %d ohne passenden Beruf ausgeblendet"):format(#report.gather, report.hidden) or ("HIER SAMMELN (%d)"):format(#report.gather))
 
     local m = report.mobs
     if m then
