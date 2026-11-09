@@ -221,11 +221,9 @@ end
 
 local function createButton()
   if sendButton or not MailFrame then return end
-  sendButton = ns.UI.Button(MailFrame, "", 300, onSendClick)
-  sendButton:SetPoint("TOP", MailFrame, "BOTTOM", 0, -4)
-  sendButton:SetFrameStrata("HIGH")
-  local width = MailFrame:GetWidth()
-  if width and width > 100 then sendButton:SetWidth(width - 40) end
+  -- beside the mail frame (top right, outside): never covers the Inbox/Send tabs or the frame's own buttons
+  sendButton = ns.UI.Button(MailFrame, "", 230, onSendClick)
+  sendButton:SetPoint("TOPLEFT", MailFrame, "TOPRIGHT", 4, -30)
 end
 
 ns:RegisterModule("Mail", {
