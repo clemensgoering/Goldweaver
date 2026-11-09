@@ -266,6 +266,19 @@ function Learn.TrainerFor(skillLine, reqSkill)
   return nil
 end
 
+-- Trainer we met who teaches the rank with this skill requirement: npcName, contact {zone, mapID, x, y} or nil.
+function Learn.TrainerContact(skillLine, reqSkill)
+  local l = L()
+  for npc, t in pairs(l.trainers or {}) do
+    if t.skillLine == skillLine then
+      for _, r in ipairs(t.ranks or {}) do
+        if r.skillReq == reqSkill then return npc, ns.db.contacts and ns.db.contacts[npc], r end
+      end
+    end
+  end
+  return nil
+end
+
 -- Summary rows for the debug report
 function Learn.Status()
   local l = L()

@@ -35,19 +35,30 @@ Data\Disenchant.lua
 Data\Crates.lua
 Data\VendorReagents.lua
 Data\Conversions.lua
+Data\Gathering.lua
+Data\Zones.lua
 
 Professions\Registry.lua
 Professions\Adapter.lua
 Professions\Tailoring.lua
 Professions\Enchanting.lua
 
+# UI: kit first, tabs in display order (Leitfaden, Unterwegs, Berufe, Team)
 UI\Kit.lua
-UI\MainWindow.lua
+UI\TabGuide.lua
+UI\TabField.lua
+UI\TabProfessions.lua
+UI\TabTeam.lua
+UI\Settings.lua
+UI\Panel.lua
 UI\Tooltip.lua
 UI\Minimap.lua
 
 Modules\Checks.lua
 Modules\Learn.lua
+Modules\Demand.lua
+Modules\Field.lua
+Modules\Autopilot.lua
 Modules\Advisor.lua
 Modules\HUD.lua
 Modules\Mail.lua

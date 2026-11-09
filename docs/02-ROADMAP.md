@@ -105,6 +105,9 @@ Hinweis: `Auction.lua` wird groß; wenn zwei Sessions parallel arbeiten, in `Auc
 
 ---
 
+## Stand 09.11.2026: drei Stränge umgesetzt
+Siehe `14-UI-FUEHRUNG.md`. Erledigt aus dem Backlog: B4 (Sammel-Sicht, ohne GatherMate2-Import), Teile von B1 (Rezeptquellen aus Besuchen), B10 teilweise (Einstellungen im Blizzard-Menü). Neu offen: B15 GatherMate2-/Questie-Import (lesend), B16 Angeln je Zone, B17 Übersetzung der Zonen-/Stepptexte ins Englische.
+
 ## Automatisierte Auswertung im Spiel (Stand 08.11.2026, spät)
 
 Manuelle Checklisten sind abgeschafft. Was im Spiel beobachtbar ist, prüft und lernt das Addon selbst:

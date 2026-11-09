@@ -103,6 +103,9 @@ D("f10mail", { group = "F", title = "F10 Post-Empfängerformat", hint = "Einmal 
 D("f11skillup", { group = "F", title = "F11 Skill-up-Chancen aus eigenen Crafts (mind. 15)", hint = "Herstellen; das Addon zählt Crafts und Skill-ups je Farbe." })
 D("recipeFields", { group = "F", title = "Rezeptfelder erkannt (Quelle, Anforderungen)", hint = "Ein Berufefenster öffnen." })
 D("trainerRanks", { group = "F", title = "Rang-Anforderungen beim Lehrer gelesen", hint = "Einen Berufslehrer ansprechen." })
+D("autoRead", { group = "B", title = "Berufe automatisch im Hintergrund gelesen", hint = "Läuft beim Login von selbst (außerhalb des Kampfs)." })
+D("fieldZone", { group = "B", title = "Aktuelle Zone erkannt (Unterwegs)", hint = "Läuft von selbst." })
+D("fieldObserve", { group = "B", title = "Sammelfund einer Zone zugeordnet", hint = "Ein Kraut, Erz oder Leder sammeln." })
 D("recipeSources", { group = "B", title = "Mindestens eine Rezeptquelle (Lehrer/Händler) zugeordnet", hint = "Lehrer oder Rezept-Händler besuchen." })
 D("deObserved", { group = "B", title = "Entzauber-Ergebnis geloggt (Kalibrierung)", hint = "Einmal entzaubern." })
 

@@ -86,6 +86,13 @@ function Tooltip.Lines(itemID, quantity, isBound)
     lines[#lines + 1] = { text = "  Shift: alle Optionen", color = { 0.45, 0.45, 0.45 } }
   end
 
+  -- team demand: the processor needs this for its next skill-ups
+  local need = ns.Demand and ns.Demand.For(itemID)
+  if need then
+    local who, why = next(need.by)
+    lines[#lines + 1] = { text = ("  Gefragt: %s braucht %d (%s)"):format((who or "Team"):match("^(%S+)") or "Team", need.qty, tostring(why or "")), color = { 1, 0.82, 0 } }
+  end
+
   -- stock line (Baganator-style alt counts), only when something is beyond the bags
   local total, br = ns.Inventory.Count(itemID, { bank = true, alts = true })
   if total > (br.bags or 0) then

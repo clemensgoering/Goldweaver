@@ -1,64 +1,183 @@
--- Goldweaver: recommendations for the Heute tab (docs/08-UX.md 4.7): at most three, each with a value and an action.
+-- Goldweaver: the guide's step list (docs/08-UX.md 4.7, docs/14-UI-FUEHRUNG.md). Builds an ordered list of concrete
+-- next steps for THIS character, RestedXP-style: one current step with one action button, then the next few.
+--
+-- Public API
+--   ns.Steps.Build(limit?) -> { step }       step = { id, icon?, item?, category, title, detail, value, actionLabel, action }
+--                                            icon = texture path or fileID; item = itemID (item icon + quality border wins)
+--   ns.Dashboard.Recommendations(limit)      compatibility wrapper: { {text, value, action, color} }
+-- Extension point: ns.Steps.RegisterSource(name, priority, fn(add, ctx))  ★  add(step) appends a step.
 local ADDON, ns = ...
 
+local Steps = { sources = {} }
+ns.Steps = Steps
 local Dashboard = {}
 ns.Dashboard = Dashboard
 
--- Returns up to `limit` entries { text, value (copper or nil), action = fn|nil, color = {r,g,b} }
-function Dashboard.Recommendations(limit)
-  limit = limit or 3
-  local out = {}
-  local me = ns.Chars.Current()
-  local unassigned = ns.Chars.Unassigned()
-  if unassigned > 0 then
-    out[#out + 1] = { text = ("%d Charakter(e) ohne Rolle: im Tab Charaktere Main oder Verarbeiter wählen"):format(unassigned), color = { 1, 0.6, 0.2 }, action = function() ns.UI.Open("chars") end }
-  end
+local function itemName(id)
+  if ns.UI and ns.UI.ItemName then return ns.UI.ItemName(id) end
+  return ns.API.ItemName(id) or (ns.Data.ExpectedName(id) or ("Item " .. tostring(id)))
+end
 
-  -- mail
-  if me and me.role == "main" then
-    local count, value, target = ns.Mail.Pending()
-    if count > 0 and target then
-      out[#out + 1] = { text = ("%d Item(s) an %s schicken (Briefkasten: Anhängen, dann Senden)"):format(count, target.firstName or target.name), value = value, color = { 1, 1, 1 } }
-    end
-  end
+local ICON = {
+  roles = "Interface\\Icons\\INV_Misc_GroupNeedMore",
+  mail = "Interface\\Icons\\INV_Letter_15",
+  disenchant = "Interface\\Icons\\INV_Enchant_Disenchant",
+  train = "Interface\\Icons\\INV_Misc_Book_11",
+  book = "Interface\\Icons\\INV_Misc_Book_09",
+  gather = "Interface\\Icons\\INV_Misc_Herb_07",
+  bank = "Interface\\Icons\\INV_Misc_Bag_10_Blue",
+}
+Steps.ICON = ICON
 
-  -- disenchant
-  if ns.Destroy and ns.Destroy.CanDisenchant() then
-    local queue = ns.Destroy.Queue()
-    if #queue > 0 then
-      local gain = 0
-      for _, q in ipairs(queue) do gain = gain + q.gain end
-      out[#out + 1] = { text = ("%d Item(s) entzaubern statt verkaufen"):format(#queue), value = gain, color = { 0.7, 0.5, 1 }, action = function() ns.Destroy.Show() end }
-    end
-  end
+function Steps.RegisterSource(name, priority, fn)
+  Steps.sources[#Steps.sources + 1] = { name = name, priority = priority, fn = fn }
+  table.sort(Steps.sources, function(a, b) return a.priority < b.priority end)
+end
 
-  -- skill-up and profit per profession
-  if me and me.professions then
-    for skillLine, p in pairs(me.professions) do
-      if ns.Adapter.Book(skillLine) then
-        local plan = ns.Planner.Plan(skillLine, me)
-        if plan.best and not (plan.rank and plan.rank.capped) then
-          local missing = 0
-          for _, s in ipairs(plan.shopping or {}) do missing = missing + s.buy end
-          out[#out + 1] = {
-            text = ("%s: %s ×%d herstellen für den nächsten Skill-up%s"):format(p.name or "?", plan.best.recipe.name, plan.crafts or 1, missing > 0 and (", " .. missing .. " Materialien fehlen") or ""),
-            value = plan.shoppingCost and -plan.shoppingCost or nil, color = { 0.6, 0.9, 1 },
-            action = function() ns.UI.Open("berufe"); if ns.UI.SelectProfession then ns.UI.SelectProfession(skillLine) end end,
-          }
-        elseif plan.rank and plan.rank.capped and plan.rank.next then
-          out[#out + 1] = { text = ("%s ist am Limit (%d): nächster Rang %s"):format(p.name or "?", plan.rank.skill, plan.rank.next.name), color = { 1, 0.9, 0.5 },
-            action = function() ns.UI.Open("berufe"); if ns.UI.SelectProfession then ns.UI.SelectProfession(skillLine) end end }
+local function openGuide(skillLine)
+  ns.UI.Open("berufe")
+  if ns.UI.SelectProfession then ns.UI.SelectProfession(skillLine) end
+end
+
+-- 10: setup gaps (roles, books that were never read)
+Steps.RegisterSource("setup", 10, function(add, ctx)
+  if ns.Chars.Unassigned() > 0 then
+    add({ id = "roles", icon = ICON.roles, category = "Einrichtung", title = "Rollen festlegen",
+      detail = ("%d Charakter(e) ohne Rolle. Main sammelt, Verarbeiter stellt her."):format(ns.Chars.Unassigned()),
+      actionLabel = "Team öffnen", action = function() ns.UI.Open("team") end })
+  end
+  for _, missing in ipairs(ns.Adapter.MissingBooks(ctx.me)) do
+    local p = ctx.me.professions[missing.skillLine]
+    add({ id = "book" .. missing.skillLine, icon = p and p.icon or ICON.book, category = "Einrichtung",
+      title = ("%s einlesen"):format(missing.name or "Beruf"),
+      detail = "Einmal öffnen, dann kennt Goldweaver Rezepte, Farben und Materialien.",
+      actionLabel = "Rezepte laden", action = function() ns.Adapter.Open(missing.skillLine) end })
+  end
+end)
+
+-- 20: mail for gatherers
+Steps.RegisterSource("mail", 20, function(add, ctx)
+  if ctx.me.role ~= "main" then return end
+  local count, value, target = ns.Mail.Pending()
+  if count > 0 and target then
+    add({ id = "mail", icon = ICON.mail, category = "Post", value = value,
+      title = ("%d Item(s) an %s schicken"):format(count, target.firstName or target.name),
+      detail = "Am nächsten Briefkasten: 'Anhängen', dann 'Senden'.", })
+  end
+end)
+
+-- 30: disenchant queue for enchanters
+Steps.RegisterSource("disenchant", 30, function(add)
+  if not (ns.Destroy and ns.Destroy.CanDisenchant()) then return end
+  local queue = ns.Destroy.Queue()
+  if #queue == 0 then return end
+  local gain = 0
+  for _, q in ipairs(queue) do gain = gain + q.gain end
+  add({ id = "disenchant", icon = ICON.disenchant, category = "Verarbeiten", value = gain,
+    title = ("%d Item(s) entzaubern"):format(#queue),
+    detail = ("Bringt ≈ %s mehr als Verkaufen."):format(ns.Util.Money(gain)),
+    actionLabel = "Entzaubern", action = function() ns.Destroy.Show() end })
+end)
+
+-- 40: per profession: train the next rank, buy missing reagents, craft the next skill-up
+Steps.RegisterSource("professions", 40, function(add, ctx)
+  for skillLine, p in pairs(ctx.me.professions or {}) do
+    if not p.former and ns.Adapter.Book(skillLine) then
+      local plan = ns.Planner.Plan(skillLine, ctx.me)
+      local rank = plan.rank
+      if rank and rank.next and rank.canTrain then
+        local npc, contact = ns.Learn.TrainerContact(skillLine, rank.next.reqSkill)
+        add({ id = "train" .. skillLine, icon = ICON.train, category = p.name or "Beruf",
+          title = ("%s lernen: %s"):format(rank.next.name, p.name or "?"),
+          detail = rank.trainer and ("Bei " .. rank.trainer) or "Beim Berufslehrer in der Hauptstadt.",
+          actionLabel = contact and contact.x and "Wegpunkt" or nil,
+          action = contact and contact.x and function() ns.Field.SetWaypoint(contact.mapID, contact.x, contact.y, npc) end or nil })
+      end
+      if plan.best and not (rank and rank.capped) then
+        local missing, missingCost, firstMissing = 0, 0, nil
+        for _, s in ipairs(plan.shopping or {}) do
+          if s.buy > 0 then missing = missing + s.buy; missingCost = missingCost + (s.cost or 0); firstMissing = firstMissing or s end
         end
+        local r = plan.best.recipe
+        if firstMissing then
+          add({ id = "buy" .. skillLine, item = firstMissing.item, category = p.name or "Beruf", value = -missingCost,
+            title = ("%d× %s besorgen"):format(firstMissing.buy, itemName(firstMissing.item)),
+            detail = ("Für %s ×%d. Im AH oder beim Händler."):format(r.name, plan.crafts or 1),
+            actionLabel = "Im AH suchen",
+            action = function()
+              if not ns.Auction.SearchFor(firstMissing.item) then ns.Print("Auktionshaus öffnen, dann erneut klicken.") end
+            end })
+        end
+        add({ id = "craft" .. skillLine, icon = r.icon, item = r.outputItemID, category = p.name or "Beruf",
+          title = ("%s ×%d herstellen"):format(r.name, plan.crafts or 1),
+          detail = ("%s %d → %d · ≈ %s je Punkt"):format(p.name or "", p.rank or 0, math.min(p.maxRank or 0, (p.rank or 0) + (plan.crafts or 1)), ns.Util.Money(plan.best.costPerPoint)),
+          actionLabel = "Zum Beruf", action = function() openGuide(skillLine) end })
+      elseif rank and rank.capped and rank.next and not rank.canTrain then
+        add({ id = "cap" .. skillLine, icon = p.icon or ICON.train, category = p.name or "Beruf",
+          title = ("%s am Limit (%d)"):format(p.name or "?", p.rank or 0),
+          detail = ("Nächster Rang %s ab Level %d."):format(rank.next.name, rank.next.reqLevel) })
       end
     end
-    local top = ns.CraftProfit.Top(1)[1]
-    if top and top.margin > 0 then
-      out[#out + 1] = { text = ("Lohnt sich: %s (%s) +%s je Stück"):format(top.recipe.name, top.professionName or "", ns.Util.Money(top.margin)), value = top.margin, color = { 0.6, 1, 0.6 } }
+  end
+end)
+
+-- 50: gather here (current zone) what the team needs or what levels a gathering skill
+Steps.RegisterSource("gather", 50, function(add)
+  local ok, report = pcall(ns.Field.Analyze)
+  if not ok or not report then return end
+  for _, row in ipairs(report.gather) do
+    if row.demand or (row.hasProfession and (row.color == "orange" or row.color == "yellow")) then
+      local who = row.demand and next(row.demand.by) or nil
+      add({ id = "gather", item = row.item, category = "Unterwegs · " .. report.name, value = row.price,
+        title = ("%s sammeln"):format(itemName(row.item)),
+        detail = row.demand and ("%s braucht %d"):format(who or "Team", row.demand.qty) or ("Skill-up-Chance %d %%"):format(math.floor(row.chance * 100)),
+        actionLabel = "Unterwegs", action = function() ns.UI.Open("field") end })
+      return
     end
   end
+end)
 
-  while #out > limit do table.remove(out) end
+-- 60: best profit craft
+Steps.RegisterSource("profit", 60, function(add)
+  local top = ns.CraftProfit.Top(1)[1]
+  if top and top.margin > 0 then
+    add({ id = "profit", icon = top.recipe.icon, item = top.recipe.outputItemID, category = "Gold", value = top.margin,
+      title = ("%s herstellen und verkaufen"):format(top.recipe.name),
+      detail = ("+%s je Stück nach AH-Cut (%s)"):format(ns.Util.Money(top.margin), top.professionName or ""),
+      actionLabel = "Zum Beruf", action = function() openGuide(top.skillLine) end })
+  end
+end)
+
+function Steps.Build(limit)
+  local me = ns.Chars.Current()
+  if not me then return {} end
+  local out, seen = {}, {}
+  local ctx = { me = me }
+  local function add(step)
+    if step.id and seen[step.id] then return end
+    if step.id then seen[step.id] = true end
+    out[#out + 1] = step
+  end
+  for _, src in ipairs(Steps.sources) do
+    local ok, err = pcall(src.fn, add, ctx)
+    if not ok then ns.Health.Record("steps " .. src.name, err) end
+  end
+  if limit then while #out > limit do table.remove(out) end end
   return out
 end
 
-ns:RegisterModule("Dashboard", {})
+-- Compatibility for callers of the first version.
+function Dashboard.Recommendations(limit)
+  local out = {}
+  for _, s in ipairs(Steps.Build(limit)) do
+    out[#out + 1] = { text = s.title .. (s.detail and (" – " .. s.detail) or ""), value = s.value, action = s.action, color = { 1, 1, 1 } }
+  end
+  return out
+end
+
+ns:RegisterModule("Dashboard", {
+  SelfTest = function()
+    local steps = Steps.Build(6)
+    return { { name = "Leitfaden-Schritte", ok = true, detail = #steps .. " Schritt(e): " .. (steps[1] and steps[1].title or "-") } }
+  end,
+})

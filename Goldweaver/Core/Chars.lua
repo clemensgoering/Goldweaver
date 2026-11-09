@@ -150,10 +150,11 @@ function Chars.UpdateProfessions()
   local seen = {}
   for _, idx in ipairs({ GetProfessions() }) do
     if idx then
-      local name, _, rank, maxRank, _, _, skillLine = GetProfessionInfo(idx)
+      local name, icon, rank, maxRank, _, _, skillLine = GetProfessionInfo(idx)
       if not ns.Secret.Any(name, rank, maxRank, skillLine) and skillLine then
         local p = rec.professions[skillLine] or {}
         p.name, p.rank, p.maxRank = name, rank, maxRank
+        if icon and not ns.Secret.IsSecret(icon) then p.icon = icon end
         rec.professions[skillLine] = p
         seen[skillLine] = true
       end
@@ -170,11 +171,14 @@ function Chars.UpdateProfessions()
   end
 end
 
-function Chars.SetRole(name, role)
+-- source = "auto" for the Autopilot's guess; anything else (UI, slash) marks the role as chosen by the player,
+-- which the Autopilot never overrides.
+function Chars.SetRole(name, role, source)
   assert(ROLES[role], "unknown role: " .. tostring(role))
   local rec = ns.db.chars[name]
   if not rec then return false end
   rec.role = role
+  rec.roleSource = source == "auto" and "auto" or "manual"
   Chars.Changed()
   return true
 end

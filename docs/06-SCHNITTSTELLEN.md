@@ -41,6 +41,12 @@ Stand: 08.11.2026 (nach dem Architektur-Durchgang). Jede Session, die eine Schni
 | `ns.Auction` | `Suggest(itemID, qty, duration?) → {unitPrice, market, source, age, deposit, net}`, `SearchFor(itemID)` |
 | `ns.Ledger` | `RecordInvoice(index)`, `Totals(days)`, `TrackGold()`, `GoldDelta(day?)`, `SessionDelta()` |
 | `ns.Dashboard` | `Recommendations(limit) → {{text, value, action, color}}` |
+| `ns.Steps` | `Build(limit) → {{id, icon, item, category, title, detail, value, actionLabel, action}}`, `RegisterSource(name, priority, fn(add, ctx))` ★, `ICON` |
+| `ns.Field` | `CurrentZone() → zoneID, rawMapID, name`, `Analyze(zoneID?, rec?) → report`, `Route()` (RestedXP, lesend), `BestZones(rec?)`, `RecordGather(kind, items, zoneID)`, `SetWaypoint(mapID, x, y, label)` |
+| `ns.Demand` | `Get() → {[itemID] = {qty, by, via}}`, `For(itemID)`, `Invalidate()` |
+| `ns.Autopilot` | `GuessRole(rec, market)`, `ReadQueue(rec?)`, `StartReading()`, `QuickHealth()`, `status` |
+| `ns.Panel` | `Refresh()`, `Toggle()`, `ShouldShow()` |
+| `ns.Settings` | `Open()` |
 | `ns.HUD` | `Refresh()`, `ShouldShow()` |
 | `ns.Onboarding` | `Check()` |
 | `ns.Contacts` | `VendorFor(itemID)`, `Trainers()` |

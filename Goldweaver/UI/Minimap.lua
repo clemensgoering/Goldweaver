@@ -1,5 +1,5 @@
 -- Goldweaver: minimap button with a badge. Left click opens the Goldweaver window, right click opens the
--- Charaktere tab. Drag to move around the minimap (angle saved). No library dependency.
+-- Unterwegs tab. Drag to move around the minimap (angle saved). No library dependency.
 local ADDON, ns = ...
 
 local Minimap_ = {}
@@ -32,15 +32,33 @@ local function onDragUpdate()
   place(angle)
 end
 
-function Minimap_.SetBadge(n)
+local badgeCount, alert = 0, false
+
+local function renderBadge()
   if not badgeText then return end
-  n = tonumber(n) or 0
-  if n > 0 then
-    badgeText:SetText(n > 99 and "99+" or tostring(n))
+  if alert then
+    badgeText:SetText("!")
+    badgeBg:SetColorTexture(0.9, 0.45, 0.1, 0.95)
+    badgeBg:Show(); badgeText:Show()
+  elseif badgeCount > 0 then
+    badgeText:SetText(badgeCount > 99 and "99+" or tostring(badgeCount))
+    badgeBg:SetColorTexture(0.75, 0.15, 0.15, 0.95)
     badgeBg:Show(); badgeText:Show()
   else
     badgeBg:Hide(); badgeText:Hide()
   end
+end
+
+-- Count badge: characters without a role.
+function Minimap_.SetBadge(n)
+  badgeCount = tonumber(n) or 0
+  renderBadge()
+end
+
+-- Alert badge "!" from the login self test (Modules/Autopilot.lua).
+function Minimap_.SetAlert(on)
+  alert = on and true or false
+  renderBadge()
 end
 
 function Minimap_.SetShown(shown)
@@ -52,7 +70,7 @@ local function tooltip(self)
   GameTooltip:SetOwner(self, "ANCHOR_LEFT")
   GameTooltip:AddLine("Goldweaver", 0.83, 0.66, 0.31)
   GameTooltip:AddLine("Linksklick: Fenster öffnen", 1, 1, 1)
-  GameTooltip:AddLine("Rechtsklick: Charaktere und Rollen", 1, 1, 1)
+  GameTooltip:AddLine("Rechtsklick: Unterwegs (diese Zone)", 1, 1, 1)
   GameTooltip:AddLine("Ziehen: Button verschieben", 0.7, 0.7, 0.7)
   local unassigned = ns.Chars and ns.Chars.Unassigned and ns.Chars.Unassigned() or 0
   if unassigned > 0 then
@@ -105,7 +123,7 @@ local function create()
   button:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
   button:SetScript("OnClick", function(_, mouseButton)
     if not (ns.UI and ns.UI.Toggle) then return ns.Print("window not loaded") end
-    if mouseButton == "RightButton" then ns.UI.Open("chars") else ns.UI.Toggle() end
+    if mouseButton == "RightButton" then ns.UI.Open("field") else ns.UI.Toggle() end
   end)
 
   place(angleFromSettings())

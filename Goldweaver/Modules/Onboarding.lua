@@ -21,7 +21,7 @@ local function create()
   title:SetPoint("TOPLEFT", 14, -12)
   local hint = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   hint:SetPoint("TOPLEFT", 14, -34); hint:SetWidth(410); hint:SetJustifyH("LEFT")
-  hint:SetText("Main sammelt unterwegs und schickt Material. Verarbeiter stellt her, entzaubert und verkauft. Später änderbar im Fenster (Tab Charaktere).")
+  hint:SetText("Main sammelt unterwegs und schickt Material. Verarbeiter stellt her, entzaubert und verkauft. Später änderbar im Fenster (Reiter Team).")
   local x = 14
   for _, def in ipairs({ { "main", "Sammelt unterwegs", 140 }, { "processor", "Verarbeitet & verkauft", 150 }, { "bank", "Bank", 60 }, { "none", "Später", 60 } }) do
     local b = ns.UI.Button(card, def[2], def[3], function()

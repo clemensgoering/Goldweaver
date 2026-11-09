@@ -8,7 +8,7 @@ Der Projektordner heißt historisch `Auctionator`; das Addon heißt **Goldweaver
 1. `docs/01-KONZEPT.md` Abschnitte 4 (Module), 5 (Architektur), 7 (offene Fragen)
 2. `docs/02-ROADMAP.md`: eigenes Arbeitspaket (WP) und Dateibesitz
 3. `docs/04-COMPLIANCE.md` Abschnitt 3: Checkliste pro Datei
-3a. `docs/08-UX.md` für alles, was sichtbar ist: zehn Bedienregeln und Mockups sind verbindlich (Tooltip zuerst, Blizzard-Fenster erweitern statt eigene bauen, ein `/gw`-Fenster mit vier Tabs, Knopf = Verb + Objekt + Zahl, jede Zahl mit Quelle und Alter)
+b. `docs/14-UI-FUEHRUNG.md`: Reiter Leitfaden · Unterwegs · Berufe · Team, Schrittkarte mit genau einem Aktionsknopf, Blizzard-Templates nur über `UI.SafeCreate`, Einstellungen im Blizzard-Optionsmenü
 4. `docs/03-RECHERCHE-QUELLEN.md` nur bei Bedarf (Fakten und Vertrauensgrad)
 
 ## Harte Regeln
