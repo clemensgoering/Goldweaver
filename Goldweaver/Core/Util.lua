@@ -28,3 +28,14 @@ function ns.Util.Round(x, digits)
   local m = 10 ^ (digits or 0)
   return math.floor(x * m + 0.5) / m
 end
+
+-- "just now", "12 min ago", "3 h ago", "2 days ago" (translated); nil time = "never".
+function ns.Util.Ago(t)
+  local L = ns.L
+  if not t then return L["never"] end
+  local d = time() - t
+  if d < 90 then return L["just now"] end
+  if d < 3600 then return (L["%d min ago"]):format(math.floor(d / 60)) end
+  if d < 86400 then return (L["%d h ago"]):format(math.floor(d / 3600)) end
+  return (L["%d days ago"]):format(math.floor(d / 86400))
+end

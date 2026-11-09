@@ -10,7 +10,7 @@ local Panel = {}
 ns.Panel = Panel
 
 local WIDTH, ROWS = 250, 5
-local frame, header, collapse, stepRow, rows, routeText
+local frame, header, collapse, stepRow, rows, coopRows, routeText
 local pending = false
 
 local function create()
@@ -65,6 +65,7 @@ local function create()
   frame.holder = holder
   stepRow = ns.UI.IconRows(holder, 1, WIDTH - 8, 0, 36)
   rows = ns.UI.IconRows(holder, ROWS, WIDTH - 8, -38, 26)
+  coopRows = ns.UI.ProgressRows(holder, ROWS - 1, WIDTH - 8, -38, 28)
   routeText = holder:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   routeText:SetJustifyH("LEFT"); routeText:SetWidth(WIDTH - 12); routeText:SetWordWrap(true)
 end
@@ -94,6 +95,34 @@ function Panel.Refresh()
   else
     stepRow:Set({ { icon = "Interface\\Icons\\Achievement_General", text = L["Nothing urgent"], sub = L["Play and gather."], color = { 0.7, 0.7, 0.7 } } })
   end
+
+  -- main with a twink: the gather order (what the twink still needs, gatherable here first) instead of the zone list
+  local view = ns.Coop and ns.Coop.Needs()
+  local me = ns.Chars.Current()
+  if view and me == view.gatherer then
+    local who = view.crafter.firstName or view.crafter.name
+    header.text:SetText((L["Gather for %s · %s"]):format(who, report.name))
+    local data, hereNames = {}, {}
+    for _, r in ipairs(view.rows) do
+      if r.source ~= "vendor" and r.have < r.need then
+        if #data < ROWS - 1 then
+          data[#data + 1] = { item = r.item, text = ns.UI.ItemName(r.item), have = r.have, need = r.need, mail = r.mail,
+            note = r.here and { L["here"], 0.37, 0.83, 0.37 } or nil }
+        end
+        if r.here and #hereNames < 2 then hereNames[#hereNames + 1] = ns.UI.ItemName(r.item) end
+      end
+    end
+    rows:Set({})
+    coopRows:Set(data)
+    local line = (L["You carry: +%d skill points for %s"]):format(view.fromGatherer, who)
+    if #hereNames > 0 then line = (L["Here: %s"]):format(table.concat(hereNames, ", ")) .. " · " .. line end
+    routeText:ClearAllPoints()
+    routeText:SetPoint("TOPLEFT", frame.holder, "TOPLEFT", 2, -38 - #data * 28 - 2)
+    routeText:SetText("|cffffd27a" .. line .. "|r")
+    frame:SetHeight(22 + 2 + 38 + #data * 28 + 30)
+    return
+  end
+  coopRows:Set({})
 
   local data = {}
   for _, r in ipairs(report.gather) do

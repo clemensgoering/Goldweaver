@@ -57,6 +57,7 @@ UI\Minimap.lua
 Modules\Checks.lua
 Modules\Learn.lua
 Modules\Demand.lua
+Modules\Coop.lua
 Modules\Field.lua
 Modules\Autopilot.lua
 Modules\Advisor.lua

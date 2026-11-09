@@ -203,7 +203,13 @@ local function onSendClick()
     if SendMailNameEditBox then SendMailNameEditBox:SetText(recipient) end
     local subject = (L["Goldweaver: %d items"]):format(attached)
     if SendMailSubjectEditBox then SendMailSubjectEditBox:SetText(subject) end
-    pendingSend = { variant = variant, recipient = recipient, t = GetTime() }
+    -- what travels, for the team view ("in the mail")
+    local items = {}
+    for i = 1, MAX_ATTACH do
+      local _, itemID, _, count = GetSendMailItem(i)
+      if itemID and not ns.Secret.Any(itemID, count) then items[itemID] = (items[itemID] or 0) + (count or 1) end
+    end
+    pendingSend = { variant = variant, recipient = recipient, t = GetTime(), rec = p.rec, items = items }
     local ok, err = pcall(SendMail, recipient, subject, "")
     if not ok then ns.Print((L["Sending failed: %s"]):format(tostring(err))); pendingSend = nil end
     return
@@ -264,6 +270,7 @@ ns:RegisterModule("Mail", {
     ns.Events:On("MAIL_SEND_SUCCESS", function()
       attached = 0
       if pendingSend and ns.Learn then ns.Learn.MailResult(pendingSend.variant, true) end
+      if pendingSend and ns.Coop then ns.Coop.RecordSent(pendingSend.rec, pendingSend.items) end
       pendingSend = nil
       C_Timer.After(0.5, refreshSendButton)
     end, "Mail")

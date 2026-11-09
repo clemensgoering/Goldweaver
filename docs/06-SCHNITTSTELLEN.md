@@ -45,6 +45,7 @@ Stand: 08.11.2026 (nach dem Architektur-Durchgang). Jede Session, die eine Schni
 | `ns.Steps` | `Build(limit) → {{id, icon, item, category, title, detail, value, actionLabel, action}}`, `RegisterSource(name, priority, fn(add, ctx))` ★, `ICON` |
 | `ns.Field` | `CurrentZone() → zoneID, rawMapID, name`, `Analyze(zoneID?, rec?) → report`, `Route()` (RestedXP, lesend), `BestZones(rec?)`, `RecordGather(kind, items, zoneID)`, `SetWaypoint(mapID, x, y, label)` |
 | `ns.Demand` | `Get() → {[itemID] = {qty, by, via}}`, `For(itemID)`, `Invalidate()` |
+| `ns.Coop` | `Partner(rec?)`, `Team() → gatherer, crafter`, `Needs() → {gatherer, crafter, rows, plans, points, fromGatherer, fromMail}` (row: `item, need, have, gatherer, mail, crafter, here, source, via`), `RecordSent(rec, items)`, `ScanInbox()`, `Invalidate()`; Daten `chars[name].inventory.mail` und `.incoming` (Schema 5) |
 | `ns.Autopilot` | `GuessRole(rec, market)`, `ReadQueue(rec?)`, `StartReading()`, `QuickHealth()`, `status` |
 | `ns.Panel` | `Refresh()`, `Toggle()`, `ShouldShow()` |
 | `ns.Settings` | `Open()` |

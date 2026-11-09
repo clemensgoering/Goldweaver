@@ -89,10 +89,22 @@ function Inventory.Count(itemID, opts)
     breakdown.bank = me.inventory.bank[itemID] or 0
     total = total + breakdown.bank
   end
+  -- mail: the own inbox snapshot and what was sent to a character but not seen yet (Modules/Coop.lua)
+  local function mailed(inv)
+    local n = inv.mail and inv.mail[itemID] or 0
+    if inv.incoming and inv.incoming.items then n = n + (inv.incoming.items[itemID] or 0) end
+    return n
+  end
+  breakdown.mail = 0
+  if opts.mail ~= false and me and me.inventory then
+    breakdown.mail = mailed(me.inventory)
+    total = total + breakdown.mail
+  end
   if opts.alts and me then
     for _, rec in pairs(ns.db.chars) do
       if rec ~= me and rec.market == me.market and rec.inventory then
-        local n = (rec.inventory.bags and rec.inventory.bags[itemID] or 0) + (rec.inventory.bank and rec.inventory.bank[itemID] or 0)
+        local inv = rec.inventory
+        local n = (inv.bags and inv.bags[itemID] or 0) + (inv.bank and inv.bank[itemID] or 0) + (opts.mail ~= false and mailed(inv) or 0)
         if n > 0 then
           breakdown.alts[#breakdown.alts + 1] = { name = rec.name, count = n }
           total = total + n

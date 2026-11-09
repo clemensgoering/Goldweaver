@@ -310,7 +310,8 @@ local function newClient(opts)
   env.SendMailNameEditBox = newObject("EditBox", env.MailFrame, "SendMailNameEditBox")
   env.SendMailSubjectEditBox = newObject("EditBox", env.MailFrame, "SendMailSubjectEditBox")
   env.ATTACHMENTS_MAX_SEND = 12
-  env.GetSendMailItem = function(i) return env._sendItems[i] and env._sendItems[i].itemID or nil end
+  env.GetSendMailItem = function(i) local it = env._sendItems[i]; if it then return "Item", it.itemID, 134400, it.count or 1 end end
+  env.GetInboxItem = function() return nil end
   env.SendMail = function(to)
     env._sentTo = to
     env._sendItems = {}

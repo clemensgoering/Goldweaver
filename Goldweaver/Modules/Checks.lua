@@ -82,6 +82,7 @@ D("tooltip", { group = "A", title = "Tooltip line appears", hint = "Look at an i
 D("stock", { group = "A", title = "Stock across bank/alts in the tooltip", hint = "Visit the bank, then look at an item that is also stored there." })
 D("mailButtons", { group = "A", title = "Mailbox buttons appear", hint = "Open the mailbox." })
 D("mailAttach", { group = "A", title = "Attach fills recipient and attachments", hint = "In the mailbox click 'Attach for …'." })
+D("coopGather", { group = "A", title = "Gathering for the twink is counted", hint = "As main, gather or loot something the twink needs; a short notice appears." })
 D("mailSend", { group = "A", title = "Mail delivered to the processor (recipient format confirmed)", hint = "After attaching, click 'Send to …'." })
 D("mailOpen", { group = "A", title = "Inbox with AH mail opened (Blizzard 'Open all'), invoices recorded", hint = "After a sale, open the mailbox and click 'Open all'." })
 D("ledger", { group = "A", title = "Sale recorded from an AH invoice", hint = "Sell something at the AH, open the mail." })

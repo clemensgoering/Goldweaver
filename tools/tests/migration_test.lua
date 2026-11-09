@@ -26,7 +26,7 @@ eq(type(old.checks), "table", "checks table added")
 
 -- backup written before migrating
 eq(ns.DB.HasBackup(), true, "backup exists")
-eq(GoldweaverBackupDB.reason, "migration 1 -> 4", "backup reason")
+eq(GoldweaverBackupDB.reason, "migration 1 -> 5", "backup reason")
 eq(GoldweaverBackupDB.data.version, 1, "backup holds the pre-migration state")
 eq(GoldweaverBackupDB.data.chars["Cupedos-Grel"].role, "main", "backup is a deep copy with data")
 GoldweaverBackupDB.data.chars["Cupedos-Grel"].role = "bank"
@@ -77,7 +77,7 @@ eq(v2.checks.load, nil, "red load check reset")
 eq(v2.checks.tooltip.status, "pass", "other checks kept")
 eq(v2.settings.favorValueCopper, 300, "settings kept")
 eq(v2.settings.autoReadProfessions, nil, "background reading off by default")
-eq(GoldweaverBackupDB.reason, "migration 2 -> 4", "backup before migration 3")
+eq(GoldweaverBackupDB.reason, "migration 2 -> 5", "backup before migration 3")
 GoldweaverBackupDB = nil
 
 -- migration 4 merges the bank role into processor
@@ -86,4 +86,20 @@ GoldweaverBackupDB = nil
 ns.DB.Prepare(v3)
 eq(v3.chars.A.role, "processor", "bank became processor")
 eq(v3.chars.B.role, "main", "main unchanged")
+GoldweaverBackupDB = nil
+
+-- 4 -> 5: team view mail snapshots are optional; existing inventories stay, malformed values are dropped
+local v4 = { schema = 4, chars = {
+  A = { name = "A", role = "processor", inventory = { bags = { [2589] = 7 }, mail = "broken" } },
+  B = { name = "B", role = "main", inventory = { bags = { [2589] = 3 }, mail = { [2589] = 2 }, incoming = { items = { [2589] = 5 }, when = 1 } } },
+  C = { name = "C", role = "main" } } }
+GoldweaverBackupDB = nil
+ns.DB.Prepare(v4)
+eq(v4.schema, 5, "schema 5")
+eq(v4.chars.A.inventory.bags[2589], 7, "bags kept")
+eq(v4.chars.A.inventory.mail, nil, "malformed mail snapshot dropped")
+eq(v4.chars.B.inventory.mail[2589], 2, "mail snapshot kept")
+eq(v4.chars.B.inventory.incoming.items[2589], 5, "incoming kept")
+eq(v4.chars.C.inventory, nil, "no inventory invented")
+eq(GoldweaverBackupDB.reason, "migration 4 -> 5", "backup before migration 5")
 GoldweaverBackupDB = nil

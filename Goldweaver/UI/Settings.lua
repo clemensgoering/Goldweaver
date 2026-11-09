@@ -23,6 +23,7 @@ local function defs()
       function(on) s.autoReadProfessions = on and true or nil; if on then ns.db.learned.autoReadBlocked = nil end end },
     { L["Fill in the suggested auction price automatically"], function() return s.autofillPrice ~= false end, function(on) s.autofillPrice = on end },
     { L["Keep materials for your own professions (do not mail them)"], function() return s.keepOwnMaterials ~= false end, function(on) s.keepOwnMaterials = on end },
+    { L["Notice when you gather something the twink needs"], function() return s.coopToast ~= false end, function(on) s.coopToast = on end },
     { L["Use unconfirmed crate bundles in recommendations"], function() return s.unverifiedCrates == true end, function(on) s.unverifiedCrates = on and true or nil end },
     { L["Debug output in chat"], function() return s.debug end, function(on) s.debug = on end },
   }
@@ -79,7 +80,7 @@ function Settings_.Open()
   -- fallback: standalone window
   if not panel then
     panel = ns.UI.SafeCreate("Frame", UIParent, { "BasicFrameTemplateWithInset", "BackdropTemplate" }, "GoldweaverSettingsWindow")
-    panel:SetSize(520, 420); panel:SetPoint("CENTER"); panel:SetFrameStrata("DIALOG")
+    panel:SetSize(520, 480); panel:SetPoint("CENTER"); panel:SetFrameStrata("DIALOG")
     panel:SetMovable(true); panel:EnableMouse(true); panel:RegisterForDrag("LeftButton")
     panel:SetScript("OnDragStart", panel.StartMoving); panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
     tinsert(UISpecialFrames, "GoldweaverSettingsWindow")

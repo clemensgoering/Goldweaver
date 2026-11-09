@@ -17,7 +17,7 @@ local ADDON, ns = ...
 local L = ns.L
 
 ns.INTERFACE = 16001
-local SCHEMA = 4
+local SCHEMA = 5
 
 local DEFAULTS = {
   schema = SCHEMA,
@@ -83,6 +83,18 @@ local MIGRATIONS = {
   [4] = function(db)
     -- 3 -> 4: the "bank" role was merged into "processor" (the processing twink is also the bank)
     for _, rec in pairs(db.chars or {}) do if rec.role == "bank" then rec.role = "processor" end end
+  end,
+  [5] = function(db)
+    -- 4 -> 5: characters' inventory snapshots gain two optional parts for the team view (Modules/Coop.lua):
+    -- inventory.mail (items in the inbox) and inventory.incoming (sent to it, not seen yet). Both are filled on
+    -- use; nothing existing changes, a malformed value from a test build is dropped.
+    for _, rec in pairs(db.chars or {}) do
+      local inv = rec.inventory
+      if type(inv) == "table" then
+        if inv.mail ~= nil and type(inv.mail) ~= "table" then inv.mail = nil end
+        if inv.incoming ~= nil and type(inv.incoming) ~= "table" then inv.incoming = nil end
+      end
+    end
   end,
 }
 

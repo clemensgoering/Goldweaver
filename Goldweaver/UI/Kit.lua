@@ -5,12 +5,12 @@
 --
 -- Public API (ns.UI)
 --   RegisterTab(key, title, builder(frame) -> { Refresh }) ★ (title = English key, translated when the tab button is built)   Open(key?), Toggle(key?), IsOpen(), Refresh()
---   SetSubtitle(text)                                            line under the title
+--   SetSubtitle(text), SetHeaderInfo(text)                       line under the title, line right in the header
 --   SafeCreate(type, parent, templates) -> frame, template       first template that exists
 --   Skin(frame, style) -> frame        styles: window, card, hl, tracker, menu, button, buttonOff, ghost, tab, tabOn
 --   Button(parent, text, width, onClick, style?)   Inset(parent, w, h, style?)
 --   Widgets: Text, Header, Button, Check, Group, Inset, Section, Lines, Pairs, Table, IconRows,
---            ItemButton, SkillBar, StepCard, StepList, ItemName, QualityColor, Money
+--            ItemButton, SkillBar, StepCard, StepList, ProgressRows, ItemName, QualityColor, Money
 local ADDON, ns = ...
 local L = ns.L
 
@@ -474,22 +474,97 @@ function UI.IconRows(parent, count, width, firstY, rowHeight)
   return rows
 end
 
+-- Gather-list rows: icon, name with a coloured note, a bar (gold = there, blue = in the mail, green = enough),
+-- "have / need" on the right and, when rowHeight >= 34, a grey sub line under the bar.
+-- rows:Set({ { item, icon, text, note = { text, r, g, b }, sub, have, need, mail, right } })
+function UI.ProgressRows(parent, count, width, firstY, rowHeight)
+  rowHeight = rowHeight or 40
+  local compact = rowHeight < 34
+  local iconSize = compact and 20 or 28
+  local barW = width - iconSize - 8 - (compact and 52 or 76)
+  local rows = {}
+  for i = 1, count do
+    local r = CreateFrame("Button", nil, parent)
+    r:SetSize(width, rowHeight - 2)
+    if i == 1 then r:SetPoint("TOPLEFT", parent, "TOPLEFT", parent.pad or 0, firstY or (parent.top or 0))
+    else r:SetPoint("TOPLEFT", rows[i - 1], "BOTTOMLEFT", 0, -2) end
+    r.item = UI.ItemButton(r, iconSize)
+    r.item:SetPoint("LEFT", 0, 0)
+    r.text = r:CreateFontString(nil, "OVERLAY", compact and "GameFontHighlightSmall" or "GameFontHighlight")
+    r.text:SetPoint("TOPLEFT", r.item, "TOPRIGHT", 8, compact and 1 or 0)
+    r.text:SetJustifyH("LEFT"); r.text:SetWordWrap(false)
+    r.text:SetWidth(barW)
+    r.right = r:CreateFontString(nil, "OVERLAY", compact and "GameFontHighlightSmall" or "GameFontNormal")
+    r.right:SetPoint("TOPRIGHT", 0, compact and -1 or -2); r.right:SetJustifyH("RIGHT")
+    r.bar = r:CreateTexture(nil, "ARTWORK")
+    r.bar:SetPoint("TOPLEFT", r.text, "BOTTOMLEFT", 0, -3)
+    r.bar:SetSize(barW, compact and 4 or 6)
+    r.bar:SetColorTexture(0.04, 0.035, 0.03, 1)
+    r.fill = r:CreateTexture(nil, "ARTWORK", nil, 1)
+    r.fill:SetPoint("TOPLEFT", r.bar, "TOPLEFT")
+    r.fill:SetHeight(compact and 4 or 6)
+    r.mail = r:CreateTexture(nil, "ARTWORK", nil, 2)
+    r.mail:SetPoint("TOPLEFT", r.fill, "TOPRIGHT")
+    r.mail:SetHeight(compact and 4 or 6)
+    r.mail:SetColorTexture(0.23, 0.47, 0.75, 1)
+    if not compact then
+      r.sub = r:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+      r.sub:SetPoint("TOPLEFT", r.bar, "BOTTOMLEFT", 0, -3)
+      r.sub:SetJustifyH("LEFT"); r.sub:SetWordWrap(false); r.sub:SetWidth(width - iconSize - 8)
+    end
+    r.hl = r:CreateTexture(nil, "HIGHLIGHT")
+    r.hl:SetAllPoints(); r.hl:SetColorTexture(1, 0.8, 0.4, 0.07)
+    r:SetScript("OnEnter", function(self) local f = self.item:GetScript("OnEnter"); if f then f(self.item) end end)
+    r:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    r:Hide()
+    rows[i] = r
+  end
+  function rows:Set(data)
+    for i, r in ipairs(self) do
+      local d = data[i]
+      if d then
+        r:Show()
+        r.item:SetContent(d.icon, d.item)
+        local note = d.note and ("  |cff%02x%02x%02x%s|r"):format((d.note[2] or 1) * 255, (d.note[3] or 1) * 255, (d.note[4] or 1) * 255, d.note[1]) or ""
+        r.text:SetText((d.text or "") .. note)
+        local need = math.max(1, d.need or 1)
+        local have, mail = math.min(d.have or 0, need), math.min(d.mail or 0, d.have or 0)
+        local done = (d.have or 0) >= need
+        local own = math.max(0, have - mail)
+        r.fill:SetWidth(math.max(0.01, barW * own / need)); r.fill:SetShown(own > 0)
+        if done then r.fill:SetColorTexture(0.30, 0.72, 0.30, 1) else r.fill:SetColorTexture(0.85, 0.66, 0.30, 1) end
+        r.mail:SetWidth(math.max(0.01, barW * math.min(mail, need - own) / need)); r.mail:SetShown(mail > 0 and not done)
+        r.right:SetText(d.right or ("%d / %d"):format(d.have or 0, need))
+        if done then r.right:SetTextColor(0.4, 1, 0.4) else r.right:SetTextColor(1, 0.82, 0.45) end
+        if r.sub then r.sub:SetText(d.sub or "") end
+      else
+        r:Hide()
+      end
+    end
+  end
+  return rows
+end
+
 -- The current step, big: icon, category, title, detail, value, one primary action (RestedXP-style "Now").
-function UI.StepCard(parent, width)
-  local c = UI.Inset(parent, width, 104, "hl")
-  c.icon = UI.ItemButton(c, 52)
+-- Narrow cards (< 420 px, e.g. beside the team view) stack: text full width, value bottom left beside the button.
+function UI.StepCard(parent, width, height)
+  local narrow = width < 420
+  local c = UI.Inset(parent, width, height or 104, "hl")
+  c.icon = UI.ItemButton(c, narrow and 40 or 52)
   c.icon:SetPoint("TOPLEFT", 12, -14)
   c.counter = UI.Text(c, "", "GameFontNormalSmall")
-  c.counter:SetPoint("TOPLEFT", c.icon, "TOPRIGHT", 12, 0)
-  c.title = UI.Text(c, "", "GameFontNormalLarge")
+  c.counter:SetPoint("TOPLEFT", c.icon, "TOPRIGHT", 10, 0)
+  c.title = UI.Text(c, "", narrow and "GameFontNormal" or "GameFontNormalLarge")
   c.title:SetTextColor(1, 1, 1)
   c.title:SetPoint("TOPLEFT", c.counter, "BOTTOMLEFT", 0, -3)
-  c.title:SetWidth(width - 230); c.title:SetWordWrap(false)
-  c.detail = UI.Text(c, "", "GameFontHighlight")
+  c.title:SetWidth(width - (narrow and 76 or 230)); c.title:SetWordWrap(false)
+  c.detail = UI.Text(c, "", narrow and "GameFontHighlightSmall" or "GameFontHighlight")
   c.detail:SetPoint("TOPLEFT", c.title, "BOTTOMLEFT", 0, -4)
-  c.detail:SetWidth(width - 230)
+  c.detail:SetWidth(width - (narrow and 76 or 230))
+  if narrow then c.detail:SetHeight(math.max(24, (height or 104) - 96)); c.detail:SetJustifyV("TOP") end
   c.value = UI.Text(c, "", "GameFontNormal")
-  c.value:SetPoint("TOPRIGHT", -14, -16); c.value:SetJustifyH("RIGHT")
+  if narrow then c.value:SetPoint("BOTTOMLEFT", 14, 18)
+  else c.value:SetPoint("TOPRIGHT", -14, -16); c.value:SetJustifyH("RIGHT") end
   c.action = UI.Button(c, "", 150, nil)
   c.action:SetHeight(26)
   c.action:SetPoint("BOTTOMRIGHT", -12, 12)
@@ -581,6 +656,11 @@ function UI.SetSubtitle(text)
   if window and window.subtitle then window.subtitle:SetText(text or "") end
 end
 
+-- Short line at the right of the header band (session gold and the like).
+function UI.SetHeaderInfo(text)
+  if window and window.info then window.info:SetText(text or "") end
+end
+
 -- Browser-style tab: icon and name; the active one gets the warm gold plate and a gold line along its bottom.
 local function tabButton(key, title)
   local b = CreateFrame("Button", nil, window)
@@ -656,6 +736,9 @@ local function buildHeader()
   close:SetSize(26, 26)
   close:SetPoint("TOPRIGHT", -8, -12)
   close:SetScript("OnClick", function() window:Hide() end)
+  window.info = UI.Text(window, "", "GameFontHighlightSmall")
+  window.info:SetPoint("RIGHT", close, "LEFT", -12, 0)
+  window.info:SetJustifyH("RIGHT")
 end
 
 local function buildWindow()
