@@ -673,3 +673,6 @@ L["Debug report created: %d lines. In the window click 'Select all', then Ctrl+C
 L["Send %d » %s"] = "Senden %d » %s"
 L["Attach %d » %s"] = "Anhängen %d » %s"
 L["Nothing to send"] = "Nichts zu senden"
+L["Open recipe"] = "Zum Rezept"
+L["Profession window opens on the recipe"] = "Berufsfenster öffnet beim Rezept"
+L["In the guide click 'Open recipe' on a craft step."] = "Im Leitfaden bei einem Herstellungsschritt auf 'Zum Rezept' klicken."

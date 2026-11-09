@@ -250,6 +250,8 @@ local function newClient(opts)
   local open
   env.ProfessionsFrame = newObject("Frame", env.UIParent, "ProfessionsFrame")
   env.ProfessionsFrame._shown = false
+  -- Blizzard's recipe list (Blizzard_Professions): Goldweaver selects the recipe the guide talks about
+  env.ProfessionsFrame.CraftingPage = { RecipeList = { SelectRecipe = function(_, info) env._selectedRecipe = info and info.recipeID end } }
   local function recipesFor(line)
     return char.recipes[line] or {}
   end
@@ -542,7 +544,11 @@ local function session(label, opts, savedDB)
   end)
   s("craft via guide", function()
     local line = ns.Chars.Current().professions[197] and 197 or 165
-    ns.Adapter.Open(line); env._advance(2)
+    -- the step button lands on the recipe, not just on the profession
+    local recipeID = line == 197 and 3755 or 2149
+    env.C_TradeSkillUI.CloseTradeSkill(); env._fire("TRADE_SKILL_CLOSE")
+    ns.Adapter.Open(line, recipeID); env._advance(2)
+    if not opts.blockOpen and env._selectedRecipe ~= recipeID then fail(label .. ": profession opened without selecting recipe " .. recipeID) end
     ns.UI.Open("berufe"); ns.UI.SelectProfession(line)
     local b = findButton(env, "^Herstellen")
     if b then b:Click() end

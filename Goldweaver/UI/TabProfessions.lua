@@ -191,7 +191,7 @@ UI.RegisterTab("berufe", "Professions", function(frame)
       craftButton:SetText((L["Craft ×%d"]):format(plan.crafts or 1))
       local open = ns.Adapter.IsOpen() and ns.Adapter.current == skillLine
       craftButton:SetScript("OnClick", function()
-        if not (ns.Adapter.IsOpen() and ns.Adapter.current == skillLine) then ns.Adapter.Open(skillLine); return end
+        if not (ns.Adapter.IsOpen() and ns.Adapter.current == skillLine) then ns.Adapter.Open(skillLine, r.id); return end
         local ok, err = ns.Adapter.Craft(r.id, plan.crafts or 1)
         if not ok then ns.Print((L["Crafting: %s"]):format(tostring(err))) end
         if ns.Checks then ns.Checks.Pass("craft", "via the guide") end

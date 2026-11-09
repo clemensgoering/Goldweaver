@@ -176,7 +176,33 @@ end
 
 -- Opens a profession window from a click handler so the book can be read without hunting for the spellbook.
 -- Returns true when the request was sent; the TRADE_SKILL_LIST_UPDATE handler then reads the recipes.
-function Adapter.Open(skillLine)
+-- Puts the profession window on a recipe: select it in Blizzard's recipe list, else type its name into the list's
+-- search box. Returns the method that worked ("list", "search") or nil. Only touches frames that exist.
+function Adapter.SelectRecipe(recipeID)
+  local info = recipeID and C_TradeSkillUI and C_TradeSkillUI.GetRecipeInfo and C_TradeSkillUI.GetRecipeInfo(recipeID)
+  local page = ProfessionsFrame and ProfessionsFrame.CraftingPage
+  local list = page and page.RecipeList
+  if not (info and list) then return nil end
+  if list.SelectRecipe and pcall(list.SelectRecipe, list, info, true) then return "list" end
+  local box = list.SearchBox
+  if box and box.SetText and info.name and pcall(box.SetText, box, info.name) then return "search" end
+  return nil
+end
+
+-- Opens the profession window; with recipeID it lands on that recipe (the one the guide talks about).
+-- Must run in a click handler. Order: C_TradeSkillUI.OpenRecipe (one call), else open the profession and select the
+-- recipe once the window is ready (TRADE_SKILL_SHOW), or right away when it is already open.
+function Adapter.Open(skillLine, recipeID)
+  if recipeID and Adapter.IsOpen() and Adapter.current == skillLine then
+    local how = Adapter.SelectRecipe(recipeID)
+    if how and ns.Checks then ns.Checks.Pass("openRecipe", how) end
+    return how ~= nil, how
+  end
+  Adapter.pendingRecipe = recipeID
+  if recipeID and C_TradeSkillUI and C_TradeSkillUI.OpenRecipe and pcall(C_TradeSkillUI.OpenRecipe, recipeID) then
+    if ns.Checks then ns.Checks.Pass("openRecipe", "OpenRecipe") end
+    return true, "OpenRecipe"
+  end
   if not (C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill) then return false, L["OpenTradeSkill missing"] end
   local ok, err = pcall(C_TradeSkillUI.OpenTradeSkill, skillLine)
   return ok, err
@@ -256,9 +282,19 @@ ns:RegisterModule("Adapter", {
     end
     ns.Events:On("TRADE_SKILL_LIST_UPDATE", schedule, "Adapter")
     ns.Events:On("TRADE_SKILL_SHOW", schedule, "Adapter")
+    -- a recipe asked for by Open() is selected once Blizzard has filled its list
+    ns.Events:On("TRADE_SKILL_SHOW", function()
+      local recipeID = Adapter.pendingRecipe
+      if not recipeID then return end
+      C_Timer.After(0.2, function()
+        Adapter.pendingRecipe = nil
+        local how = Adapter.SelectRecipe(recipeID)
+        if how and ns.Checks then ns.Checks.Pass("openRecipe", how) end
+      end)
+    end, "Adapter")
     ns.Events:On("TRADE_SKILL_DATA_SOURCE_CHANGED", schedule, "Adapter")
     ns.Events:On("NEW_RECIPE_LEARNED", schedule, "Adapter")
-    ns.Events:On("TRADE_SKILL_CLOSE", function() Adapter.current = nil end, "Adapter")
+    ns.Events:On("TRADE_SKILL_CLOSE", function() Adapter.current = nil; Adapter.pendingRecipe = nil end, "Adapter")
     -- F11: count crafts (recipe IDs are spell IDs) and attribute skill-ups to the last craft's colour
     ns.Events:On("UNIT_SPELLCAST_SUCCEEDED", function(_, unit, _, spellID)
       if unit ~= "player" or not Adapter.current or not ns.Learn then return end

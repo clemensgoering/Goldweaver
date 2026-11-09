@@ -103,6 +103,7 @@ D("f7crate", { group = "F", title = "F7 Crate bundles and favor from a crate too
 D("f10mail", { group = "F", title = "F10 Mail recipient format", hint = "Send once to the processor via the button." })
 D("f11skillup", { group = "F", title = "F11 Skill-up chances from own crafts (min. 15)", hint = "Craft; the addon counts crafts and skill-ups per colour." })
 D("recipeFields", { group = "F", title = "Recipe fields detected (source, requirements)", hint = "Open a profession window." })
+D("openRecipe", { group = "B", title = "Profession window opens on the recipe", hint = "In the guide click 'Open recipe' on a craft step." })
 D("trainerRanks", { group = "F", title = "Rank requirements read from the trainer", hint = "Talk to a profession trainer." })
 D("autoRead", { group = "B", title = "Professions read automatically in the background", hint = "Runs by itself at login (out of combat)." })
 D("fieldZone", { group = "B", title = "Current zone detected (On the road)", hint = "Runs by itself." })

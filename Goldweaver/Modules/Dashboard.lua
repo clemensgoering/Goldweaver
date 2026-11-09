@@ -112,7 +112,10 @@ Steps.RegisterSource("professions", 40, function(add, ctx)
         add({ id = "craft" .. skillLine, icon = r.icon, item = r.outputItemID, category = p.name or L["Profession"],
           title = (L["Craft %s ×%d"]):format(r.name, plan.crafts or 1),
           detail = (L["%s %d » %d · ≈ %s per point"]):format(p.name or "", p.rank or 0, math.min(p.maxRank or 0, (p.rank or 0) + (plan.crafts or 1)), ns.Util.Money(plan.best.costPerPoint)),
-          actionLabel = L["To profession"], action = function() openGuide(skillLine) end })
+          actionLabel = L["Open recipe"], action = function()
+            -- lands on this recipe in the profession window; our Professions tab only if the game refuses
+            if not ns.Adapter.Open(skillLine, r.id) then openGuide(skillLine) end
+          end })
       elseif rank and rank.capped and rank.next and not rank.canTrain then
         add({ id = "cap" .. skillLine, icon = p.icon or ICON.train, category = p.name or L["Profession"],
           title = (L["%s at its cap (%d)"]):format(p.name or "?", p.rank or 0),
