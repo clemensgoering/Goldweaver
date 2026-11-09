@@ -36,16 +36,30 @@ local function record(kind)
   return c
 end
 
+-- Merchant item: Forever/Mainline use C_MerchantFrame.GetItemInfo(index) -> table; older clients the global.
+local function merchantItem(i)
+  if C_MerchantFrame and C_MerchantFrame.GetItemInfo then
+    local ok, info = pcall(C_MerchantFrame.GetItemInfo, i)
+    if ok and type(info) == "table" then return info.price, info.numAvailable, info.spellID end
+    return nil
+  end
+  if GetMerchantItemInfo then
+    local _, _, price, _, numAvailable = GetMerchantItemInfo(i)
+    return price, numAvailable, nil
+  end
+  return nil
+end
+
 local function recordMerchant()
   local name = npcName()
   local c = name and record("merchant")
-  if not (c and GetMerchantNumItems and GetMerchantItemInfo) then return end
+  if not (c and GetMerchantNumItems) then return end
   local n = GetMerchantNumItems() or 0
   ns.db.vendors = ns.db.vendors or {}
   for i = 1, n do
     local link = GetMerchantItemLink and GetMerchantItemLink(i)
     local id = link and tonumber(link:match("item:(%d+)"))
-    local _, _, price, _, numAvailable = GetMerchantItemInfo(i)
+    local price, numAvailable = merchantItem(i)
     if id and price and not ns.Secret.Any(id, price, numAvailable) then
       c.items[id] = price
       -- vendor price registry used as a ceiling by the price engine; limited stock items (recipes) are flagged

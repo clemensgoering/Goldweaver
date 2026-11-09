@@ -1,6 +1,14 @@
--- Goldweaver: mail pipeline. Rules decide which bag items travel to the processor; the mailbox gets two buttons
--- (docs/08-UX.md 4.3): "Anhängen" fills up to 12 attachments and the recipient, "Senden" sends that one mail.
--- Each click is one protected action (docs/04-COMPLIANCE.md). The inbox gets "Alles abholen" and a sales line.
+-- Goldweaver: mail pipeline. Rules decide which bag items travel to the processor; the mailbox gets ONE button
+-- (docs/08-UX.md 4.3): "Anhängen" fills up to 12 attachments and the recipient, a second click "Senden" sends that
+-- mail. Each click is one protected action (docs/04-COMPLIANCE.md). Forever's own inbox already has "Alle öffnen";
+-- sales are recorded passively by Modules/Ledger.lua while the inbox is open.
+--
+-- Public API
+--   ns.Mail.AddRule(name, fn, position?)   ★ routing rule, see below
+--   ns.Mail.TargetFor(item) -> rec, reason  which processor gets an item and why (nil = stays)
+--   ns.Mail.Plan() -> { [name] = { rec, items, value, count } }
+--   ns.Mail.Pending() -> count, value, target
+--   ns.Mail.Explain() -> { {item, target, reason} }   every bag item with its decision (for /gw mail)
 local ADDON, ns = ...
 
 local Mail = {}
@@ -22,12 +30,14 @@ local TRADEGOOD_USERS = {
   [10] = { 164, 165, 197, 171, 202, 333 }, -- Elemental: any crafter
   [11] = { 164, 165, 197, 171, 202, 333, 185, 129 }, -- Other
 }
+-- Enum.ItemRecipeSubclass (verified on Forever): Leatherworking=1 Tailoring=2 Engineering=3 Blacksmithing=4 Cooking=5
+-- Alchemy=6 FirstAid=7 Enchanting=8 Fishing=9
 local RECIPE_USERS = { [1] = 165, [2] = 197, [3] = 202, [4] = 164, [5] = 185, [6] = 171, [7] = 129, [8] = 333, [9] = 356 }
 local ENCHANTING = 333
 
 local function hasAny(rec, skillLines)
   if not (rec and rec.professions) then return false end
-  for _, sl in ipairs(skillLines) do if rec.professions[sl] then return true end end
+  for _, sl in ipairs(skillLines) do if rec.professions[sl] and not rec.professions[sl].former then return true end end
   return false
 end
 
@@ -79,7 +89,7 @@ function Mail.TargetFor(item)
   local me = ns.Chars.Current()
   if not me or me.role == "processor" then return nil, "hier verarbeiten" end
   local instant = ns.API.ItemInfoInstant(item.itemID)
-  if not instant then return nil end
+  if not instant then return nil, "Itemdaten fehlen" end
   local list = processors()
   if #list == 0 then return nil, "kein Verarbeiter" end
   for _, rule in ipairs(Mail.rules) do
@@ -92,7 +102,7 @@ function Mail.TargetFor(item)
       return nil, reason
     end
   end
-  return nil
+  return nil, "keine Regel"
 end
 
 -- Items in bags that should travel, grouped by target. Returns { [targetName] = { rec, items = {...}, value } }.
@@ -116,6 +126,16 @@ function Mail.Plan()
   return plan
 end
 
+-- Every bag item with its decision, for /gw mail and the debug report.
+function Mail.Explain()
+  local out = {}
+  for _, it in ipairs(ns.Inventory.BagItems()) do
+    local target, reason = Mail.TargetFor(it)
+    out[#out + 1] = { item = it, target = target, reason = reason }
+  end
+  return out
+end
+
 -- Flat list for the HUD: count and value of everything that should travel.
 function Mail.Pending()
   local count, value, target = 0, 0, nil
@@ -128,29 +148,7 @@ function Mail.Pending()
 end
 
 -- Mailbox UI -----------------------------------------------------------------------------------
-local sendButton, inboxButton, inboxLine, currentPlan, attached
-
-local function refreshSendButton()
-  if not sendButton then return end
-  if not (ns.Chars.Current() and ns.Chars.Current().role ~= "processor") then
-    sendButton:Hide(); return
-  end
-  currentPlan = Mail.Plan()
-  local first
-  for _, p in pairs(currentPlan) do if not first or p.value > first.value then first = p end end
-  if not first then
-    sendButton:SetText("Nichts zu verschicken")
-    sendButton:Disable(); sendButton:Show(); return
-  end
-  sendButton.plan = first
-  sendButton:Enable(); sendButton:Show()
-  if attached and attached > 0 then
-    sendButton:SetText(("Senden an %s (%d Anhänge)"):format(first.rec.firstName or first.rec.name, attached))
-  else
-    local n = math.min(MAX_ATTACH, #first.items)
-    sendButton:SetText(("Anhängen für %s: %d von %d Items (%s)"):format(first.rec.firstName or first.rec.name, n, first.count, ns.Util.Money(first.value)))
-  end
-end
+local sendButton, attached, pendingSend
 
 local function countAttachments()
   local n = 0
@@ -160,7 +158,26 @@ local function countAttachments()
   return n
 end
 
-local pendingSend -- { variant, recipient, t } while a send from our button is in flight (F10 learning)
+local function refreshSendButton()
+  if not sendButton then return end
+  local me = ns.Chars.Current()
+  if not me or me.role == "processor" or me.role == "bank" then sendButton:Hide(); return end
+  local plan = Mail.Plan()
+  local first
+  for _, p in pairs(plan) do if not first or p.value > first.value then first = p end end
+  if not first then
+    sendButton:SetText("Nichts zu verschicken (/gw mail zeigt warum)")
+    sendButton:Disable(); sendButton:Show(); return
+  end
+  sendButton.plan = first
+  sendButton:Enable(); sendButton:Show()
+  if attached and attached > 0 then
+    sendButton:SetText(("Senden an %s (%d Anhänge)"):format(first.rec.firstName or first.rec.name, attached))
+  else
+    local n = math.min(MAX_ATTACH, #first.items)
+    sendButton:SetText(("Anhängen für %s: %d von %d (%s)"):format(first.rec.firstName or first.rec.name, n, first.count, ns.Util.Money(first.value)))
+  end
+end
 
 local function onSendClick()
   local p = sendButton.plan
@@ -178,16 +195,13 @@ local function onSendClick()
     if not ok then ns.Print("Senden fehlgeschlagen: " .. tostring(err)); pendingSend = nil end
     return
   end
-  -- first click: fill recipient and attach up to 12 items
-  if SendMailNameEditBox then SendMailNameEditBox:SetText(ns.Chars.MailName(p.rec)) end
+  -- first click: switch to the send tab, fill recipient and attach up to 12 items
   if MailFrameTab2 and MailFrameTab2.Click then MailFrameTab2:Click() end
+  if SendMailNameEditBox then SendMailNameEditBox:SetText(ns.Chars.MailName(p.rec)) end
   local n = 0
   for _, it in ipairs(p.items) do
     if n >= MAX_ATTACH then break end
-    if not it.isLocked and C_Container and C_Container.UseContainerItem then
-      local ok = pcall(C_Container.UseContainerItem, it.bag, it.slot)
-      if ok then n = n + 1 end
-    end
+    if not it.isLocked and ns.API.UseContainerItem(it.bag, it.slot) then n = n + 1 end
   end
   C_Timer.After(0.2, function()
     attached = countAttachments()
@@ -196,59 +210,13 @@ local function onSendClick()
   end)
 end
 
--- Inbox: open everything with attachments or money, one mail per step, recording invoices first.
-local opening = false
-local openedCount = 0
-local function openNext()
-  if not opening then return end
-  if not (MailFrame and MailFrame:IsShown()) then opening = false; return end
-  if ns.Inventory.FreeBagSlots() < 1 then
-    opening = false
-    ns.Print("Posteingang: Taschen voll, Abholen gestoppt.")
-    return
-  end
-  local n = GetInboxNumItems and GetInboxNumItems() or 0
-  for i = n, 1, -1 do
-    local _, _, sender, _, money, cod, _, hasItem = GetInboxHeaderInfo(i)
-    if not ns.Secret.Any(sender, money, cod, hasItem) and (cod or 0) == 0 and ((money or 0) > 0 or hasItem) then
-      local okInv, entry = pcall(ns.Ledger.RecordInvoice, i)
-      if okInv and entry and ns.Checks then ns.Checks.Pass("ledger", ("%s x%d für %s"):format(tostring(entry.item), entry.count, ns.Util.Money(entry.price))) end
-      pcall(AutoLootMailItem, i)
-      openedCount = openedCount + 1
-      C_Timer.After(0.6, openNext)
-      return
-    end
-  end
-  opening = false
-  if openedCount > 0 and ns.Checks then ns.Checks.Pass("mailOpen", openedCount .. " Briefe") end
-  local t = ns.Ledger.Totals(1)
-  if inboxLine then inboxLine:SetText(("Heute verkauft: %s (%d Auktionen) · Einzahlung zurück: %s"):format(ns.Util.Money(t.sales), t.count, ns.Util.Money(t.deposits))) end
-  ns.Print("Posteingang abgeholt.")
-end
-
-local function onOpenAll()
-  if opening then opening = false; inboxButton:SetText("Alles abholen"); return end
-  opening = true
-  openedCount = 0
-  inboxButton:SetText("Stopp")
-  openNext()
-  C_Timer.After(0.1, function() if not opening then inboxButton:SetText("Alles abholen") end end)
-end
-
-local function createButtons()
+local function createButton()
   if sendButton or not MailFrame then return end
-  sendButton = ns.UI.Button(MailFrame, "", 330, onSendClick)
-  sendButton:SetPoint("BOTTOMLEFT", MailFrame, "BOTTOMLEFT", 20, -26)
+  sendButton = ns.UI.Button(MailFrame, "", 300, onSendClick)
+  sendButton:SetPoint("TOP", MailFrame, "BOTTOM", 0, -4)
   sendButton:SetFrameStrata("HIGH")
-
-  inboxButton = ns.UI.Button(MailFrame, "Alles abholen", 130, onOpenAll)
-  inboxButton:SetPoint("BOTTOMRIGHT", MailFrame, "BOTTOMRIGHT", -20, -26)
-  inboxButton:SetFrameStrata("HIGH")
-
-  inboxLine = MailFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  inboxLine:SetPoint("BOTTOMLEFT", MailFrame, "BOTTOMLEFT", 20, -46)
-  inboxLine:SetWidth(460)
-  inboxLine:SetJustifyH("LEFT")
+  local width = MailFrame:GetWidth()
+  if width and width > 100 then sendButton:SetWidth(width - 40) end
 end
 
 ns:RegisterModule("Mail", {
@@ -256,27 +224,24 @@ ns:RegisterModule("Mail", {
     local plan = Mail.Plan()
     local targets, items = 0, 0
     for _, p in pairs(plan) do targets = targets + 1; items = items + p.count end
-    local sample = ns.Inventory.BagItems()[1]
-    local target, reason = sample and Mail.TargetFor(sample) or nil, nil
-    if sample then target, reason = Mail.TargetFor(sample) end
+    local explained = Mail.Explain()
+    local first = explained[1]
     return {
-      { name = "Versandplan", ok = true, detail = ("%d Ziel(e), %d Items"):format(targets, items) },
-      { name = "Regelprüfung erstes Taschenitem", ok = sample ~= nil, warn = true, detail = sample and (tostring(sample.itemID) .. " -> " .. (target and target.name or "bleibt") .. " (" .. tostring(reason) .. ")") or "Taschen leer" },
-      { name = "Briefkasten-Knöpfe erzeugt", ok = sendButton ~= nil, warn = true, detail = sendButton and "ja" or "erst nach dem ersten Öffnen" },
+      { name = "Versandplan", ok = true, detail = ("%d Ziel(e), %d Items von %d in den Taschen"):format(targets, items, #explained) },
+      { name = "Regelprüfung erstes Taschenitem", ok = first ~= nil, warn = true,
+        detail = first and ("%s -> %s (%s)"):format(tostring(first.item.itemID), first.target and first.target.name or "bleibt", tostring(first.reason)) or "Taschen leer" },
+      { name = "Briefkasten-Knopf erzeugt", ok = sendButton ~= nil, warn = true, detail = sendButton and "ja" or "erst nach dem ersten Öffnen" },
+      { name = "Regeln", ok = #Mail.rules >= 5, detail = (function() local t = {} for _, r in ipairs(Mail.rules) do t[#t + 1] = r.name end return table.concat(t, ", ") end)() },
     }
   end,
   Init = function()
     ns.Events:On("MAIL_SHOW", function()
-      createButtons()
+      createButton()
       attached = 0
       refreshSendButton()
       if sendButton and ns.Checks then ns.Checks.Pass("mailButtons", "erzeugt") end
-      if inboxLine then
-        local t = ns.Ledger.Totals(1)
-        inboxLine:SetText(t.count > 0 and ("Heute verkauft: %s (%d Auktionen) · Einzahlung zurück: %s"):format(ns.Util.Money(t.sales), t.count, ns.Util.Money(t.deposits)) or "")
-      end
-    end)
-    ns.Events:On("MAIL_CLOSED", function() opening = false; attached = 0; pendingSend = nil end, "Mail")
+    end, "Mail")
+    ns.Events:On("MAIL_CLOSED", function() attached = 0; pendingSend = nil end, "Mail")
     ns.Events:On("MAIL_SEND_SUCCESS", function()
       attached = 0
       if pendingSend and ns.Learn then ns.Learn.MailResult(pendingSend.variant, true) end
@@ -293,21 +258,21 @@ ns:RegisterModule("Mail", {
         pendingSend = nil
       end
     end, "Mail")
-    ns.Events:On("MAIL_SEND_INFO_UPDATE", function() attached = countAttachments(); refreshSendButton() end)
-    ns.Events:On("BAG_UPDATE_DELAYED", function() if MailFrame and MailFrame:IsShown() then C_Timer.After(0.5, refreshSendButton) end end)
+    ns.Events:On("MAIL_SEND_INFO_UPDATE", function() attached = countAttachments(); refreshSendButton() end, "Mail")
+    ns.Events:On("BAG_UPDATE_DELAYED", function() if MailFrame and MailFrame:IsShown() then C_Timer.After(0.5, refreshSendButton) end end, "Mail")
   end,
 })
 
 ns.Slash.Register("mail", function()
-  local plan = Mail.Plan()
-  local any = false
-  for name, p in pairs(plan) do
-    any = true
-    ns.Print(("An %s: %d Items, %s"):format(name, p.count, ns.Util.Money(p.value)))
-    for i, it in ipairs(p.items) do
-      if i > 10 then ns.Print("  ..."); break end
-      ns.Print(("  %s x%d (%s)"):format(it.link or tostring(it.itemID), it.count, it.reason or ""))
+  local explained = Mail.Explain()
+  if #explained == 0 then return ns.Print("Taschen leer.") end
+  local byReason = {}
+  for _, e in ipairs(explained) do
+    if e.target then
+      ns.Print(("→ %s: %s x%d (%s)"):format(e.target.firstName or e.target.name, e.item.link or tostring(e.item.itemID), e.item.count, e.reason or ""))
+    else
+      byReason[e.reason or "?"] = (byReason[e.reason or "?"] or 0) + 1
     end
   end
-  if not any then ns.Print("Nichts zu verschicken (Rolle, Verarbeiter und Regeln prüfen: /gw chars)") end
-end, "show what would be mailed to the processor")
+  for reason, n in pairs(byReason) do ns.Print(("bleibt: %d Item(s), Grund: %s"):format(n, reason)) end
+end, "show what would be mailed and why the rest stays")

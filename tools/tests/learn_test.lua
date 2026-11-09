@@ -63,13 +63,20 @@ eq(ns.Adapter.ChanceFor(0), 1.0, "rule of thumb where no data")
 eq(Checks.Get("f11skillup").status, "pass", "F11 passes after 15 crafts")
 
 -- recipe fields and enum lookup
-Enum = { TradeskillRecipeSourceType = { Trainer = 1, Vendor = 2, Drop = 3 } }
-Learn.RecipeFields({ name = "x", learned = false, sourceType = 2, relativeDifficulty = 0 }, { outputItemID = 1, reagentSlotSchematics = {} })
+Enum = { TradeskillRelativeDifficulty = { Optimal = 0, Medium = 1, Easy = 2, Trivial = 3 } }
+Learn.RecipeFields({ name = "x", learned = false, relativeDifficulty = 0, maxTrivialLevel = 48 }, { outputItemID = 1, reagentSlotSchematics = {} })
 eq(ns.db.learned.recipeFields.info[1], "learned", "info fields sorted")
-eq(Learn.EnumName(2, "Source"), "Vendor", "enum name resolved")
-local src = Learn.RecipeSource({ id = 999, name = "Unknown Recipe", sourceType = 2 })
-eq(src, "Quelle: Vendor", "source from enum")
+eq(Learn.EnumName(2, "Difficulty"), "Easy", "enum name resolved")
+eq(Learn.RecipeSource({ id = 999, name = "Unknown Recipe" }), nil, "no source without own visits")
 Enum = nil
+
+-- crate detector: favor alone is not a crate (Mote of Magic false positive), crate word + favor is
+Learn.CrateTooltip(247786, "Magiepartikel", { { leftText = "Magiepartikel" }, { leftText = "Verfügbar bei Händlern für Verzauberkunstbedarf." } })
+eq(ns.db.learned.crates, nil, "vendor hint is not a crate")
+Learn.CrateTooltip(5001, "Waylaid Crate", { { leftText = "Waylaid Crate" }, { leftText = "20 Strange Dust" }, { leftText = "Reward: 10 Merchant's Favor" } })
+eq(ns.db.learned.crates[5001].favor, 10, "favor parsed")
+eq(ns.db.learned.crates[5001].bundles[1].qty, 20, "bundle quantity parsed")
+eq(Checks.Get("f7crate").status, "pass", "F7 passes on a real crate")
 
 -- recipe source from a visited vendor
 ns.db.vendors = { [5000] = { buy = 2500, npc = "Händler Hans", limited = true, teaches = 777 } }

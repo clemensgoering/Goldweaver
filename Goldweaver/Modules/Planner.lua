@@ -22,19 +22,26 @@ end
 -- Candidate steps: learned recipes that still give skill-ups, ranked by expected cost per skill point.
 function Planner.Candidates(skillLine, rec)
   local out = {}
+  local p = rec and rec.professions and rec.professions[skillLine]
+  local skill = p and p.rank or 0
   for _, recipe in ipairs(ns.Adapter.Learned(skillLine, rec)) do
     local chance = ns.Adapter.ChanceFor(recipe.difficulty)
-    if chance and chance > 0 and #(recipe.reagents or {}) > 0 then
+    -- canSkillUp/maxTrivialLevel come from the client when available and beat the colour heuristic
+    if recipe.canSkillUp == false then chance = 0 end
+    if recipe.maxTrivialLevel and recipe.maxTrivialLevel > 0 and skill >= recipe.maxTrivialLevel then chance = 0 end
+    if chance and chance > 0 and #(recipe.reagents or {}) > 0 and not recipe.isSalvage and not recipe.isGathering then
       local cost, coverage = Planner.CraftCost(recipe)
       -- what the product is worth after the cut offsets part of the cost (sold or used)
       local productValue = 0
       if recipe.outputItemID then
-        local p = priceOf(recipe.outputItemID)
-        if p then productValue = p * ((recipe.qtyMin + recipe.qtyMax) / 2) * (1 - (ns.db.settings.ahCut or 0.05)) end
+        local unit = priceOf(recipe.outputItemID)
+        if unit then productValue = unit * ((recipe.qtyMin + recipe.qtyMax) / 2) * (1 - (ns.db.settings.ahCut or 0.05)) end
       end
+      -- points this recipe can still give before it turns grey (nil when the client does not say)
+      local pointsLeft = recipe.maxTrivialLevel and recipe.maxTrivialLevel > 0 and math.max(0, recipe.maxTrivialLevel - skill) or nil
       out[#out + 1] = {
         recipe = recipe, chance = chance, cost = cost, coverage = coverage, productValue = productValue,
-        netPerPoint = (cost - productValue) / chance, costPerPoint = cost / chance,
+        netPerPoint = (cost - productValue) / chance, costPerPoint = cost / chance, pointsLeft = pointsLeft,
       }
     end
   end
@@ -92,6 +99,7 @@ function Planner.Plan(skillLine, rec)
   local plan = { skillLine = skillLine, rank = rankInfo, candidates = candidates, best = best }
   if best and rankInfo then
     local pointsToCap = math.max(1, (rankInfo.maxSkill or 0) - (rankInfo.skill or 0))
+    if best.pointsLeft and best.pointsLeft > 0 then pointsToCap = math.min(pointsToCap, best.pointsLeft) end
     local crafts = math.min(20, math.max(1, math.ceil(pointsToCap / best.chance)))
     plan.crafts = crafts
     plan.shopping = Planner.Shopping(best.recipe, crafts)

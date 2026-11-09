@@ -6,7 +6,7 @@ local Tooltip = {}
 ns.Tooltip = Tooltip
 
 local GOLD = { 0.83, 0.66, 0.31 }
-local ACTION_LABEL = { vendor = "Händler", auction = "AH", convert = nil, crate = "Kiste", keep = "Behalten" }
+local ACTION_LABEL = { vendor = "Händler", auction = "AH", convert = nil, crate = "Kiste~", keep = "Behalten" }
 
 local function optionLabel(o)
   if o.action == "convert" then return o.conversion and (o.conversion.name or o.conversion.kind) or "Umwandeln" end

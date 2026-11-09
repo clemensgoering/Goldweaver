@@ -35,6 +35,11 @@ Features.SetEnabled("items", true)
 eq((Features.Available("items")), true, "feature back on")
 local rows = Features.Status()
 eq(#rows >= 10, true, "feature status rows")
+-- alternatives: one of several APIs is enough
+Features.Define("altTest", { label = "alt", requires = { { "C_Nope.A", "C_Item.GetItemInfo" } } })
+eq((Features.Available("altTest")), true, "one alternative present is enough")
+Features.Define("altTest2", { label = "alt2", requires = { { "C_Nope.A", "C_Nope.B" } } })
+eq((Features.Available("altTest2")), false, "no alternative present fails")
 
 -- event error isolation: a handler that always errors is detached after 5 errors
 local calls = 0

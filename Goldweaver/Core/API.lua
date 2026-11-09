@@ -90,12 +90,21 @@ function Features.Define(name, def)
   Features.order[#Features.order + 1] = name
 end
 
--- Missing API paths for a feature (empty when all present).
+-- Missing API paths for a feature (empty when all present). A requirement may be a list of alternatives
+-- ({ "C_MerchantFrame.GetItemInfo", "GetMerchantItemInfo" }): one of them is enough.
 function Features.Missing(name)
   local def = Features.defs[name]
   local missing = {}
   if not def then return missing end
-  for _, path in ipairs(def.requires) do if not API.Has(path) then missing[#missing + 1] = path end end
+  for _, req in ipairs(def.requires) do
+    if type(req) == "table" then
+      local any = false
+      for _, alt in ipairs(req) do if API.Has(alt) then any = true break end end
+      if not any then missing[#missing + 1] = table.concat(req, "|") end
+    elseif not API.Has(req) then
+      missing[#missing + 1] = req
+    end
+  end
   return missing
 end
 
@@ -138,7 +147,8 @@ Features.Define("craft", { label = "Herstellen-Knopf", requires = { "C_TradeSkil
 Features.Define("disenchant", { label = "Entzauber-Queue", requires = { "C_Spell.GetSpellName", "CreateFrame" } })
 Features.Define("auction", { label = "AH-Preise mitlesen", requires = { "C_AuctionHouse.GetNumCommoditySearchResults", "C_AuctionHouse.GetCommoditySearchResultInfo", "C_AuctionHouse.GetBrowseResults" } })
 Features.Define("auctionSell", { label = "AH-Verkaufsvorschlag", requires = { "C_AuctionHouse.CalculateCommodityDeposit" } })
-Features.Define("contacts", { label = "Lehrer/Händler merken", requires = { "C_Map.GetBestMapForUnit", "C_Map.GetPlayerMapPosition", "GetMerchantNumItems", "GetMerchantItemInfo" } })
+Features.Define("contacts", { label = "Lehrer/Händler merken", requires = { "C_Map.GetBestMapForUnit", "C_Map.GetPlayerMapPosition", "GetMerchantNumItems", { "C_MerchantFrame.GetItemInfo", "GetMerchantItemInfo" } } })
+Features.Define("openProfession", { label = "Beruf per Knopf öffnen", requires = { "C_TradeSkillUI.OpenTradeSkill" } })
 Features.Define("minimap", { label = "Minimap-Button", requires = { "Minimap" } })
 
 ns.Slash.Register("feature", function(arg)

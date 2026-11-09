@@ -51,11 +51,17 @@ eq(linen[1].action, "convert", "bolts beat raw cloth at these prices")
 eq(linen[1].value, math.floor(10 * 150 * 0.95), "bolt value for 10 runs")
 eq(linen[1].runs, 10, "20 cloth = 10 bolts")
 eq(find(linen, "crate"), nil, "no crate option when crates are off")
+-- textiles bundles are unverified: no crate option unless the user opts in
+eq(find(Advisor.Evaluate({ id = 2589, quantity = 20, vendorSell = 0 }, ctx), "crate"), nil, "unverified crate category is skipped")
+ns.db.settings.unverifiedCrates = true
 -- with crates: 20 linen = one textiles apprentice bundle = 10 favor * 500c = 5000c, which beats both
 local withCrate = Advisor.Evaluate({ id = 2589, quantity = 20, vendorSell = 0 }, ctx)
 eq(find(withCrate, "crate").value, 5000, "crate value")
 eq(withCrate[1].action, "crate", "crate sorted first")
 eq(find(Advisor.Evaluate({ id = 2589, quantity = 7, vendorSell = 0 }, ctx), "crate").value, 0, "partial bundle is worth nothing")
+ns.db.settings.unverifiedCrates = nil
+-- curiosities (verified table) always count: 20 strange dust = 1 bundle
+eq(find(Advisor.Evaluate({ id = 10940, quantity = 20, vendorSell = 0 }, ctx), "crate").value, 5000, "verified category counts")
 
 -- Mail cost applies when the item has to travel
 local mailed = Advisor.Evaluate({ id = 2589, quantity = 20, vendorSell = 0 }, setmetatable({ needsMail = true, crates = false }, { __index = ctx }))

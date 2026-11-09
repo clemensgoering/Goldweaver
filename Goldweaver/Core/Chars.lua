@@ -144,16 +144,30 @@ function Chars.UpdateProfessions()
   if not (GetProfessions and GetProfessionInfo) then return end
   local rec = Chars.Current()
   if not rec then return end
-  local profs = {}
+  -- Merge into the existing entries: the Adapter stores learned recipes, counts and timestamps there and they
+  -- must survive a SKILL_LINES_CHANGED refresh (bug found in the first in-game report, 08.11.2026).
+  rec.professions = rec.professions or {}
+  local seen = {}
   for _, idx in ipairs({ GetProfessions() }) do
     if idx then
       local name, _, rank, maxRank, _, _, skillLine = GetProfessionInfo(idx)
       if not ns.Secret.Any(name, rank, maxRank, skillLine) and skillLine then
-        profs[skillLine] = { name = name, rank = rank, maxRank = maxRank }
+        local p = rec.professions[skillLine] or {}
+        p.name, p.rank, p.maxRank = name, rank, maxRank
+        rec.professions[skillLine] = p
+        seen[skillLine] = true
       end
     end
   end
-  rec.professions = profs
+  -- professions the character no longer has (unlearned) are kept for 30 days as "former" to avoid losing data by accident
+  for skillLine, p in pairs(rec.professions) do
+    if not seen[skillLine] then
+      p.former = p.former or time()
+      if time() - p.former > 30 * 86400 then rec.professions[skillLine] = nil end
+    else
+      p.former = nil
+    end
+  end
 end
 
 function Chars.SetRole(name, role)

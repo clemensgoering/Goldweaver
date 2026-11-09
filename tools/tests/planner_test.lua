@@ -14,7 +14,7 @@ ns.db.recipes = {
     name = "Schneiderei", skillLine = 197, when = time(),
     list = {
       { id = 101, name = "Bolt of Linen Cloth", icon = 1, outputItemID = 2996, qtyMin = 1, qtyMax = 1, reagents = { { item = 2589, qty = 2 } }, difficulty = 2 },          -- easy
-      { id = 102, name = "Linen Belt", icon = 1, outputItemID = 7026, qtyMin = 1, qtyMax = 1, reagents = { { item = 2996, qty = 1 }, { item = 2320, qty = 1 } }, difficulty = 0 }, -- optimal
+      { id = 102, name = "Linen Belt", icon = 1, outputItemID = 7026, qtyMin = 1, qtyMax = 1, reagents = { { item = 2996, qty = 1 }, { item = 2320, qty = 1 } }, difficulty = 0, maxTrivialLevel = 48 }, -- optimal, grey at 48
       { id = 103, name = "Grey Thing", icon = 1, outputItemID = 9999, qtyMin = 1, qtyMax = 1, reagents = { { item = 2589, qty = 1 } }, difficulty = 3 },                  -- trivial
       { id = 104, name = "Woolen Cape", icon = 1, outputItemID = 2580, qtyMin = 1, qtyMax = 1, reagents = { { item = 2997, qty = 1 } }, difficulty = 0 },                   -- not learned
     },
@@ -45,12 +45,17 @@ T.near(candidates[2].netPerPoint, -121.4, 1, "bolt net per point")
 
 local plan = ns.Planner.Plan(197)
 eq(plan.best.recipe.id, 102, "plan picks the belt")
-eq(plan.crafts, 20, "crafts capped at 20 (35 points to cap / chance 1.0)")
+eq(plan.best.pointsLeft, 8, "belt turns grey in 8 points (48 - 40)")
+eq(plan.crafts, 8, "crafts limited by the grey level, not the rank cap")
 eq(#plan.shopping, 2, "two reagents on the shopping list")
-eq(plan.shopping[1].need, 20, "need 20 bolts")
-eq(plan.shopping[1].buy, 20, "nothing in bags -> buy 20")
-eq(plan.shopping[1].cost, 3000, "20 bolts at 150c")
-eq(plan.shoppingCost, 3200, "total shopping cost incl. thread")
+eq(plan.shopping[1].need, 8, "need 8 bolts")
+eq(plan.shopping[1].buy, 8, "nothing in bags -> buy 8")
+eq(plan.shopping[1].cost, 1200, "8 bolts at 150c")
+eq(plan.shoppingCost, 1280, "total shopping cost incl. thread")
+-- a recipe the client flags as no longer skilling up is excluded
+ns.db.recipes[197].byID[102].canSkillUp = false
+eq(ns.Planner.Plan(197).best.recipe.id, 101, "canSkillUp=false removes the belt")
+ns.db.recipes[197].byID[102].canSkillUp = nil
 
 local rank = ns.Planner.NextRank(197)
 eq(rank.current.name, "Apprentice", "40 skill is apprentice")

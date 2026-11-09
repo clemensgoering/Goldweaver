@@ -35,8 +35,7 @@ ns.Professions:Register({
   },
   tools = { "Runed Copper Rod", "Runed Silver Rod", "Runed Golden Rod", "Runed Truesilver Rod", "Runed Arcanite Rod" },
   seedPath = {
-    -- Mote of Magic is a new Forever item without a known ID; the first 20 points are priced as zero until the probe resolves it.
-    { from = 1,   to = 20,  recipe = "Runed Copper Rod + Enchant Bracer - Inferior Stamina", crafts = 19, mats = { { item = COPPER_ROD, qty = 1 } } },
+    { from = 1,   to = 20,  recipe = "Runed Copper Rod + Enchant Bracer - Inferior Stamina", crafts = 19, mats = { { item = COPPER_ROD, qty = 1 }, { item = 247786, qty = 19 } } },
     { from = 20,  to = 70,  recipe = "Enchant Chest - Inferior Stamina", crafts = 50, mats = { { item = STRANGE, qty = 50 } } },
     { from = 70,  to = 109, recipe = "Enchant Bracer - Minor Stamina / Cloak - Minor Protection", crafts = 39, mats = { { item = STRANGE, qty = 78 } } },
     { from = 109, to = 110, recipe = "Runed Silver Rod", crafts = 1, mats = { { item = SILVER_ROD, qty = 1 }, { item = STRANGE, qty = 3 }, { item = L_MAGIC, qty = 4 }, { item = SHADOWGEM, qty = 1 } } },

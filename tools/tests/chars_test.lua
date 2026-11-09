@@ -55,6 +55,26 @@ eq(Chars.Unassigned(), 0, "all roles set")
 eq(Chars.SetRole("Alt Name", "none"), true, "set role")
 eq(Chars.Unassigned(), 1, "one unassigned")
 
+-- UpdateProfessions merges: learned sets from the Adapter survive a SKILL_LINES_CHANGED refresh
+ns.db.chars = {}
+local me = Chars.Register()
+me.professions[197] = { name = "Schneiderei", rank = 53, maxRank = 75, learned = { [1] = true }, learnedCount = 1, recipeCount = 471 }
+GetProfessions = function() return 1, 2 end
+GetProfessionInfo = function(idx)
+  if idx == 1 then return "Schneiderei", 1, 60, 75, 0, 0, 197 end
+  return "Verzauberkunst", 1, 25, 75, 0, 0, 333
+end
+Chars.UpdateProfessions()
+eq(me.professions[197].rank, 60, "rank refreshed")
+eq(me.professions[197].learnedCount, 1, "learned count kept")
+eq(me.professions[197].learned[1], true, "learned set kept")
+eq(me.professions[333].name, "Verzauberkunst", "new profession added")
+GetProfessions = function() return 1 end
+Chars.UpdateProfessions()
+eq(me.professions[333].former ~= nil, true, "unlearned profession marked former, not deleted")
+GetProfessions = function() return nil end
+GetProfessionInfo = function() return nil end
+
 -- restore stubs for other tests
 UnitFullName = function() return "Testchar", "" end
 GetRealmName = nil

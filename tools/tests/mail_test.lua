@@ -50,6 +50,9 @@ eq(target and target.name, "Cupedos Bank", "tailoring pattern goes to the tailor
 target, reason = Mail.TargetFor({ itemID = 8888, quality = 0, isBound = false })
 eq(target, nil, "grey items stay")
 eq(reason, "Händler", "vendor reason")
+target, reason = Mail.TargetFor({ itemID = 8888, quality = 1, isBound = false })
+eq(reason, "keine Regel", "consumables: no rule applies")
+eq(#Mail.Explain(), 0, "explain lists bag items (none in headless)")
 
 -- own-profession materials stay when the setting is on; leather subclass 6 -> leatherworking 165
 CLASSES[2318] = { 7, 6 }

@@ -35,5 +35,5 @@ read_globals = {
   "ATTACHMENTS_MAX_SEND", "GetNumLootItems", "GetLootSlotInfo", "GetLootSlotLink", "C_Map",
   "GetMerchantNumItems", "GetMerchantItemInfo", "GetMerchantItemLink", "UnitName", "unpack",
   "GetNumTrainerServices", "GetTrainerServiceInfo", "GetTrainerServiceSkillReq", "GetTrainerServiceLevelReq",
-  "GetTrainerServiceCost", "ERR_MAIL_TARGET_NOT_FOUND", "debugstack",
+  "GetTrainerServiceCost", "ERR_MAIL_TARGET_NOT_FOUND", "debugstack", "C_MerchantFrame",
 }

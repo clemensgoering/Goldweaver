@@ -48,6 +48,7 @@ local L_RADIANT      = I(11178, "Large Radiant Shard")
 local S_BRILLIANT    = I(14343, "Small Brilliant Shard")
 local L_BRILLIANT    = I(14344, "Large Brilliant Shard")
 local NEXUS_CRYSTAL  = I(20725, "Nexus Crystal")
+I(247786, "Mote of Magic") -- new Forever reagent (ID read from the game, 08.11.2026)
 
 Data.Disenchant = {
   -- Brackets by the item's "Requires Level". dust/essence = {item, min, max}; shard = item; crystal = item or nil.

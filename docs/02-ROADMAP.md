@@ -170,7 +170,9 @@ Noch nicht automatisierbar (brauchen Entwicklung, nicht Spielzeit): B2 Profile, 
 | F4 | Secure-Button mit `macrotext` | **beantwortet: ja** | Lauf 3: `/dance` im Makrotext eines `SecureActionButtonTemplate`-Buttons wird ausgeführt. Zerlegen-Queue kann `/cast Entzaubern` + Item-Ziel nutzen |
 | F5 | `TooltipDataProcessor` | **beantwortet** | vorhanden |
 | F6 | Laufzeiten und Einzahlung | **teilweise beantwortet** | 2 / 8 / 24 h. Einzahlung 1 Silber pauschal für 1× Leinenstoff; Formel über Rechnung prüfen |
-| F7 | Favor pro Kiste, Bündel je Kategorie | offen | |
+| F7 | Favor pro Kiste, Bündel je Kategorie | offen (automatisch) | Kisten-Tooltips werden erfasst; erster Treffer war ein Fehlalarm (Magiepartikel), Erkenner verschärft |
+| F14 | Rezeptquelle aus der API | **beantwortet: nein** | `GetRecipeInfo` hat kein Quellenfeld (Felder: learned, relativeDifficulty, numSkillUps, maxTrivialLevel, canSkillUp, isSalvageRecipe, …). Quellen nur aus eigenen Lehrer-/Händlerbesuchen |
+| F15 | Grau-Grenze je Rezept | **beantwortet: ja** | `maxTrivialLevel` liefert den Skill, ab dem ein Rezept grau wird; der Planer begrenzt Crafts damit |
 | F8 | Interface 16001 nach Patch | **beantwortet** | Live-Build 70862 nutzt 16001 |
 | F9 | AH-Budget pro Minute | offen, kein Fix erwartet | Konservatives Design |
 | F10 | Post nach Vorname | offen | Testsendung vor erster echter Sendung |

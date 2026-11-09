@@ -49,19 +49,22 @@ function Data.Crates.FavorRate(tier)
   return (override and override[tier]) or Data.Crates.favorPerCrate[tier] or 0
 end
 
--- For an item: { category, tier, bundleQty, favor } or nil if no crate takes it.
+-- For an item: { category, tier, bundleQty, favor, unverified } or nil if no crate takes it.
 function Data.Crates.For(itemID)
   if not index then buildIndex() end
   local e = index[itemID]
   if not e then return nil end
-  return { category = e.category, tier = e.tier, bundleQty = e.qty, favor = Data.Crates.FavorRate(e.tier) }
+  local category = Data.Crates.bundles[e.category]
+  return { category = e.category, tier = e.tier, bundleQty = e.qty, favor = Data.Crates.FavorRate(e.tier), unverified = category and category.unverified or false }
 end
 
 -- Gold-equivalent value of putting `qty` of an item into crates, given favorValueCopper per Favor.
 -- Only whole bundles count unless allowPartial is true (then the value is proportional).
+-- Unverified bundle categories return nil unless GoldweaverDB.settings.unverifiedCrates is set (honest numbers only).
 function Data.Crates.Value(itemID, qty, favorValueCopper, allowPartial)
   local e = Data.Crates.For(itemID)
   if not e or not favorValueCopper or favorValueCopper <= 0 then return nil end
+  if e.unverified and not (ns.db and ns.db.settings and ns.db.settings.unverifiedCrates) then return nil end
   local bundles = allowPartial and (qty / e.bundleQty) or math.floor(qty / e.bundleQty)
   if bundles <= 0 then return 0, e end
   return math.floor(bundles * e.favor * favorValueCopper), e

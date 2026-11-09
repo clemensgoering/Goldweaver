@@ -47,7 +47,10 @@ UI.RegisterTab("heute", "Heute", function(frame)
 
   local checks = UI.Group(frame, "SELBSTPRÜFUNG", W, 96)
   checks:SetPoint("TOPLEFT", sales, "BOTTOMLEFT", 0, -10)
-  local checkLines = UI.Lines(checks, 3, W - 20, "GameFontHighlightSmall")
+  local checkLines = UI.Lines(checks, 3, W - 200, "GameFontHighlightSmall")
+  local checkButton = UI.Button(checks, "Nächsten Schritt öffnen", 170, nil)
+  checkButton:SetPoint("TOPRIGHT", -10, -26)
+  checkButton:Hide()
 
   local tip = UI.Text(frame, "", "GameFontDisableSmall")
   tip:SetPoint("BOTTOMLEFT", 0, 0)
@@ -96,12 +99,21 @@ UI.RegisterTab("heute", "Heute", function(frame)
     local failText = s.fail > 0 and (", " .. s.fail .. " fehlgeschlagen") or ""
     local summary = ("%d von %d Prüfungen bestanden, %d offen%s. Das Addon prüft sich selbst, während du spielst."):format(s.pass, s.total, s.pending, failText)
     local clines = { { summary, s.fail > 0 and 1 or 0.6, s.fail > 0 and 0.5 or 1, 0.6 } }
-    for _, r in ipairs(ns.Checks.NextPending(2)) do
+    local pending = ns.Checks.NextPending(2)
+    for _, r in ipairs(pending) do
       local failed = r.status == "fail"
       local text = ("%s %s → %s"):format(failed and "✗" or "…", r.title, failed and tostring(r.detail) or (r.hint or ""))
       clines[#clines + 1] = { text, failed and 1 or 0.8, failed and 0.5 or 0.8, failed and 0.5 or 0.8 }
     end
     checkLines:Set(clines)
+    local withAction
+    for _, r in ipairs(pending) do if r.action then withAction = r; break end end
+    if withAction then
+      checkButton:SetScript("OnClick", function() withAction.action() end)
+      checkButton:Show()
+    else
+      checkButton:Hide()
+    end
     tip:SetText("Verkäufe werden beim Abholen der Post erfasst. Zahlen tragen Quelle und Alter; ~ markiert unbestätigte Daten. /gw debug run erstellt den Bericht.")
   end
   return content
@@ -121,7 +133,10 @@ UI.RegisterTab("berufe", "Berufe", function(frame)
 
   local status = UI.Group(frame, "STATUS", W, 92)
   status:SetPoint("TOPLEFT", selector, "BOTTOMLEFT", 0, -6)
-  local statusLines = UI.Lines(status, 3, W - 20, "GameFontHighlight")
+  local statusLines = UI.Lines(status, 3, W - 190, "GameFontHighlight")
+  -- one click opens the profession window so the book loads; no spellbook hunting (user request 08.11.2026)
+  local loadButton = UI.Button(status, "Rezepte laden", 160, nil)
+  loadButton:SetPoint("TOPRIGHT", -10, -26)
 
   local nextStep = UI.Group(frame, "NÄCHSTER SKILL-UP", W, 176)
   nextStep:SetPoint("TOPLEFT", status, "BOTTOMLEFT", 0, -8)
@@ -234,16 +249,23 @@ UI.RegisterTab("berufe", "Berufe", function(frame)
       lines[1] = { "Dieser Charakter hat diesen Beruf nicht.", 0.7, 0.7, 0.7 }
     end
     statusLines:Set(lines)
+    loadButton:SetText(book and "Rezepte aktualisieren" or "Rezepte laden")
+    if ns.Features.Available("openProfession") and p then loadButton:Enable() else loadButton:Disable() end
+    loadButton:SetScript("OnClick", function()
+      local ok, err = ns.Adapter.Open(skillLine)
+      if not ok then ns.Print("Beruf öffnen: " .. tostring(err)) end
+    end)
 
     currentPlan = book and ns.Planner.Plan(skillLine, me) or nil
     local best = currentPlan and currentPlan.best
     if best then
       local r = best.recipe
       local chance = math.floor(best.chance * 100 + 0.5)
+      local greyText = best.pointsLeft and (" · grau in %d Punkten"):format(best.pointsLeft) or ""
       stepRow:Set({ {
         icon = r.icon or r.outputItemID, text = ("%s ×%d"):format(r.name, currentPlan.crafts or 1),
         right = ("≈ %s je Punkt"):format(money(best.costPerPoint)), rightColor = { 1, 0.9, 0.6 },
-        sub = ("Skill-up-Chance %d %% · Materialkosten %s je Stück · Produkt %s"):format(chance, money(best.cost), best.productValue > 0 and ("≈ " .. money(best.productValue)) or "ohne AH-Preis"),
+        sub = ("Skill-up-Chance %d %%%s · Materialkosten %s je Stück · Produkt %s"):format(chance, greyText, money(best.cost), best.productValue > 0 and ("≈ " .. money(best.productValue)) or "ohne AH-Preis"),
         itemID = r.outputItemID, tooltip = not r.outputItemID and r.name or nil,
       } })
       local rrows = {}

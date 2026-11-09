@@ -58,16 +58,19 @@ end
 -- F7 crates -----------------------------------------------------------------------------------------
 -- Called from the tooltip hook with the TooltipData lines of an item. Captures anything that mentions favor.
 function Learn.CrateTooltip(itemID, name, lines)
+  -- Only real crates: the name or a line must name a crate AND a line must mention favor. (First run matched
+  -- "Magiepartikel ... Verfügbar bei Händlern", so the word "Händler" alone is not enough.)
   local text = {}
-  local mentionsFavor = false
+  local mentionsFavor, mentionsCrate = false, false
   for _, line in ipairs(lines or {}) do
     local left = line.leftText
     if type(left) == "string" and not ns.Secret.IsSecret(left) then
       text[#text + 1] = left
-      if left:find("Favor") or left:find("Gunst") or left:find("Merchant") or left:find("Händler") then mentionsFavor = true end
+      if left:find("Favor") or left:find("Gunst") then mentionsFavor = true end
+      if left:find("Crate") or left:find("Kiste") or left:find("Waylaid") or left:find("Lieferung") or left:find("Bündel") then mentionsCrate = true end
     end
   end
-  if not mentionsFavor then return end
+  if not (mentionsFavor and mentionsCrate) then return end
   local l = L()
   l.crates = l.crates or {}
   local entry = { name = name, lines = text, t = time(), bundles = {}, favor = nil }
@@ -78,7 +81,9 @@ function Learn.CrateTooltip(itemID, name, lines)
     if qty and what then entry.bundles[#entry.bundles + 1] = { qty = tonumber(qty), text = what } end
   end
   l.crates[itemID] = entry
-  if ns.Checks then ns.Checks.Pass("f7crate", ("%s: %d Bündelzeilen, Favor %s"):format(tostring(name), #entry.bundles, tostring(entry.favor or "?"))) end
+  if ns.Checks and (entry.favor or #entry.bundles > 0) then
+    ns.Checks.Pass("f7crate", ("%s: %d Bündelzeilen, Favor %s"):format(tostring(name), #entry.bundles, tostring(entry.favor or "?")))
+  end
 end
 
 -- F10 mail format ------------------------------------------------------------------------------------
@@ -241,10 +246,7 @@ function Learn.RecipeSource(recipe)
       return ("Händler %s%s, %s%s"):format(tostring(v.npc), c and c.zone and (" (" .. c.zone .. ")") or "", ns.Util.Money(v.buy or 0), v.limited and ", limitiert" or ""), "vendor", itemID
     end
   end
-  if recipe.sourceType ~= nil then
-    local enumName = Learn.EnumName(recipe.sourceType, "Source")
-    return "Quelle: " .. (enumName or tostring(recipe.sourceType)), "enum"
-  end
+  -- Forever's RecipeInfo has no source field (verified 08.11.2026); only own visits can answer this.
   return nil
 end
 

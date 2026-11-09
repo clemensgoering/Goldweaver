@@ -89,9 +89,13 @@ function Adapter.Read()
         id = recipeID, name = info.name, icon = info.icon or (schem and schem.icon),
         outputItemID = schem and schem.outputItemID, qtyMin = schem and schem.qtyMin or 1, qtyMax = schem and schem.qtyMax or 1,
         reagents = schem and schem.reagents or {},
-        difficulty = difficultyOf(info), numSkillUps = info.numSkillUps, sourceType = info.sourceType,
+        difficulty = difficultyOf(info), numSkillUps = info.numSkillUps,
+        -- Forever 1.60.1 RecipeInfo (verified 08.11.2026): no sourceType; maxTrivialLevel = skill at which the recipe
+        -- turns grey, canSkillUp = still gives points at the current skill
+        maxTrivialLevel = info.maxTrivialLevel, canSkillUp = info.canSkillUp,
         craftable = info.craftable, disabled = info.disabled, hyperlink = info.hyperlink,
         isEnchant = info.isEnchantingRecipe or (schem and schem.outputItemID == nil) or false,
+        isSalvage = info.isSalvageRecipe or false, isGathering = info.isGatheringRecipe or false,
       }
       book.list[#book.list + 1] = rec
       book.byID[recipeID] = rec
@@ -167,6 +171,25 @@ end
 
 function Adapter.IsOpen()
   return C_TradeSkillUI and C_TradeSkillUI.IsTradeSkillReady and C_TradeSkillUI.IsTradeSkillReady() or false
+end
+
+-- Opens a profession window from a click handler so the book can be read without hunting for the spellbook.
+-- Returns true when the request was sent; the TRADE_SKILL_LIST_UPDATE handler then reads the recipes.
+function Adapter.Open(skillLine)
+  if not (C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill) then return false, "OpenTradeSkill fehlt" end
+  local ok, err = pcall(C_TradeSkillUI.OpenTradeSkill, skillLine)
+  return ok, err
+end
+
+-- Skill lines of this character that have no cached book yet (crafting/secondary only; gathering has no recipes to plan).
+function Adapter.MissingBooks(rec)
+  rec = rec or ns.Chars.Current()
+  local out = {}
+  for skillLine, p in pairs(rec and rec.professions or {}) do
+    if not p.former and not Adapter.Book(skillLine) then out[#out + 1] = { skillLine = skillLine, name = p.name } end
+  end
+  table.sort(out, function(a, b) return (a.name or "") < (b.name or "") end)
+  return out
 end
 
 -- Crafts a recipe `count` times. Must be called from a click handler while the profession window is open.

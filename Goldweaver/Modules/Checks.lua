@@ -42,7 +42,7 @@ function Checks.Status()
   for _, id in ipairs(Checks.order) do
     local def = Checks.defs[id]
     local st = Checks.Get(id)
-    rows[#rows + 1] = { id = id, title = def.title, status = st.status, detail = st.detail, hint = def.hint, when = st.when, group = def.group }
+    rows[#rows + 1] = { id = id, title = def.title, status = st.status, detail = st.detail, hint = def.hint, when = st.when, group = def.group, action = def.action }
   end
   return rows
 end
@@ -82,16 +82,20 @@ D("stock", { group = "A", title = "Bestand über Bank/Twinks im Tooltip", hint =
 D("mailButtons", { group = "A", title = "Briefkasten-Knöpfe erscheinen", hint = "Briefkasten öffnen." })
 D("mailAttach", { group = "A", title = "Anhängen füllt Empfänger und Anhänge", hint = "Im Briefkasten 'Anhängen für …' klicken." })
 D("mailSend", { group = "A", title = "Post an den Verarbeiter zugestellt (Empfängerformat bestätigt)", hint = "Nach dem Anhängen 'Senden an …' klicken." })
-D("mailOpen", { group = "A", title = "'Alles abholen' leert den Posteingang", hint = "Mit Post im Eingang den Knopf klicken." })
-D("ledger", { group = "A", title = "Verkauf aus einer AH-Rechnung erfasst", hint = "Etwas im AH verkaufen, Post abholen." })
-D("book", { group = "A", title = "Rezeptbuch gelesen (C_TradeSkillUI)", hint = "Ein Berufefenster öffnen." })
-D("plan", { group = "A", title = "Skill-up-Plan mit Einkaufsliste berechnet", hint = "Beruf mit lernbaren Rezepten öffnen, dann Fenster → Berufe." })
-D("craft", { group = "A", title = "Herstellen über den Leitfaden-Knopf", hint = "Im Leitfaden 'Herstellen ×N' bei offenem Berufefenster klicken." })
-D("disenchant", { group = "A", title = "Entzaubern über die Queue (Secure-Button)", hint = "/gw de auf dem Verzauberer, Knopf klicken." })
+D("mailOpen", { group = "A", title = "Posteingang mit AH-Post geöffnet (Blizzard 'Alle öffnen'), Rechnungen erfasst", hint = "Nach einem Verkauf den Briefkasten öffnen und 'Alle öffnen' klicken." })
+D("ledger", { group = "A", title = "Verkauf aus einer AH-Rechnung erfasst", hint = "Etwas im AH verkaufen, Post öffnen." })
+D("book", { group = "A", title = "Rezeptbuch gelesen (C_TradeSkillUI)", hint = "Fenster → Berufe → 'Rezepte laden' (öffnet den Beruf per Knopf).",
+  action = function() ns.UI.Open("berufe") end })
+D("plan", { group = "A", title = "Skill-up-Plan mit Einkaufsliste berechnet", hint = "Beruf mit lernbaren Rezepten laden, dann Fenster → Berufe.",
+  action = function() ns.UI.Open("berufe") end })
+D("craft", { group = "A", title = "Herstellen über den Leitfaden-Knopf", hint = "Im Leitfaden 'Herstellen ×N' bei geladenem Beruf klicken.",
+  action = function() ns.UI.Open("berufe") end })
+D("disenchant", { group = "A", title = "Entzaubern über die Queue (Secure-Button)", hint = "/gw de auf dem Verzauberer, Knopf klicken.",
+  action = function() if ns.Destroy then ns.Destroy.Show() end end })
 D("ahObserve", { group = "A", title = "AH-Suchseite in die Preisdatenbank übernommen", hint = "Im AH nach einem Item suchen." })
 D("ahSuggest", { group = "A", title = "Verkaufsvorschlag angezeigt und Preis vorbelegt", hint = "Ein Item in den Verkaufen-Tab legen." })
 D("contacts", { group = "A", title = "Lehrer oder Händler aufgezeichnet", hint = "Einen Berufslehrer oder Händler ansprechen." })
-D("selftest", { group = "A", title = "Debug-Bericht ohne rote Modulzeilen", hint = "/gw debug run." })
+D("selftest", { group = "A", title = "Debug-Bericht ohne rote Modulzeilen", hint = "/gw debug run.", action = function() if ns.Debug then ns.Debug.Run() end end })
 -- open questions answered by observation
 D("f6deposit", { group = "F", title = "F6 Einzahlungsformel aus echten Werten", hint = "Items in den Verkaufen-Tab legen (drei verschiedene genügen)." })
 D("f7crate", { group = "F", title = "F7 Kisten-Bündel und Favor aus einem Kisten-Tooltip", hint = "Eine Waylaid Crate im Tooltip ansehen." })
