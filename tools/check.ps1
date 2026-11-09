@@ -47,5 +47,12 @@ if ($lua) {
   $ran++
 }
 
+# whole-addon session simulation (every TOC file, simulated client, two template modes)
+if ($lua) {
+  & $lua (Join-Path $root "tools\tests\sim.lua") $root
+  if ($LASTEXITCODE -ne 0) { $failed = $true }
+  $ran++
+}
+
 if ($ran -eq 0) { Write-Host "CHECK FAILED: no tool available"; exit 2 }
 if ($failed) { Write-Host "CHECK FAILED"; exit 1 } else { Write-Host "CHECK OK ($ran steps)"; exit 0 }

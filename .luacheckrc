@@ -38,5 +38,5 @@ read_globals = {
   "GetTrainerServiceCost", "ERR_MAIL_TARGET_NOT_FOUND", "debugstack", "C_MerchantFrame",
   "C_SuperTrack", "UiMapPoint", "ClassTrainerFrame", "MerchantFrame", "ProfessionsFrame", "HideUIPanel",
   "ITEM_QUALITY_COLORS", "OpenWorldMap", "ToggleWorldMap", "PanelTemplates_SetNumTabs", "PanelTemplates_SetTab",
-  "PanelTemplates_TabResize", "PlaySound", "SOUNDKIT", "Settings", "RXP", "RXPCData",
+  "PanelTemplates_TabResize", "PlaySound", "SOUNDKIT", "Settings", "RXP", "RXPCData", "ReloadUI",
 }

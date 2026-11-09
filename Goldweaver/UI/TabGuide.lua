@@ -56,13 +56,20 @@ UI.RegisterTab("guide", "Leitfaden", function(frame)
     list:SetSteps(steps, 1)
     afterTitle:SetText(#steps > 1 and "DANACH" or "DANACH · nichts weiter")
 
-    local h = ns.Autopilot and ns.Autopilot.status.health
     local s = ns.Checks.Summary()
-    if h and h.red > 0 then
-      healthIcon:SetTexture("Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew")
-      healthText:SetText(("%d Funktion(en) eingeschränkt"):format(h.red))
-      healthText:SetTextColor(1, 0.5, 0.4)
-      healthSub:SetText(h.rows[1] or "")
+    local finding = ns.Diagnose and ns.Diagnose.Latest()[1]
+    reportButton:SetText("Bericht")
+    reportButton:SetScript("OnClick", function() ns.Debug.Run() end)
+    if finding and finding.severity ~= "info" or (finding and finding.fix) then
+      local isError = finding.severity == "error"
+      healthIcon:SetTexture(isError and "Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew" or "Interface\\FriendsFrame\\InformationIcon")
+      healthText:SetText(finding.title)
+      if isError then healthText:SetTextColor(1, 0.5, 0.4) else healthText:SetTextColor(1, 0.82, 0) end
+      healthSub:SetText(finding.detail or "")
+      if finding.fix and finding.fixLabel then
+        reportButton:SetText(finding.fixLabel)
+        reportButton:SetScript("OnClick", function() finding.fix(); ns.Diagnose.Run(); content:Refresh() end)
+      end
     else
       healthIcon:SetTexture("Interface\\RaidFrame\\ReadyCheck-Ready")
       healthText:SetText("Alles bereit")

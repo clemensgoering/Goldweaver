@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Goldweaver Mockups</title>
+<style>
+:root{--gold:#ffd100;--frame:#6b5a3e;--bg:#0b0907;--panel:#100d09;--inset:#0d0b08;--line:#3a2e20;--grey:#9a9a9a}
+body{margin:0;background:#1b1712;font:13px Arial,Helvetica,sans-serif;color:#fff}
+h1{font:22px Georgia,serif;color:var(--gold);margin:16px 24px 4px}
+p.lead{margin:0 24px 16px;color:#cfc6b0;max-width:900px}
+.stage{padding:24px 24px 60px;display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+.win{position:relative;width:800px;height:600px;box-sizing:border-box;border:2px solid var(--frame);border-radius:6px;background:#15110c;margin-top:16px}
+.portrait{position:absolute;left:-10px;top:-16px;width:60px;height:60px;border-radius:50%;border:3px solid #c8a24a;background:#2a1d14;display:flex;align-items:center;justify-content:center;font:28px Georgia,serif;color:var(--gold)}
+.title{height:26px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line);font:14px Georgia,serif;color:var(--gold)}
+.close{position:absolute;right:4px;top:3px;width:20px;height:20px;background:#7a1a12;border:1px solid #c8a24a;color:var(--gold);border-radius:3px}
+.sub{position:absolute;left:62px;top:32px;font-size:12px;color:#d0d0d0}
+.body{position:absolute;left:6px;right:6px;top:56px;bottom:6px;background:var(--inset);border:1px solid var(--line);padding:8px;display:flex;gap:10px}
+.col{display:flex;flex-direction:column;gap:8px}
+.box{box-sizing:border-box;border:1px solid var(--line);background:var(--panel);padding:8px 10px}
+.sec{font:13px Georgia,serif;color:var(--gold);border-bottom:1px solid rgba(255,209,0,.25);padding-bottom:3px;margin-bottom:6px}
+.row{display:flex;align-items:center;gap:8px;min-height:36px;border-bottom:1px solid #1f1a12}
+.ic{flex:none;box-sizing:border-box;border:2px solid #9d9d9d;display:flex;align-items:center;justify-content:center;font:700 9px Arial;color:#eee}
+.t{flex:1;min-width:0;display:flex;flex-direction:column}
+.t small{color:var(--grey);font-size:11px}
+.btn{background:#7a1a12;border:1px solid #c8a24a;color:var(--gold);font:700 11px Arial;padding:0 10px;height:22px;border-radius:3px;cursor:pointer;white-space:nowrap}
+.btn.big{height:26px;font-size:12px;padding:0 14px}
+.btn:disabled{background:#2a2420;color:#777;border-color:#555}
+.tabs{display:flex;gap:3px;margin-left:16px}
+.tab{height:30px;padding:0 18px;background:#2a1d14;border:1px solid var(--frame);border-top:none;border-radius:0 0 6px 6px;color:#c9b27a;font:13px Georgia,serif;cursor:pointer}
+.tab.on{background:#3d2a1a;color:var(--gold);height:34px}
+.bar{position:relative;height:12px;background:#000}.bar i{display:block;height:12px;background:#1a8c1a}.bar span{position:absolute;inset:0;font-size:10px;text-align:center;line-height:12px}
+.cap{font-size:11px;color:#ffe9a0}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<h1>Goldweaver – Mockups</h1>
+<p class="lead">Statische Entwürfe zum Besprechen ohne Spiel. Reiter unten wechseln die Ansicht. Beschriftete Kacheln stehen für Spiel-Icons; Farben: Gold = Überschrift, Grün/Blau-Rand = Item-Qualität, Orange/Gelb/Grün/Grau = Skill-Farbe wie im Spiel, Rot = Skill zu niedrig.</p>
+<div class="stage">
+  <div>
+    <div class="win">
+      <div class="portrait">G</div><div class="title">Goldweaver</div><button class="close" aria-label="Schließen">x</button>
+      <div class="sub" id="sub"></div>
+      <div class="body" id="view"></div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+
+  <div style="position:relative;width:1000px;height:560px;background:#55603a;border:1px solid #333">
+    <span style="position:absolute;left:420px;top:260px;font:14px Georgia,serif;color:rgba(255,255,255,.4)">Spielwelt (Brachland)</span>
+    <div style="position:absolute;left:330px;top:8px;padding:3px 12px;background:rgba(0,0,0,.55);border:1px solid rgba(200,162,74,.6);font-size:11px">Für Cupedos: 3g 42s (14) · Session +1g 18s 40c</div>
+    <span class="cap" style="position:absolute;left:330px;top:32px">HUD-Zeile (nur Mains)</span>
+    <div style="position:absolute;right:16px;top:12px;width:120px;height:120px;border-radius:50%;background:#27301c;border:4px solid #8a7444"></div>
+    <div style="position:absolute;right:122px;top:96px;width:28px;height:28px;border-radius:50%;background:#2a1d14;border:2px solid #c8a24a;color:var(--gold);display:flex;align-items:center;justify-content:center">G</div>
+    <div style="position:absolute;right:16px;top:150px;width:250px;background:rgba(0,0,0,.4)" id="panel"></div>
+    <div style="position:absolute;left:20px;top:40px;width:300px;background:rgba(10,10,30,.94);border:1px solid #6b6b8a;border-radius:4px;padding:8px 10px;line-height:1.5">
+      <div style="font-size:14px">Wilddornrose</div><div>Handwerkswaren</div><div style="color:#ccc">Verkaufspreis: 5c</div><br>
+      <div style="color:#d4a94e">Goldweaver: an Cupedos schicken → AH ≈ 18s</div>
+      <div style="color:var(--gold)">&nbsp; Gefragt: Cupedos braucht 12 (Heiltrank)</div>
+      <div style="color:#999">&nbsp; Bestand: Taschen 6 · Bank 0 · Cupedos 4</div>
+      <div style="color:#777">&nbsp; Shift: alle Optionen</div>
+    </div>
+    <span class="cap" style="position:absolute;left:20px;top:226px">Tooltip</span>
+    <div style="position:absolute;left:20px;top:270px;width:340px;height:220px;background:#d8c49a;border:3px solid var(--frame)">
+      <div style="height:24px;background:#2a1d14;color:var(--gold);display:flex;align-items:center;justify-content:center">Posteingang</div>
+      <div style="padding:10px;color:#4a3820">Auktionshaus: Verkauf erfolgreich (2)</div>
+    </div>
+    <button class="btn big" style="position:absolute;left:40px;top:500px;width:300px">Anhängen für Cupedos: 12 von 14 (3g 42s)</button>
+    <span class="cap" style="position:absolute;left:360px;top:504px">Knopf unter dem Briefkasten; zweiter Klick sendet</span>
+  </div>
+</div>
+
+<script>
+const tile=(tag,bg,border,size)=>`<div class="ic" style="width:${size||28}px;height:${size||28}px;background:${bg};border-color:${border||'#9d9d9d'}">${tag}</div>`;
+const row=(r)=>`<div class="row">${tile(r.tag,r.bg,r.border,r.size)}<div class="t"><span style="color:${r.color||'#fff'}">${r.name}</span><small>${r.sub||''}</small></div>${r.right?`<span style="font-size:11px;color:${r.rc||'#fff'}">${r.right}</span>`:''}${r.btn?`<button class="btn">${r.btn}</button>`:''}</div>`;
+const box=(title,inner,style)=>`<div class="box" style="${style||''}"><div class="sec">${title}</div>${inner}</div>`;
+const HERB='#2f5a2a';
+const views={
+ guide:{sub:'Cupedos Grel · Main (sammelt) · EU-PvE-Horde', html:`
+  <div class="col" style="width:490px">
+   <div class="box" style="position:relative;height:104px;background:#1a1408;border-color:#5a4a30;display:flex;gap:12px">
+    ${tile('POST','#3b4a5c','#9d9d9d',52)}
+    <div class="t"><span style="font:700 11px Arial;color:var(--gold)">JETZT · SCHRITT 1 VON 5 · POST</span><span style="font:18px Georgia,serif">14 Items an Cupedos Bank schicken</span><span style="color:#e0e0e0">Am nächsten Briefkasten: „Anhängen“, dann „Senden“.</span></div>
+    <span style="position:absolute;right:12px;top:14px;color:#66ff66;font-weight:700">≈ 3g 42s</span></div>
+   ${box('DANACH',[
+    {tag:'LDR',bg:'#5c4630',name:'2. 8× Leichtes Leder besorgen',sub:'Lederverarbeitung · für Leichte Lederhose ×8',right:'−1g 04s',rc:'#ff9a66',btn:'Im AH suchen'},
+    {tag:'HOS',bg:'#4a3a28',border:'#1eff00',name:'3. Leichte Lederhose ×8 herstellen',sub:'Lederverarbeitung 81 → 89 · ≈ 13s je Punkt',btn:'Zum Beruf'},
+    {tag:'LDR',bg:'#5c4630',name:'4. Mittleres Leder häuten',sub:'Unterwegs · Brachland · Cupedos Bank braucht 8',right:'≈ 18s',rc:'#66ff66',btn:'Unterwegs'},
+    {tag:'GLD',bg:'#5a4a1a',border:'#1eff00',name:'5. Grober Lederumhang herstellen und verkaufen',sub:'+42s je Stück nach AH-Cut',right:'≈ 42s',rc:'#66ff66',btn:'Zum Beruf'}].map(row).join(''),'flex:1')}
+   <div class="box" style="display:flex;align-items:center;gap:10px"><span style="color:#80ff80">✓ Alles bereit</span><small style="flex:1;color:var(--grey)">Selbstprüfung beim Login · 18 von 32 Funktionen im Spiel bestätigt</small><button class="btn">Bericht</button></div>
+  </div>
+  <div class="col" style="flex:1">${box('UNTERWEGS · BRACHLAND',`<small style="color:#d0d0d0">Stufe 10–25 · passt zu deinem Level</small>`+[
+    {tag:'LDR',bg:'#5c4630',name:'Mittleres Leder',sub:'Wildtiere häuten',right:'gefragt ×8',rc:'var(--gold)',size:24},
+    {tag:'WOL',bg:'#4a4a5a',name:'Wollstoff',sub:'von Humanoiden',right:'8s',size:24}].map(row).join('')+
+    `<div class="sec" style="margin-top:10px">AUF DEINER ROUTE (RestedXP)</div><div>Steinkrallengebirge (15–27)</div><div>Eschental (18–30)</div><div>Tausend Nadeln (25–35)</div>
+     <div class="sec" style="margin-top:10px">HEUTE</div><div>Session +1g 18s 40c</div><div>Verkauft 2g 05s (3)</div><div>Gold 14g 22s 31c</div>`,'flex:1')}</div>`},
+ field:{sub:'Cupedos Grel · Main (sammelt) · EU-PvE-Horde', html:`
+  <div class="col" style="flex:1">
+   <div class="box" style="display:flex;align-items:center"><div class="t"><span style="font:18px Georgia,serif;color:var(--gold)">Brachland</span><small style="color:#d0d0d0">Stufe 10–25 · <span style="color:#80ff80">passt zu Level 23</span> · Classic-Daten, ergänzt um deine Funde</small></div><button class="btn">Weltkarte</button></div>
+   <div style="display:flex;gap:10px;flex:1">
+    ${box('HIER SAMMELN (10)',[
+     {tag:'WDR',bg:HERB,name:'Wilddornrose',color:'#ff8040',sub:'Kräuterkunde 70 · orange · selbst gesammelt ×6',right:'gefragt ×12',rc:'var(--gold)'},
+     {tag:'MAG',bg:HERB,name:'Maguskönigskraut',color:'#ffff00',sub:'Kräuterkunde 50 · gelb',right:'22s'},
+     {tag:'ERD',bg:HERB,name:'Erdwurzel',color:'#40bf40',sub:'Kräuterkunde 15 · grün',right:'9s'},
+     {tag:'FRI',bg:HERB,name:'Friedensblume',color:'#808080',sub:'Kräuterkunde 1 · grau',right:'4s'},
+     {tag:'BEU',bg:HERB,name:'Beulengras',color:'#ff3333',sub:'Kräuterkunde 100 · Skill zu niedrig',right:'31s'},
+     {tag:'KUP',bg:'#6a4a2a',name:'Kupfererz',color:'#d9d9d9',sub:'braucht Bergbau 1',right:'15s'},
+     {tag:'ZIN',bg:'#6a6a6a',name:'Zinnerz',color:'#d9d9d9',sub:'braucht Bergbau 65',right:'21s'}].map(row).join(''),'width:470px')}
+    <div class="col" style="flex:1">
+     ${box('GEGNER HIER',[{tag:'WOL',bg:'#4a4a5a',name:'Wollstoff',sub:'Humanoide · Schneiderei/Erste Hilfe',right:'8s'},{tag:'LDR',bg:'#5c4630',name:'Mittleres Leder',sub:'Wildtiere häuten',right:'gefragt ×8',rc:'var(--gold)'}].map(row).join('')+'<small style="color:var(--grey)">Kürschnerei: du häutest bis Level 28 · alles hier möglich</small>')}
+     ${box('BESTE ZONEN FÜR DEINE SKILLS',[{tag:'KÜR',bg:'#5c4630',name:'Eschental',sub:'Kürschnerei · Stufe 18–30',btn:'Ansehen'}].map(row).join(''))}
+     ${box('RESTEDXP: 23-25 BRACHLAND',[{tag:'MAP',bg:'#3b4a5c',name:'Steinkrallengebirge',sub:'Stufe 15–27 · ab Schritt 41',btn:'Ansehen'},{tag:'MAP',bg:'#3b4a5c',name:'Eschental',sub:'Stufe 18–30 · ab Schritt 58',btn:'Ansehen'}].map(row).join(''),'flex:1')}
+    </div></div></div>`},
+ prof:{sub:'Cupedos Bank · Verarbeiter · EU-PvE-Horde', html:`
+  ${box('DEINE BERUFE',`
+   <div class="row" style="background:rgba(255,209,0,.12)">${tile('SCH','#5a3a5a','#9d9d9d',30)}<div class="t"><span style="color:var(--gold)">Schneiderei</span><div class="bar"><i style="width:71%"></i><span>53 / 75</span></div></div></div>
+   <div class="row">${tile('VZK','#3a3a7a','#9d9d9d',30)}<div class="t"><span style="color:var(--gold)">Verzauberkunst</span><div class="bar"><i style="width:33%"></i><span>25 / 75</span></div></div></div>
+   <div style="height:300px"></div><button class="btn big" style="width:100%">Welcher Beruf lohnt sich?</button>`,'width:196px')}
+  <div class="col" style="flex:1;min-width:0">
+   ${box('STATUS · SCHNEIDEREI 53 / 75',`<div style="display:flex"><div class="t"><span>Lehrling → Geselle ab Skill 50, Level 10 · <span style="color:#ff9a66">noch 4 Level</span></span><small>Nächster Rang bei: Magar (Orgrimmar) · selbst gesehen</small><small>Rezepte: 24 von 471 gelernt · gelesen vor 3 min (automatisch)</small></div><button class="btn">Rezepte aktualisieren</button></div>`)}
+   ${box('NÄCHSTER SKILL-UP',[
+    {tag:'TAS',bg:'#4a3a5a',border:'#1eff00',size:34,name:'Leinentasche ×8',sub:'Skill-up 100 % · grau in 8 Punkten · Material 64c je Stück',right:'≈ 64c je Punkt',rc:'var(--gold)',btn:'Herstellen ×8'},
+    {tag:'BLZ',bg:'#4a4a5a',name:'Bolzen aus Leinenstoff',sub:'brauche 8 · Taschen 2 · Bank 0 · Twinks 0',right:'fehlen 6 · 72c',rc:'#ff9a66',btn:'Im AH suchen'},
+    {tag:'GAR',bg:'#6a6a6a',name:'Grobes Garn',sub:'brauche 8 · Taschen 10',right:'vorhanden',rc:'#80ff80'}].map(row).join('')+'<small style="color:var(--grey)">Alternativen: Leinenstiefel (1s 10c/Pkt) · Bolzen aus Leinenstoff (1s 30c/Pkt)</small>')}
+   <div style="display:flex;gap:8px;flex:1">
+    ${box('LOHNT SICH',[{tag:'BTL',bg:'#4a3a5a',border:'#1eff00',name:'Leinenbeutel',sub:'48s → 60s 40c',right:'+12s 40c',rc:'#66ff66'},{tag:'BLZ',bg:'#4a4a5a',name:'Bolzen aus Leinenstoff',sub:'8s → 12s 30c',right:'+4s 30c',rc:'#66ff66'}].map(row).join(''),'flex:1')}
+    ${box('NOCH NICHT GELERNT (447)',[{tag:'UMH',bg:'#4a3a5a',border:'#1eff00',name:'Wollener Umhang',color:'#ccffcc',sub:'Lehrer Magar (Orgrimmar) ab Skill 75'},{tag:'ROB',bg:'#4a3a5a',border:'#0070dd',name:'Robe der Macht',sub:'Quelle noch unbekannt'}].map(row).join(''),'flex:1')}
+   </div></div>`},
+ team:{sub:'Cupedos Bank · Verarbeiter · EU-PvE-Horde', html:`
+  <div class="col" style="flex:1">
+   ${box('DEIN TEAM','<small style="color:var(--grey)">Rollen werden automatisch vergeben (höchstes Level = Main, Handwerker = Verarbeiter). Ein Klick legt sie fest.</small>'+
+    [['MAIN','#5c4630','Cupedos Grel <small style="color:#999">(automatisch)</small>','Level 23 · Angeln 50, Erste Hilfe 95, Kochkunst 64, Kürschnerei 142, Lederverarbeitung 81',0],
+     ['VER','#3a3a5a','Cupedos Bank <small style="color:#80ff80">(du)</small>','Level 6 · Schneiderei 53, Verzauberkunst 25',1]].map(c=>`<div class="row" style="min-height:52px">${tile(c[0],c[1],'#9d9d9d',36)}<div class="t"><span style="font:14px Georgia,serif;color:var(--gold)">${c[2]}</span><small>${c[3]}</small></div><button class="btn" ${c[4]==0?'disabled':''}>Main</button><button class="btn" ${c[4]==1?'disabled':''}>Verarbeiter</button><button class="btn">Bank</button><button class="btn">–</button></div>`).join(''),'height:340px')}
+   ${box('FUNKTIONSSTATUS',`<div style="display:flex;gap:12px"><div class="t" style="gap:4px"><span style="color:#80ff80">Selbstprüfung beim Login: alles in Ordnung.</span><span>Im Spiel bestätigt: 18 von 32 Funktionen.</span><small>Berufe im Hintergrund gelesen: 2</small><small>Backup: migration 1 → 2, 08.11. 21:00</small></div><div class="col" style="width:170px"><button class="btn big">Einstellungen</button><button class="btn big">Debug-Bericht</button><button class="btn big">Backup anlegen</button></div></div>`,'flex:1')}
+  </div>`}
+};
+const order=[['guide','Leitfaden'],['field','Unterwegs'],['prof','Berufe'],['team','Team']];
+function show(k){document.getElementById('view').innerHTML=views[k].html;document.getElementById('sub').textContent=views[k].sub;
+ document.getElementById('tabs').innerHTML=order.map(([key,label])=>`<button class="tab ${key===k?'on':''}" onclick="show('${key}')">${label}</button>`).join('');}
+show('guide');
+document.getElementById('panel').innerHTML=`<div style="height:22px;padding:0 8px;display:flex;align-items:center;justify-content:space-between;font:13px Georgia,serif;color:var(--gold)">Unterwegs · Brachland<span style="color:#ccc">–</span></div>`+
+ [{tag:'POST',bg:'#3b4a5c',name:'14 Items an Cupedos Bank schicken',color:'var(--gold)',sub:'Am nächsten Briefkasten'},
+  {tag:'LDR',bg:'#5c4630',name:'Mittleres Leder',right:'×8',rc:'var(--gold)',size:20},
+  {tag:'WOL',bg:'#4a4a5a',name:'Wollstoff',right:'8s',size:20}].map(row).join('')+
+ `<div style="padding:4px 8px;font-size:10px;color:#aaa">Route: Steinkrallengebirge → Eschental</div><div class="cap" style="padding:0 8px 6px">Seitenpanel wie die Questverfolgung</div>`;
+</script>
+</body>
+</html>

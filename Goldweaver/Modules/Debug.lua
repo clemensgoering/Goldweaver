@@ -160,6 +160,15 @@ local function context()
   end
 end
 
+local function diagnosis()
+  section("Diagnose (automatisch ausgewertet)")
+  local findings = ns.Diagnose and ns.Diagnose.Run() or {}
+  if #findings == 0 then add("keine Befunde: alles in Ordnung") end
+  for _, f in ipairs(findings) do
+    add("[%s] %s%s – %s", f.severity, f.title, f.fixed and " (automatisch behoben)" or "", tostring(f.detail or ""))
+  end
+end
+
 local function checks()
   section("Prüfungen (automatisch)")
   local s = ns.Checks.Summary()
@@ -201,7 +210,7 @@ end
 function Debug.Build()
   lines = {}
   add("Goldweaver Debug-Bericht")
-  local steps = { client, checks, learned, features, modules, data, events, errors, context, probes, debugLog }
+  local steps = { client, diagnosis, checks, learned, features, modules, data, events, errors, context, probes, debugLog }
   for _, step in ipairs(steps) do
     local ok, err = pcall(step)
     if not ok then add("[!!] Berichtsschritt fehlgeschlagen: %s", tostring(err)) end

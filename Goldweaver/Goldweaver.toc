@@ -71,4 +71,5 @@ Modules\Ledger.lua
 Modules\Dashboard.lua
 Modules\Onboarding.lua
 Modules\Contacts.lua
+Modules\Diagnose.lua
 Modules\Debug.lua

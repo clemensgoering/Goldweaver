@@ -436,7 +436,7 @@ local function selectTab(key)
   if window.usesPanelTabs and PanelTemplates_SetTab then
     pcall(PanelTemplates_SetTab, window, tab.index)
   else
-    for k, b in pairs(window.tabButtons) do if k == key then b:Disable() else b:Enable() end end
+    for k, b in pairs(window.tabButtons or {}) do if k == key then b:Disable() else b:Enable() end end
   end
   if not tab.content then
     local frame = CreateFrame("Frame", nil, window.Body)
@@ -495,7 +495,7 @@ local function buildTabs()
   end
 end
 
-local function createWindow()
+local function buildWindow()
   if window then return window end
   window = UI.SafeCreate("Frame", UIParent, { "PortraitFrameTemplate", "ButtonFrameTemplate", "BasicFrameTemplateWithInset", "BackdropTemplate" }, "GoldweaverMainWindow")
   window:SetSize(780, 580)
@@ -533,8 +533,23 @@ local function createWindow()
   return window
 end
 
+-- Builds the window once. A failure halfway (e.g. a template changed in a patch) must not leave a broken
+-- half-built window behind: the frame is hidden, forgotten and the error recorded; the next call tries again.
+local function createWindow()
+  if window and window.Body and window.tabButtons then return window end
+  if window then window:Hide(); window = nil end
+  local ok, err = pcall(buildWindow)
+  if not ok then
+    if window then window:Hide() end
+    window = nil
+    ns.Health.Record("UI.createWindow", err)
+    return nil
+  end
+  return window
+end
+
 function UI.Open(key)
-  createWindow()
+  if not createWindow() then ns.Print("Fenster konnte nicht aufgebaut werden; Details mit /gw debug run."); return end
   window:Show()
   local me = ns.Chars and ns.Chars.Current()
   if me then UI.SetSubtitle(("%s · %s · %s"):format(me.name, ns.Chars.ROLE_LABELS[me.role or "none"] or "", me.market or "")) end
@@ -542,7 +557,7 @@ function UI.Open(key)
 end
 
 function UI.Toggle(key)
-  createWindow()
+  if not createWindow() then return UI.Open(key) end
   key = key and (UI.aliases[key] or key)
   if window:IsShown() and (key == nil or key == activeKey) then window:Hide() else UI.Open(key) end
 end

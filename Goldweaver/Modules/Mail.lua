@@ -162,6 +162,14 @@ local function refreshSendButton()
   if not sendButton then return end
   local me = ns.Chars.Current()
   if not me or me.role == "processor" or me.role == "bank" then sendButton:Hide(); return end
+  -- Attached items have left the bags, so the plan no longer contains them: while a mail is filled, the button
+  -- keeps pointing at the target it was filled for (bug found by tools/tests/sim.lua, 09.11.2026).
+  if attached and attached > 0 and sendButton.plan then
+    local rec = sendButton.plan.rec
+    sendButton:SetText(("Senden an %s (%d Anhänge)"):format(rec.firstName or rec.name, attached))
+    sendButton:Enable(); sendButton:Show()
+    return
+  end
   local plan = Mail.Plan()
   local first
   for _, p in pairs(plan) do if not first or p.value > first.value then first = p end end

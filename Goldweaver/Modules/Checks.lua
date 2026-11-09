@@ -123,7 +123,8 @@ ns:RegisterModule("Checks", {
     local s = Checks.Summary()
     local rows = { { name = "Prüfungen", ok = s.fail == 0, warn = s.pending > 0, detail = ("%d bestanden, %d offen, %d fehlgeschlagen, %d übersprungen"):format(s.pass, s.pending, s.fail, s.skip) } }
     for _, r in ipairs(Checks.Status()) do
-      if r.status == "fail" then rows[#rows + 1] = { name = r.title, ok = false, detail = r.detail } end
+      -- failed acceptance checks are hints (evidence from play), not runtime breakage: warn, never red
+      if r.status == "fail" then rows[#rows + 1] = { name = r.title, ok = false, warn = true, detail = r.detail } end
     end
     return rows
   end,

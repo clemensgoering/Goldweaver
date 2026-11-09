@@ -38,6 +38,12 @@ if [ -n "$lua" ]; then
   ran=$((ran + 1))
 fi
 
+# whole-addon session simulation
+if [ -n "$lua" ]; then
+  "$lua" "$root/tools/tests/sim.lua" "$root" || failed=1
+  ran=$((ran + 1))
+fi
+
 if [ "$ran" -eq 0 ]; then echo "CHECK FAILED: no tool available"; exit 2; fi
 if [ "$failed" -ne 0 ]; then echo "CHECK FAILED"; exit 1; fi
 echo "CHECK OK ($ran steps)"
