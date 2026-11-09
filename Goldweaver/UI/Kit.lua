@@ -4,12 +4,13 @@
 -- degrades the look but never breaks the addon.
 --
 -- Public API (ns.UI)
---   RegisterTab(key, title, builder(frame) -> { Refresh }) ★   Open(key?), Toggle(key?), IsOpen(), Refresh()
+--   RegisterTab(key, title, builder(frame) -> { Refresh }) ★ (title = English key, translated when the tab button is built)   Open(key?), Toggle(key?), IsOpen(), Refresh()
 --   SetSubtitle(text)                                            line next to the portrait
 --   SafeCreate(type, parent, templates) -> frame, template       first template that exists
 --   Widgets: Text, Header, Button, Check, Group, Inset, Section, Lines, Pairs, Table, IconRows,
 --            ItemButton, SkillBar, StepCard, StepList, ItemName, QualityColor, Money
 local ADDON, ns = ...
+local L = ns.L
 
 local UI = { tabs = {}, order = {}, aliases = { heute = "guide", chars = "team", settings = "team" } }
 ns.UI = UI
@@ -76,7 +77,7 @@ function UI.Check(parent, label, checked, onChange)
 end
 
 -- Dropdown: a button showing the current value; a click opens a small list below it. Own implementation on
--- purpose (no dependency on Blizzard's changing menu API). options = { {value, label} }, onSelect(value).
+-- purpose (no dependency on Blizzard's changing menu API). options = { {value, English label key} }, onSelect(value).
 local openMenu
 function UI.Dropdown(parent, width, options, onSelect)
   local d = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
@@ -101,7 +102,7 @@ function UI.Dropdown(parent, width, options, onSelect)
     item:SetPoint("TOPLEFT", 4, -4 - (i - 1) * 22)
     item.text = item:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     item.text:SetPoint("LEFT", 8, 0)
-    item.text:SetText(opt[2])
+    item.text:SetText(L[opt[2]])
     local hl = item:CreateTexture(nil, "HIGHLIGHT")
     hl:SetAllPoints(); hl:SetColorTexture(1, 0.82, 0, 0.15)
     item:SetScript("OnClick", function()
@@ -118,7 +119,7 @@ function UI.Dropdown(parent, width, options, onSelect)
   d:SetScript("OnHide", function() d.menu:Hide() end)
   function d:SetValue(value)
     self.value = value
-    for _, opt in ipairs(options) do if opt[1] == value then self:SetText(opt[2]) end end
+    for _, opt in ipairs(options) do if opt[1] == value then self:SetText(L[opt[2]]) end end
   end
   return d
 end
@@ -387,7 +388,7 @@ function UI.IconRows(parent, count, width, firstY, rowHeight)
   return rows
 end
 
--- The current step, big: icon, category, title, detail, value, one primary action (RestedXP-style "Jetzt").
+-- The current step, big: icon, category, title, detail, value, one primary action (RestedXP-style "Now").
 function UI.StepCard(parent, width)
   local c = UI.Inset(parent, width, 104)
   c.glow = c:CreateTexture(nil, "BACKGROUND", nil, 1)
@@ -412,19 +413,19 @@ function UI.StepCard(parent, width)
   function c:SetStep(step, index, total)
     if not step then
       self.icon:SetContent("Interface\\Icons\\Achievement_General", nil)
-      self.counter:SetText("ALLES ERLEDIGT")
-      self.title:SetText("Nichts Dringendes")
-      self.detail:SetText("Spielen, sammeln, Berufe öffnen: neue Schritte erscheinen von selbst.")
+      self.counter:SetText(L["ALL DONE"])
+      self.title:SetText(L["Nothing urgent"])
+      self.detail:SetText(L["Play, gather, open professions: new steps appear on their own."])
       self.value:SetText("")
       self.action:Hide()
       return
     end
     self.icon:SetContent(step.icon, step.item)
-    self.counter:SetText(("JETZT · SCHRITT %d VON %d · %s"):format(index or 1, total or 1, (step.category or ""):upper()))
+    self.counter:SetText((L["NOW · STEP %d OF %d · %s"]):format(index or 1, total or 1, (step.category or ""):upper()))
     self.title:SetText(step.title or "")
     self.detail:SetText(step.detail or "")
     if step.value and step.value ~= 0 then
-      self.value:SetText((step.value > 0 and "≈ " or "Kosten ") .. UI.Money(math.abs(step.value)))
+      self.value:SetText((step.value > 0 and "≈ " or (L["Cost"] .. " ")) .. UI.Money(math.abs(step.value)))
       if step.value > 0 then self.value:SetTextColor(0.4, 1, 0.4) else self.value:SetTextColor(1, 0.6, 0.4) end
     else
       self.value:SetText("")
@@ -517,7 +518,7 @@ local function buildTabs()
     local ok, b = pcall(CreateFrame, "Button", "GoldweaverMainWindowTab" .. i, window, "PanelTabButtonTemplate")
     if not ok or not b then okAll = false; break end
     b:SetID(i)
-    b:SetText(t.title)
+    b:SetText(L[t.title])
     if PanelTemplates_TabResize then pcall(PanelTemplates_TabResize, b, 0) end
     if i == 1 then b:SetPoint("TOPLEFT", window, "BOTTOMLEFT", 12, 2)
     else b:SetPoint("TOPLEFT", window.Tabs[i - 1], "TOPRIGHT", 3, 0) end
@@ -538,7 +539,7 @@ local function buildTabs()
   window.Tabs, window.tabButtons, window.usesPanelTabs = {}, {}, false
   local x = 70
   for _, key in ipairs(UI.order) do
-    local b = UI.Button(window, UI.tabs[key].title, 120, function() selectTab(key) end)
+    local b = UI.Button(window, L[UI.tabs[key].title], 120, function() selectTab(key) end)
     b:SetPoint("TOPLEFT", window, "TOPLEFT", x, -30)
     window.tabButtons[key] = b
     x = x + 124
@@ -599,10 +600,10 @@ local function createWindow()
 end
 
 function UI.Open(key)
-  if not createWindow() then ns.Print("Fenster konnte nicht aufgebaut werden; Details mit /gw debug run."); return end
+  if not createWindow() then ns.Print(L["Window could not be built; details with /gw debug run."]); return end
   window:Show()
   local me = ns.Chars and ns.Chars.Current()
-  if me then UI.SetSubtitle(("%s · %s · %s"):format(me.name, ns.Chars.ROLE_LABELS[me.role or "none"] or "", me.market or "")) end
+  if me then UI.SetSubtitle(("%s · %s · %s"):format(me.name, L[ns.Chars.ROLE_LABELS[me.role or "none"] or ""], me.market or "")) end
   selectTab(key or activeKey or UI.order[1])
 end
 
@@ -631,8 +632,8 @@ ns:RegisterModule("UI", {
     local t = {}
     for _, key in ipairs(UI.order) do t[#t + 1] = key end
     return {
-      { name = "Reiter", ok = #UI.order >= 4, detail = table.concat(t, ", ") },
-      { name = "Fenster-Template", ok = true, detail = window and (window.usesPanelTabs and "Blizzard-Reiter" or "Ersatz-Reiter") or "noch nicht geöffnet" },
+      { name = "Tabs", ok = #UI.order >= 4, detail = table.concat(t, ", ") },
+      { name = "Window template", ok = true, detail = window and (window.usesPanelTabs and "Blizzard tabs" or "fallback tabs") or "not opened yet" },
     }
   end,
 })

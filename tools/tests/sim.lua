@@ -162,7 +162,7 @@ local function newClient(opts)
   env.InCombatLockdown = function() return false end
   env.IsShiftKeyDown = function() return false end
   env.GetCursorPosition = function() return 0, 0 end
-  env.GetLocale = function() return "deDE" end
+  env.GetLocale = function() return opts.clientLocale or "deDE" end
   env.GetBuildInfo = function() return "1.60.1", "70862", "Nov 6 2026", opts.interface or 16001 end
   env.WOW_PROJECT_ID = 18
   env.PlaySound = noop
@@ -448,9 +448,34 @@ local BANK = { first = "Cupedos", surname = "Bank", level = 6, money = 1831,
     [333] = { [7418] = { name = "Rute", learned = true, diff = 0, grey = 40, out = 2996, reagents = { { 247786, 1 } } } },
   } }
 
+-- Every text on screen and in chat must be in the chosen language:
+--   English UI: no German words (item and zone names come from the German client and are allowed).
+--   German UI: no English key that has a German translation (catches texts frozen at file load time).
+local GERMAN_WORDS = { "und", "nicht", "oder", "noch", "kein", "keine", "mit", "bei", "ist", "sind", "wird", "nach", "auf",
+  "zum", "zur", "dem", "der", "das", "eine", "vom", "jetzt", "Fenster", "Berufe", "lernen", "verschicken" }
+local function checkLanguage(env, ns, label)
+  local texts = {}
+  for _, f in ipairs(env._frames) do if type(f._text) == "string" and f._text ~= "" then texts[#texts + 1] = f._text end end
+  for _, line in ipairs(env._chat) do texts[#texts + 1] = (line:gsub("^|c%x+Goldweaver|r: ", "")) end
+  local de, bad, seen = ns.Locale.tables.deDE, {}, {}
+  for _, t in ipairs(texts) do
+    local plain = t:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+    local wrong
+    if ns.Locale.active == "enUS" then
+      local padded = " " .. plain:gsub("[%p]", " ") .. " "
+      for _, w in ipairs(GERMAN_WORDS) do if padded:find(" " .. w .. " ", 1, true) then wrong = true break end end
+    elseif de[plain] and de[plain] ~= plain then
+      wrong = true
+    end
+    if wrong and not seen[plain] then seen[plain] = true; bad[#bad + 1] = plain end
+  end
+  for i = 1, math.min(#bad, 15) do fail(("%s: text in the wrong language (%s UI): %q"):format(label, ns.Locale.active, bad[i])) end
+end
+
 local function session(label, opts, savedDB)
   local env = newClient(opts)
   env.GoldweaverDB, env.GoldweaverCharDB, env.GoldweaverBackupDB = savedDB, nil, nil
+  if opts.language and savedDB then savedDB.settings = savedDB.settings or {}; savedDB.settings.language = opts.language end
   local ns = loadAddon(env)
   if not ns.Events then fail(label .. ": addon did not load"); return end
   local count = 0
@@ -562,6 +587,10 @@ local function session(label, opts, savedDB)
   s("blocked background reading", function()
     if opts.blockOpen and not ns.db.learned.autoReadBlocked then fail(label .. ": blocked reading not remembered") end
   end)
+  s("texts in the chosen language", function()
+    if opts.language and ns.Locale.active ~= opts.language then fail(label .. ": language setting ignored, active " .. ns.Locale.active) end
+    checkLanguage(env, ns, label)
+  end)
   s("logout/login keeps data", function()
     local before = 0
     for _ in pairs(ns.db.chars) do before = before + 1 end
@@ -588,6 +617,11 @@ for _, mode in ipairs({ { name = "modern", minimal = false }, { name = "minimal"
   db = session(mode.name .. " · Bank, RestedXP aktiv", { minimal = mode.minimal, char = BANK, rxp = true, mapID = 1454, auctionator = true, tsm = true }, deepCopy(db))
   session(mode.name .. " · Main, neuer Patch, Spiel blockiert", { minimal = mode.minimal, char = MAIN, interface = 16002, blockOpen = true,
     unknownEvents = { AUCTION_HOUSE_BROWSE_RESULTS_UPDATED = true } }, deepCopy(db))
+  if not mode.minimal then
+    -- language setting beats the game language, in both directions
+    session(mode.name .. " · Bank, English UI, German client", { char = BANK, language = "enUS", mapID = 1454 }, deepCopy(db))
+    session(mode.name .. " · Main, German UI, English client", { char = MAIN, language = "deDE", clientLocale = "enUS" }, deepCopy(db))
+  end
 end
 
 for _, n in ipairs(NOTES) do print("note: " .. n) end

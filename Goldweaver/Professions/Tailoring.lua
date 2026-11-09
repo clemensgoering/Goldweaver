@@ -20,9 +20,10 @@ ns.Professions:Register({
   stations = {},
   -- Where the next rank is taught (community beta guides; the Trade Contacts recorder overrides with visited trainers).
   trainers = {
-    Journeyman = "Hauptstadt: Horde Magar (Orgrimmar), Rhiannon Davis (Undercity), Tepa (Thunder Bluff); Allianz Sellandus (Stormwind), Jormund Stonebrow (Ironforge), Me'lynn (Darnassus)",
-    Expert = "Josef Gregorian (Undercity) oder Georgio Bolero (Stormwind), 50 Silber",
-    Artisan = "Daryl Stack (Tarren Mill) oder Timothy Worthington (Theramore)",
+    Journeyman = { Horde = "Magar (Orgrimmar), Rhiannon Davis (Undercity), Tepa (Thunder Bluff)",
+      Alliance = "Sellandus (Stormwind), Jormund Stonebrow (Ironforge), Me'lynn (Darnassus)" },
+    Expert = { Horde = "Josef Gregorian (Undercity), 50 silver", Alliance = "Georgio Bolero (Stormwind), 50 silver" },
+    Artisan = { Horde = "Daryl Stack (Tarren Mill)", Alliance = "Timothy Worthington (Theramore)" },
   },
   -- Materials are totals for the step (bolts counted as cloth where the guide does so).
   seedPath = {

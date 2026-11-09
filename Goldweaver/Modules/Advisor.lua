@@ -20,6 +20,7 @@
 -- option = { action, value (copper), label, detail?, conversion?, coverage?, runs?, unitPrice?, replacement? }
 -- Evaluate returns the options sorted by value desc; ties: keep first, then alphabetical by action.
 local ADDON, ns = ...
+local L = ns.L
 
 local Advisor = { providers = {}, order = {} }
 ns.Advisor = Advisor
@@ -57,7 +58,7 @@ end
 
 Advisor.RegisterProvider("vendor", function(item)
   if item.vendorSell and item.vendorSell > 0 then
-    return { action = "vendor", value = item.vendorSell * (item.quantity or 1), label = "Händler" }
+    return { action = "vendor", value = item.vendorSell * (item.quantity or 1), label = L["Vendor"] }
   end
 end)
 
@@ -67,7 +68,7 @@ Advisor.RegisterProvider("auction", function(item, ctx, h)
   if not market then return nil end
   local qty = item.quantity or 1
   local mail = ctx.needsMail and h.setting(ctx, "mailCostCopper") or 0
-  return { action = "auction", value = h.auctionNet(market, qty, item.vendorSell, ctx) - mail, label = "Auktionshaus", unitPrice = market }
+  return { action = "auction", value = h.auctionNet(market, qty, item.vendorSell, ctx) - mail, label = L["Auction house"], unitPrice = market }
 end)
 
 Advisor.RegisterProvider("convert", function(item, ctx, h)
@@ -120,7 +121,7 @@ Advisor.RegisterProvider("keep", function(item, ctx)
   local replacement = (market or item.vendorSell or 0) * (item.quantity or 1)
   local bestOther = 0
   for _, o in ipairs(ctx._options or {}) do if o.value > bestOther then bestOther = o.value end end
-  return { action = "keep", value = math.max(replacement, bestOther), label = "Behalten", detail = reason, replacement = replacement }
+  return { action = "keep", value = math.max(replacement, bestOther), label = L["Keep"], detail = reason, replacement = replacement }
 end)
 
 -- Evaluation ----------------------------------------------------------------------------------------
@@ -182,6 +183,6 @@ end
 
 ns:RegisterModule("Advisor", {
   SelfTest = function()
-    return { { name = "Optionen-Provider", ok = #Advisor.order >= 5, detail = table.concat(Advisor.order, ", ") } }
+    return { { name = "Option providers", ok = #Advisor.order >= 5, detail = table.concat(Advisor.order, ", ") } }
   end,
 })

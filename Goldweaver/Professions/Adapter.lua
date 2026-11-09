@@ -6,6 +6,7 @@
 -- Normalised recipe: { id, name, icon, outputItemID, qtyMin, qtyMax, reagents = {{item, qty}}, difficulty (0 optimal,
 --   1 medium, 2 easy, 3 trivial, or nil when unknown), learned (per character, see chars), sourceType, numSkillUps }
 local ADDON, ns = ...
+local L = ns.L
 
 local Adapter = { current = nil }
 ns.Adapter = Adapter
@@ -176,7 +177,7 @@ end
 -- Opens a profession window from a click handler so the book can be read without hunting for the spellbook.
 -- Returns true when the request was sent; the TRADE_SKILL_LIST_UPDATE handler then reads the recipes.
 function Adapter.Open(skillLine)
-  if not (C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill) then return false, "OpenTradeSkill fehlt" end
+  if not (C_TradeSkillUI and C_TradeSkillUI.OpenTradeSkill) then return false, L["OpenTradeSkill missing"] end
   local ok, err = pcall(C_TradeSkillUI.OpenTradeSkill, skillLine)
   return ok, err
 end
@@ -196,8 +197,8 @@ end
 
 -- Crafts a recipe `count` times. Must be called from a click handler while the profession window is open.
 function Adapter.Craft(recipeID, count)
-  if not (C_TradeSkillUI and C_TradeSkillUI.CraftRecipe) then return false, "CraftRecipe fehlt" end
-  if not Adapter.IsOpen() then return false, "Berufefenster ist nicht offen" end
+  if not (C_TradeSkillUI and C_TradeSkillUI.CraftRecipe) then return false, L["CraftRecipe missing"] end
+  if not Adapter.IsOpen() then return false, L["Profession window is not open"] end
   local ok, err = pcall(C_TradeSkillUI.CraftRecipe, recipeID, count or 1)
   return ok, err
 end
@@ -237,11 +238,12 @@ ns:RegisterModule("Adapter", {
     local books = 0
     for sl, book in pairs(ns.db.recipes or {}) do
       books = books + 1
-      results[#results + 1] = { name = "Rezeptbuch " .. tostring(book.name), ok = #(book.list or {}) > 0, detail = ("%d Rezepte, line %s, gelesen vor %d s"):format(#(book.list or {}), tostring(sl), time() - (book.when or time())) }
+      results[#results + 1] = { name = (L["Recipe book %s"]):format(tostring(book.name)), ok = #(book.list or {}) > 0,
+        detail = L["%d recipes, line %s, read %d s ago"]:format(#(book.list or {}), tostring(sl), time() - (book.when or time())) }
     end
-    if books == 0 then results[#results + 1] = { name = "Rezeptbücher", ok = false, warn = true, detail = "noch keins (Berufefenster öffnen)" } end
-    results[#results + 1] = { name = "Berufefenster offen", ok = Adapter.IsOpen(), warn = true, detail = Adapter.current and ("skill line " .. Adapter.current) or "nein" }
-    results[#results + 1] = { name = "Legacy-Berufe-API", ok = GetTradeSkillInfo == nil, detail = GetTradeSkillInfo and "vorhanden (unerwartet)" or "abwesend wie erwartet" }
+    if books == 0 then results[#results + 1] = { name = L["Recipe books"], ok = false, warn = true, detail = L["none yet (open a profession window)"] } end
+    results[#results + 1] = { name = L["Profession window open"], ok = Adapter.IsOpen(), warn = true, detail = Adapter.current and ((L["skill line %s"]):format(Adapter.current)) or L["no"] }
+    results[#results + 1] = { name = L["Legacy profession API"], ok = GetTradeSkillInfo == nil, detail = GetTradeSkillInfo and L["present (unexpected)"] or L["absent as expected"] }
     return results
   end,
   Init = function()

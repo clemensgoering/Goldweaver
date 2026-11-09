@@ -23,6 +23,7 @@ ns.version = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadat
 if type(ns.version) ~= "string" or ns.version:find("@", 1, true) or ns.version == "" then ns.version = "dev" end
 ns.modules = {}
 ns.L = ns.L or {}
+local L = ns.L
 
 -- Single global for slash commands and the optional public API.
 Goldweaver = Goldweaver or {}
@@ -71,13 +72,13 @@ function ns.Slash.Register(cmd, fn, help)
 end
 
 local function printHelp()
-  ns.Print("Befehle:")
+  ns.Print(L["Commands:"])
   local names = {}
   for name in pairs(ns.Slash.handlers) do names[#names + 1] = name end
   table.sort(names)
   for _, name in ipairs(names) do
     local entry = ns.Slash.handlers[name]
-    ns.Print("  /gw " .. name .. (entry.help and (" - " .. entry.help) or ""))
+    ns.Print("  /gw " .. name .. (entry.help and (" - " .. L[entry.help]) or ""))
   end
 end
 
@@ -94,9 +95,9 @@ SlashCmdList.GOLDWEAVER = function(msg)
   local h = ns.Slash.handlers[cmd]
   if h then
     local ok, err = pcall(h.fn, rest)
-    if not ok then ns.Health.Record("/gw " .. cmd, err); ns.Print("Befehl fehlgeschlagen: " .. tostring(err)) end
+    if not ok then ns.Health.Record("/gw " .. cmd, err); ns.Print((L["Command failed: %s"]):format(tostring(err))) end
     return
   end
-  ns.Print("Unbekannter Befehl: " .. cmd)
+  ns.Print((L["Unknown command: %s"]):format(cmd))
   printHelp()
 end

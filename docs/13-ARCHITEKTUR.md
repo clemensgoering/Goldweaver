@@ -5,7 +5,7 @@ Stand: 08.11.2026. Für jede Session, die Code anfasst. Ergänzt `06-SCHNITTSTEL
 ## 1. Schichten und Laderegel
 
 ```
-Locales/      Strings (enUS Fallback, deDE)
+Locales/      enUS.lua: Sprachkern (ns.L, ns.Locale, Schlüssel = englischer Text); deDE.lua: deutsche Tabelle
 Core/         Init · Util · Secret · Events · API · DB · Chars · Inventory · Price · Graph · Probe
 Data/         statische Tabellen: Entzaubern, Kisten, Händler-Reagenzien, Umwandlungen
 Professions/  Registry (Profile) · Adapter (Spiel-API → Rezeptbuch) · ein Profil je Beruf

@@ -1,4 +1,4 @@
--- Goldweaver: craft profit ranking across all cached professions of this character (feeds Heute and the guide).
+-- Goldweaver: craft profit ranking across all cached professions of this character (feeds the guide).
 local ADDON, ns = ...
 
 local CraftProfit = {}

@@ -2,6 +2,7 @@
 -- For a profession it answers: which learned recipe gives the cheapest expected skill point right now, what the next
 -- rank needs, which reagents are missing (bags, bank, alts), and which items should be kept for that plan.
 local ADDON, ns = ...
+local L = ns.L
 
 local Planner = {}
 ns.Planner = Planner
@@ -90,19 +91,13 @@ function Planner.NextRank(skillLine, rec)
   return info
 end
 
--- Guide texts list both factions ("Horde X ...; Allianz Y ..."): keep only the part for the player's faction.
-function Planner.ForFaction(text)
-  if type(text) ~= "string" then return text end
+-- Trainer entry of a profile: { Horde = text, Alliance = text } or { both = text }. Returns the translated text
+-- for the player's faction (nil when the profile has none for it).
+function Planner.ForFaction(entry)
+  if type(entry) ~= "table" then return entry and ns.L[entry] or nil end
   local faction = UnitFactionGroup and UnitFactionGroup("player")
-  local word = faction == "Alliance" and "Allianz" or (faction == "Horde" and "Horde" or nil)
-  if not word or not (text:find("Horde") and text:find("Allianz")) then return text end
-  for part in text:gmatch("[^;]+") do
-    if part:find(word) then
-      local cleaned = part:gsub("^%s*[^:]*:%s*", ""):gsub("^%s*" .. word .. ":?%s*", "")
-      return cleaned
-    end
-  end
-  return text
+  local text = entry[faction] or entry.both
+  return text and ns.L[text] or nil
 end
 
 -- The plan: best step now (recipe, suggested crafts until the next rank cap), shopping list, rank info.
@@ -141,7 +136,7 @@ function Planner.KeepReason(itemID)
     end
     if plan.best then
       for _, r in ipairs(plan.best.recipe.reagents or {}) do
-        if r.item == itemID then return ("Skill-up: %s"):format(plan.best.recipe.name) end
+        if r.item == itemID then return (L["Skill-up: %s"]):format(plan.best.recipe.name) end
       end
     end
   end

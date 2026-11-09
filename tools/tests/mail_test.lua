@@ -27,7 +27,7 @@ ns.db.chars["Cupedos Bank"] = { name = "Cupedos Bank", firstName = "Cupedos", su
 
 local target, reason = Mail.TargetFor({ itemID = 2589, quality = 1, isBound = false })
 eq(target and target.name, "Cupedos Bank", "cloth goes to the tailor")
-eq(reason, "Material für Cupedos Bank", "reason names the processor")
+eq(reason, "Material for Cupedos Bank", "reason names the processor")
 
 target, reason = Mail.TargetFor({ itemID = 2770, quality = 1, isBound = false })
 eq(target and target.name, "Cupedos Bank", "ore goes to the only processor even without a matching profession")
@@ -35,30 +35,30 @@ eq(reason, "Material", "generic material reason")
 
 target, reason = Mail.TargetFor({ itemID = 5555, quality = 2, isBound = false })
 eq(target and target.name, "Cupedos Bank", "green armor goes to the enchanter")
-eq(reason:find("entzaubern") ~= nil, true, "disenchant reason")
+eq(reason:find("disenchant") ~= nil, true, "disenchant reason")
 
 target, reason = Mail.TargetFor({ itemID = 6666, quality = 1, isBound = false })
 eq(target, nil, "white weapon stays")
 
 target, reason = Mail.TargetFor({ itemID = 5555, quality = 2, isBound = true })
 eq(target, nil, "bound items stay")
-eq(reason, "gebunden", "bound reason")
+eq(reason, "bound", "bound reason")
 
 target, reason = Mail.TargetFor({ itemID = 7777, quality = 1, isBound = false })
 eq(target and target.name, "Cupedos Bank", "tailoring pattern goes to the tailor")
 
 target, reason = Mail.TargetFor({ itemID = 8888, quality = 0, isBound = false })
 eq(target, nil, "grey items stay")
-eq(reason, "Händler", "vendor reason")
+eq(reason, "vendor", "vendor reason")
 target, reason = Mail.TargetFor({ itemID = 8888, quality = 1, isBound = false })
-eq(reason, "keine Regel", "consumables: no rule applies")
+eq(reason, "no rule", "consumables: no rule applies")
 eq(#Mail.Explain(), 0, "explain lists bag items (none in headless)")
 
 -- own-profession materials stay when the setting is on; leather subclass 6 -> leatherworking 165
 CLASSES[2318] = { 7, 6 }
 target, reason = Mail.TargetFor({ itemID = 2318, quality = 1, isBound = false })
 eq(target, nil, "leather stays with the leatherworker")
-eq(reason, "eigener Beruf", "own profession reason")
+eq(reason, "own profession", "own profession reason")
 ns.db.settings.keepOwnMaterials = false
 target = Mail.TargetFor({ itemID = 2318, quality = 1, isBound = false })
 eq(target and target.name, "Cupedos Bank", "with the setting off, leather travels too")
@@ -68,7 +68,7 @@ ns.db.settings.keepOwnMaterials = nil
 me.role = "processor"
 target, reason = Mail.TargetFor({ itemID = 2589, quality = 1, isBound = false })
 eq(target, nil, "processor keeps everything")
-eq(reason, "hier verarbeiten", "processor reason")
+eq(reason, "process here", "processor reason")
 me.role = "main"
 
 -- custom rule inserted first wins

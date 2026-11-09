@@ -1,6 +1,7 @@
 -- Goldweaver: minimap button with a badge. Left click opens the Goldweaver window, right click opens the
--- Unterwegs tab. Drag to move around the minimap (angle saved). No library dependency.
+-- "On the road" tab. Drag to move around the minimap (angle saved). No library dependency.
 local ADDON, ns = ...
+local L = ns.L
 
 local Minimap_ = {}
 ns.Minimap = Minimap_
@@ -69,12 +70,12 @@ end
 local function tooltip(self)
   GameTooltip:SetOwner(self, "ANCHOR_LEFT")
   GameTooltip:AddLine("Goldweaver", 0.83, 0.66, 0.31)
-  GameTooltip:AddLine("Linksklick: Fenster öffnen", 1, 1, 1)
-  GameTooltip:AddLine("Rechtsklick: Unterwegs (diese Zone)", 1, 1, 1)
-  GameTooltip:AddLine("Ziehen: Button verschieben", 0.7, 0.7, 0.7)
+  GameTooltip:AddLine(L["Left-click: open window"], 1, 1, 1)
+  GameTooltip:AddLine(L["Right-click: On the road (this zone)"], 1, 1, 1)
+  GameTooltip:AddLine(L["Drag: move button"], 0.7, 0.7, 0.7)
   local unassigned = ns.Chars and ns.Chars.Unassigned and ns.Chars.Unassigned() or 0
   if unassigned > 0 then
-    GameTooltip:AddLine(("%d Charakter(e) ohne Rolle"):format(unassigned), 1, 0.5, 0.2)
+    GameTooltip:AddLine((L["%d character(s) without a role"]):format(unassigned), 1, 0.5, 0.2)
   end
   -- explain the "!" badge right here: the top finding of the automatic diagnosis
   local finding = alert and ns.Diagnose and ns.Diagnose.Latest()[1]
@@ -83,7 +84,7 @@ local function tooltip(self)
     if finding.detail then GameTooltip:AddLine(finding.detail, 0.8, 0.8, 0.8, true) end
   end
   if ns.Chars and ns.Chars.MarketKey then
-    GameTooltip:AddLine("Markt: " .. ns.Chars.MarketKey(), 0.7, 0.7, 0.7)
+    GameTooltip:AddLine((L["Market: %s"]):format(ns.Chars.MarketKey()), 0.7, 0.7, 0.7)
   end
   GameTooltip:Show()
 end
@@ -128,7 +129,7 @@ local function create()
   button:SetScript("OnDragStart", function(self) self:SetScript("OnUpdate", onDragUpdate) end)
   button:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
   button:SetScript("OnClick", function(_, mouseButton)
-    if not (ns.UI and ns.UI.Toggle) then return ns.Print("window not loaded") end
+    if not (ns.UI and ns.UI.Toggle) then return ns.Print(L["window not loaded"]) end
     if mouseButton == "RightButton" then ns.UI.Open("field") else ns.UI.Toggle() end
   end)
 
@@ -143,8 +144,8 @@ ns:RegisterModule("Minimap", {
   end,
   SelfTest = function()
     return {
-      { name = "Button erzeugt", ok = button ~= nil, detail = button and (button:IsShown() and "sichtbar" or "versteckt") or "nein" },
-      { name = "Winkel gespeichert", ok = true, detail = tostring(angleFromSettings()) },
+      { name = "Button created", ok = button ~= nil, detail = button and (button:IsShown() and "visible" or "hidden") or "no" },
+      { name = "Angle saved", ok = true, detail = tostring(angleFromSettings()) },
     }
   end,
 })
@@ -152,5 +153,5 @@ ns:RegisterModule("Minimap", {
 ns.Slash.Register("minimap", function(arg)
   if arg == "hide" or arg == "off" then ns.db.settings.minimapHidden = true; Minimap_.SetShown(false)
   elseif arg == "show" or arg == "on" then ns.db.settings.minimapHidden = false; Minimap_.SetShown(true)
-  else ns.Print("usage: /gw minimap show|hide") end
+  else ns.Print(L["usage: /gw minimap show|hide"]) end
 end, "show or hide the minimap button")

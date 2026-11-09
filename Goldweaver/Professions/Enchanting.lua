@@ -29,9 +29,10 @@ ns.Professions:Register({
   vendorReagents = { COPPER_ROD, LEADED_VIAL, CRYSTAL_VIAL },
   destroy = { spellName = "Disenchant", spellID = 13262, minSkill = 1 },
   trainers = {
-    Journeyman = "Verzauberkunst-Lehrer in jeder Hauptstadt (ab Skill 50, Level 10)",
-    Expert = "Horde: Hgarth (Steinkrallengebirge, Sonnenfels); Allianz: Kitta Firewind (Wald von Elwynn, Turm von Azora), 50 Silber",
-    Artisan = "Annora in Uldaman (Hintereingang), einzige Lehrerin für beide Fraktionen; erscheint erst, wenn ihr Bereich geleert ist",
+    Journeyman = { both = "Enchanting trainer in every capital (from skill 50, level 10)" },
+    Expert = { Horde = "Hgarth (Stonetalon Mountains, Sun Rock Retreat), 50 silver",
+      Alliance = "Kitta Firewind (Elwynn Forest, Tower of Azora), 50 silver" },
+    Artisan = { both = "Annora in Uldaman (back entrance), the only trainer for both factions; appears once her area is cleared" },
   },
   tools = { "Runed Copper Rod", "Runed Silver Rod", "Runed Golden Rod", "Runed Truesilver Rod", "Runed Arcanite Rod" },
   seedPath = {

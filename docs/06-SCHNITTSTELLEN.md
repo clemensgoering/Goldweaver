@@ -6,6 +6,7 @@ Stand: 08.11.2026 (nach dem Architektur-Durchgang). Jede Session, die eine Schni
 | Objekt | Funktionen |
 |---|---|
 | `ns` (Init) | `Print(...)`, `Log(...)`, `RegisterModule(name, {Init, SelfTest})`, `EachModule(fn)`, `Slash.Register(cmd, fn, help)` ★, `L[key]`, `version` |
+| `ns.Locale` | `Set(code) → active`, `Resolve(code)`, `Client()`, `active`, `tables[code]`, `LANGUAGES`; code = `"auto"`, `"deDE"` oder `"enUS"`, Einstellung `settings.language` (nil = automatisch), `/gw lang de/en/auto` |
 | `ns.Events` | `On(event, fn, owner?)`, `Off(event, fn)`, `Summary()`, `skipped`; `ns.Health.Record(where, err)`, `.errors`, `.detached` |
 | `ns.Secret` | `IsSecret(v)`, `Any(...)`, `Safe(v, fallback)` |
 | `ns.API` | `Has(path)`, `Resolve(path)`, `Call(path, ...) → ok, ...`, `ItemInfo(id) → {name, quality, reqLevel, equipLoc, sellPrice, classID, subclassID, bindType, icon}`, `ItemInfoInstant(id)`, `ItemName/ItemIcon/ItemCount`, `NumSlots/FreeSlots/ContainerItem(bag, slot)/UseContainerItem`, `failures` |

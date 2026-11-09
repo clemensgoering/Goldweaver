@@ -1,6 +1,6 @@
 -- Goldweaver: what the team needs. Aggregates the shopping lists of every processor's skill-up plan on this market
 -- and expands them one step through the conversion graph (a needed Bolt of Linen Cloth also creates demand for
--- Linen Cloth). The field view and the tooltip use this to mark items as "gefragt".
+-- Linen Cloth). The field view and the tooltip use this to mark items as "wanted".
 --
 -- Public API (ns.Demand)
 --   Get() -> { [itemID] = { qty, by = { [charName] = recipeName }, via = itemID? } }   (cached 60 s)
@@ -73,6 +73,6 @@ ns:RegisterModule("Demand", {
   SelfTest = function()
     local n = 0
     for _ in pairs(Demand.Get()) do n = n + 1 end
-    return { { name = "Bedarf der Verarbeiter", ok = true, detail = n .. " Item(s) gefragt" } }
+    return { { name = "Processor demand", ok = true, detail = n .. " item(s) wanted" } }
   end,
 })

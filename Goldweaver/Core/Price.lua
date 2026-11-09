@@ -2,6 +2,7 @@
 -- Every price is per unit in copper and carries {copper, source, age (seconds), confidence}.
 -- Pure parts (Observe/Observed/Prune/Confidence) only touch ns.db so the headless tests can drive them.
 local ADDON, ns = ...
+local L = ns.L
 
 local Price = { sources = {} }
 ns.Price = Price
@@ -154,14 +155,14 @@ ns:RegisterModule("Price", {
   SelfTest = function()
     local results = {}
     local auct = Auctionator and Auctionator.API and Auctionator.API.v1 and Auctionator.API.v1.GetAuctionPriceByItemID
-    results[#results + 1] = { name = "Auctionator-API", ok = auct ~= nil, warn = true, detail = auct and "verfügbar" or "nicht installiert (Preise nur aus eigenen AH-Suchen)" }
+    results[#results + 1] = { name = "Auctionator-API", ok = auct ~= nil, warn = true, detail = auct and L["available"] or L["not installed (prices only from your own AH searches)"] }
     local market = ns.db.prices[ns.Chars.MarketKey()]
     local n = 0
     for _ in pairs(market or {}) do n = n + 1 end
-    results[#results + 1] = { name = "Eigene Preise auf diesem Markt", ok = n > 0, warn = true, detail = n .. " Items" }
+    results[#results + 1] = { name = L["Own prices on this market"], ok = n > 0, warn = true, detail = (L["%d items"]):format(n) }
     local p = Price.Get(2589)
-    results[#results + 1] = { name = "Preis Leinenstoff (2589)", ok = p ~= nil, warn = true, detail = p and (ns.Util.Money(p.copper) .. " via " .. p.source) or "unbekannt" }
-    results[#results + 1] = { name = "Vendor-Deckel Grober Faden", ok = Price.VendorBuy(2320) == 10 or (Price.VendorBuy(2320) or 0) > 0, detail = tostring(Price.VendorBuy(2320)) }
+    results[#results + 1] = { name = L["Linen Cloth price (2589)"], ok = p ~= nil, warn = true, detail = p and (ns.Util.Money(p.copper) .. " via " .. p.source) or L["unknown"] }
+    results[#results + 1] = { name = L["Vendor cap Coarse Thread"], ok = Price.VendorBuy(2320) == 10 or (Price.VendorBuy(2320) or 0) > 0, detail = tostring(Price.VendorBuy(2320)) }
     return results
   end,
 })

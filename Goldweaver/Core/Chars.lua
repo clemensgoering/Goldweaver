@@ -5,6 +5,7 @@
 --   GetRealmName() is a shard name such as "CAMWOW EU4 Realm 5 PvE": region and ruleset are encoded in it.
 --   The auction house is shared per region + ruleset + faction, so the market key is "EU-PvE-Horde".
 local ADDON, ns = ...
+local L = ns.L
 
 local Chars = {}
 ns.Chars = Chars
@@ -12,7 +13,7 @@ ns.Chars = Chars
 -- "bank" was merged into "processor" (one twink stores AND processes; user decision 09.11.2026, schema 4)
 local ROLES = { main = true, processor = true, none = true }
 Chars.ROLES = ROLES
-Chars.ROLE_LABELS = { main = "Main (sammelt)", processor = "Verarbeiter & Bank", none = "Inaktiv" }
+Chars.ROLE_LABELS = { main = "Main (gathers)", processor = "Processor & bank", none = "Inactive" } -- English keys, shown through L[...]
 Chars.ROLE_ORDER = { "main", "processor", "none" }
 
 -- Returns firstName, surname (surname may be nil). Secrets are never returned.
@@ -230,7 +231,7 @@ function Chars.Changed()
     if me then ns.Checks.Pass("char", me.name .. " @ " .. (me.market or "?")) end
     local market = Chars.MarketKey()
     if #Chars.ByRole("main", market) > 0 and #Chars.ByRole("processor", market) > 0 then
-      ns.Checks.Pass("roles", ("%d Main, %d Verarbeiter"):format(#Chars.ByRole("main", market), #Chars.ByRole("processor", market)))
+      ns.Checks.Pass("roles", ("%d main, %d processor"):format(#Chars.ByRole("main", market), #Chars.ByRole("processor", market)))
     end
   end
   if ns.UI and ns.UI.Refresh then ns.UI.Refresh() end
@@ -247,11 +248,11 @@ ns:RegisterModule("Chars", {
     local first, surname = Chars.Names()
     local region = Chars.ParseRealm(GetRealmName and GetRealmName() or nil)
     return {
-      { name = "Charakter registriert", ok = me ~= nil, detail = me and me.name or "fehlt (PLAYER_LOGIN noch nicht gelaufen?)" },
-      { name = "Namensformat Vorname + Nachname", ok = surname ~= nil, warn = true, detail = tostring(first) .. " / " .. tostring(surname) },
-      { name = "Markt-Key aus Realmname", ok = region ~= nil or ns.db.settings.marketKey ~= nil, detail = Chars.MarketKey() },
-      { name = "Verarbeiter auf diesem Markt", ok = #Chars.ByRole("processor", Chars.MarketKey()) > 0, warn = true, detail = #Chars.ByRole("processor", Chars.MarketKey()) .. " Charakter(e)" },
-      { name = "Charaktere ohne Rolle", ok = Chars.Unassigned() == 0, warn = true, detail = tostring(Chars.Unassigned()) },
+      { name = L["Character registered"], ok = me ~= nil, detail = me and me.name or L["missing (PLAYER_LOGIN has not run yet?)"] },
+      { name = L["Name format first name + surname"], ok = surname ~= nil, warn = true, detail = tostring(first) .. " / " .. tostring(surname) },
+      { name = L["Market key from realm name"], ok = region ~= nil or ns.db.settings.marketKey ~= nil, detail = Chars.MarketKey() },
+      { name = L["Processor on this market"], ok = #Chars.ByRole("processor", Chars.MarketKey()) > 0, warn = true, detail = #Chars.ByRole("processor", Chars.MarketKey()) .. " " .. L["character(s)"] },
+      { name = L["Characters without a role"], ok = Chars.Unassigned() == 0, warn = true, detail = tostring(Chars.Unassigned()) },
     }
   end,
 })
@@ -259,9 +260,9 @@ ns:RegisterModule("Chars", {
 ns.Slash.Register("role", function(arg)
   local role, who = arg:match("^(%S+)%s*(.-)$")
   if role == "bank" then role = "processor" end
-  if not role or not ROLES[role] then return ns.Print("usage: /gw role main|processor|none [full name]") end
+  if not role or not ROLES[role] then return ns.Print(L["usage: /gw role main|processor|none [full name]"]) end
   who = (who ~= "" and who) or Chars.FullName()
-  if Chars.SetRole(who, role) then ns.Print(who .. " is now " .. role) else ns.Print("unknown character: " .. who) end
+  if Chars.SetRole(who, role) then ns.Print((L["%s is now %s"]):format(who, role)) else ns.Print((L["unknown character: %s"]):format(who)) end
 end, "set this character's role (main|processor|bank)")
 
 ns.Slash.Register("chars", function()
@@ -273,7 +274,7 @@ ns.Slash.Register("chars", function()
 end, "list known characters")
 
 ns.Slash.Register("market", function(arg)
-  if arg == "" then return ns.Print("market key: " .. Chars.MarketKey() .. " (set with /gw market <region-ruleset-faction>, clear with /gw market auto)") end
+  if arg == "" then return ns.Print((L["market key: %s (set with /gw market <region-ruleset-faction>, clear with /gw market auto)"]):format(Chars.MarketKey())) end
   ns.db.settings.marketKey = (arg ~= "auto") and arg or nil
-  ns.Print("market key: " .. Chars.MarketKey())
+  ns.Print((L["market key: %s"]):format(Chars.MarketKey()))
 end, "show or set the market key (region-ruleset-faction)")

@@ -12,6 +12,7 @@
 -- Rules: handlers are skipped when any event argument is a secret value; a handler that fails MAX_ERRORS times is
 -- detached so one broken module cannot spam the session. Handlers run newest-first (reverse registration order).
 local ADDON, ns = ...
+local L = ns.L
 
 local frame = CreateFrame("Frame")
 local handlers = {}
@@ -92,11 +93,11 @@ frame:SetScript("OnEvent", function(_, event, ...)
     if not ok then
       h.errors = h.errors + 1
       ns.Health.Record(event .. " (" .. h.owner .. ")", err)
-      if h.errors == 1 then ns.Print("Fehler in " .. event .. " (" .. h.owner .. "): " .. tostring(err)) end
+      if h.errors == 1 then ns.Print((L["Error in %s (%s): %s"]):format(event, h.owner, tostring(err))) end
       if h.errors >= MAX_ERRORS then
         table.remove(list, i)
         ns.Health.detached[#ns.Health.detached + 1] = event .. " (" .. h.owner .. ")"
-        ns.Print(("Handler für %s (%s) nach %d Fehlern abgeschaltet. /gw debug run zeigt Details."):format(event, h.owner, MAX_ERRORS))
+        ns.Print(L["Handler for %s (%s) disabled after %d errors. /gw debug run shows details."]:format(event, h.owner, MAX_ERRORS))
       end
     end
   end

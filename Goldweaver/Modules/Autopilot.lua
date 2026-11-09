@@ -11,6 +11,7 @@
 --   ReadQueue() -> { skillLine... } books that are missing or older than STALE
 --   status = { roles, books, health, blocked }
 local ADDON, ns = ...
+local L = ns.L
 
 local Autopilot = { status = {} }
 ns.Autopilot = Autopilot
@@ -45,7 +46,7 @@ local function autoRoles()
   if role then
     ns.Chars.SetRole(me.name, role, "auto")
     me.onboarded = true
-    ns.Print(("%s ist als %s eingestuft. Ändern: Fenster » Team."):format(me.name, ns.Chars.ROLE_LABELS[role]))
+    ns.Print((L["%s is classified as %s. Change: Window » Team."]):format(me.name, L[ns.Chars.ROLE_LABELS[role]]))
     Autopilot.status.roles = "auto: " .. role
   end
 end
@@ -86,7 +87,7 @@ local function finishRead(success)
   reading = nil
   if success then
     Autopilot.status.books = (Autopilot.status.books or 0) + 1
-    if ns.Checks then ns.Checks.Pass("autoRead", "Beruf " .. tostring(skillLine) .. " im Hintergrund gelesen") end
+    if ns.Checks then ns.Checks.Pass("autoRead", ("Profession %s read in the background"):format(tostring(skillLine))) end
   end
   C_Timer.After(1.5, Autopilot.ReadNext)
 end
@@ -108,7 +109,7 @@ end
 -- when the player opens a profession or clicks "Rezepte laden" in the guide.
 function Autopilot.StartReading()
   if ns.db.settings.autoReadProfessions ~= true or ns.db.learned.autoReadBlocked then
-    if ns.Checks then ns.Checks.Skip("autoRead", "vom Spiel nicht erlaubt; Bücher werden beim Öffnen des Berufs gelesen") end
+    if ns.Checks then ns.Checks.Skip("autoRead", "not allowed by the game; books are read when the profession opens") end
     return
   end
   queue = Autopilot.ReadQueue()
@@ -121,7 +122,7 @@ function Autopilot.QuickHealth()
   for _, row in ipairs(ns.Features.Status()) do
     if not row.ok and not ns.Features.Disabled(row.name) then
       result.red = result.red + 1
-      result.rows[#result.rows + 1] = row.label .. ": " .. row.detail
+      result.rows[#result.rows + 1] = L[row.label] .. ": " .. row.detail
     end
   end
   ns:EachModule(function(name, m)
@@ -148,10 +149,10 @@ local function healthCheck()
   ns.db.debug.health = { when = time(), red = h.red, warn = h.warn, rows = h.rows }
   if ns.Minimap and ns.Minimap.SetAlert then ns.Minimap.SetAlert(h.red > 0) end
   if h.red > 0 then
-    ns.Print(("%d Funktion(en) eingeschränkt: %s. Details: /gw debug run"):format(h.red, h.rows[1] or "?"))
+    ns.Print((L["%d feature(s) restricted: %s. Details: /gw debug run"]):format(h.red, h.rows[1] or "?"))
     if ns.Checks then ns.Checks.Fail("selftest", h.rows[1]) end
   elseif ns.Checks then
-    ns.Checks.Pass("selftest", "automatisch beim Login")
+    ns.Checks.Pass("selftest", "automatic at login")
   end
 end
 
@@ -180,18 +181,18 @@ ns:RegisterModule("Autopilot", {
       -- a known client limit, not a fault: remember it for good and never try again
       ns.db.learned.autoReadBlocked = true
       ns.Log("background profession reading blocked by the client; disabled permanently")
-      if ns.Checks then ns.Checks.Skip("autoRead", "vom Spiel nicht erlaubt; Bücher werden beim Öffnen gelesen") end
+      if ns.Checks then ns.Checks.Skip("autoRead", "not allowed by the game; books are read on opening") end
     end
     ns.Events:On("ADDON_ACTION_BLOCKED", onBlocked, "Autopilot")
     ns.Events:On("ADDON_ACTION_FORBIDDEN", onBlocked, "Autopilot")
   end,
   SelfTest = function()
     local off = blocked or ns.db.learned.autoReadBlocked or ns.db.settings.autoReadProfessions ~= true
-    local detail = off and "aus (Spiel erlaubt es nicht); Bücher beim Öffnen"
-      or ((Autopilot.status.books or 0) .. " gelesen, " .. #Autopilot.ReadQueue() .. " offen")
+    local detail = off and L["off (the game does not allow it); books on opening"]
+      or (L["%d read, %d open"]):format(Autopilot.status.books or 0, #Autopilot.ReadQueue())
     return {
-      { name = "Rollen-Automatik", ok = true, detail = Autopilot.status.roles or "nichts zu tun" },
-      { name = "Berufe im Hintergrund", ok = true, detail = detail },
+      { name = L["Role automation"], ok = true, detail = Autopilot.status.roles or L["nothing to do"] },
+      { name = L["Background professions"], ok = true, detail = detail },
     }
   end,
 })

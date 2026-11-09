@@ -2,6 +2,7 @@
 -- (name, zone, map position, what they sold at which price). Own observations only; no shipped NPC database.
 -- GoldweaverDB.contacts[npcName] = { kind = "trainer"|"merchant", zone, mapID, x, y, when, items = {[itemID] = buyPrice} }
 local ADDON, ns = ...
+local L = ns.L
 
 local Contacts = {}
 ns.Contacts = Contacts
@@ -67,7 +68,7 @@ local function recordMerchant()
       if not v.buy or price < v.buy then v.buy = price; v.npc = name end
       v.limited = (numAvailable or -1) >= 0
       v.when = time()
-      -- recipe scrolls teach a spell whose ID is the recipe ID: that links the vendor to "Noch nicht gelernt"
+      -- recipe scrolls teach a spell whose ID is the recipe ID: that links the vendor to "Not learned yet"
       if C_Item and C_Item.GetItemSpell then
         local okSpell, _, spellID = pcall(C_Item.GetItemSpell, id)
         if okSpell and type(spellID) == "number" then v.teaches = spellID end
@@ -75,14 +76,14 @@ local function recordMerchant()
       ns.db.vendors[id] = v
     end
   end
-  if ns.Checks then ns.Checks.Pass("contacts", ("Händler %s, %d Waren"):format(name, n)) end
+  if ns.Checks then ns.Checks.Pass("contacts", ("Merchant %s, %d goods"):format(name, n)) end
 end
 
 local function recordTrainer()
   local name = npcName()
   local c = name and record("trainer")
   if not c then return end
-  if ns.Checks then ns.Checks.Pass("contacts", "Lehrer " .. name) end
+  if ns.Checks then ns.Checks.Pass("contacts", "Trainer " .. name) end
   if ns.Learn then C_Timer.After(0.3, function() pcall(ns.Learn.TrainerServices, name) end) end
 end
 
@@ -116,8 +117,8 @@ ns:RegisterModule("Contacts", {
     for _ in pairs(ns.db.vendors or {}) do vendors = vendors + 1 end
     local mapID, zone = position()
     return {
-      { name = "Position lesbar", ok = mapID ~= nil, detail = tostring(zone) .. " (" .. tostring(mapID) .. ")" },
-      { name = "Kontakte", ok = true, detail = ("%d Lehrer, %d Händler, %d Händlerpreise"):format(trainers, merchants, vendors) },
+      { name = "Position readable", ok = mapID ~= nil, detail = tostring(zone) .. " (" .. tostring(mapID) .. ")" },
+      { name = "Contacts", ok = true, detail = ("%d trainers, %d merchants, %d vendor prices"):format(trainers, merchants, vendors) },
     }
   end,
   Init = function()
@@ -133,5 +134,5 @@ ns.Slash.Register("contacts", function()
     n = n + 1
     if n <= 15 then ns.Print(("%s (%s) %s %s"):format(name, c.kind or "?", c.zone or "?", c.x and (c.x .. ", " .. c.y) or "")) end
   end
-  ns.Print(n .. " Kontakte gespeichert (Lehrer und Händler, die du besucht hast)")
+  ns.Print((L["%d contacts saved (trainers and merchants you have visited)"]):format(n))
 end, "list visited trainers and merchants")

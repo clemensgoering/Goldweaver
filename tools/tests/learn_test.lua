@@ -91,8 +91,8 @@ ns.db.vendors, ns.db.contacts = {}, {}
 ns.db.learned.trainers = { ["Magar"] = { skillLine = 197, services = { { name = "Muster", skillReq = 20 } }, ranks = { { name = "Geselle", skillReq = 50, levelReq = 10, cost = 500 } } } }
 ns.db.contacts = { Magar = { kind = "trainer", zone = "Orgrimmar" } }
 local t = Learn.RecipeSource({ id = 1, name = "Muster" })
-eq(t, "Lehrer Magar (Orgrimmar) ab Skill 20", "trainer source text")
-eq(Learn.TrainerFor(197, 50), "Magar (Orgrimmar), 5s 00c, ab Level 10", "trainer for next rank")
+eq(t, "Trainer Magar (Orgrimmar) from skill 20", "trainer source text")
+eq(Learn.TrainerFor(197, 50), "Magar (Orgrimmar), 5s 00c, from level 10", "trainer for next rank")
 ns.db.learned = nil
 ns.db.contacts = {}
 Checks.Reset()

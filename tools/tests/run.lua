@@ -48,7 +48,7 @@ end
 
 -- Same order as the TOC for the files without UI dependencies.
 for _, rel in ipairs({
-  "Locales/enUS.lua", "Core/Init.lua", "Core/Util.lua", "Core/Secret.lua", "Core/Events.lua", "Core/API.lua", "Core/DB.lua",
+  "Locales/enUS.lua", "Locales/deDE.lua", "Core/Init.lua", "Core/Util.lua", "Core/Secret.lua", "Core/Events.lua", "Core/API.lua", "Core/DB.lua",
   "Core/Chars.lua", "Core/Inventory.lua", "Core/Price.lua", "Core/Graph.lua",
   "Data/Disenchant.lua", "Data/Crates.lua", "Data/VendorReagents.lua", "Data/Conversions.lua", "Data/Gathering.lua", "Data/Zones.lua",
   "Professions/Registry.lua", "Professions/Adapter.lua", "Professions/Tailoring.lua", "Professions/Enchanting.lua",

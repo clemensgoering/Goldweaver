@@ -28,7 +28,7 @@ function Ledger.RecordInvoice(index)
   return entry
 end
 
--- Passive inbox scan: Forever's mailbox has its own "Alle öffnen". We read every invoice while the inbox is shown
+-- Passive inbox scan: Forever's mailbox has its own "Open all". We read every invoice while the inbox is shown
 -- and record a sale once its mail disappears (looted or deleted). Keyed by item, price, count and arrival time.
 local seenInvoices = {}
 function Ledger.ScanInbox()
@@ -56,8 +56,8 @@ function Ledger.ScanInbox()
       seenInvoices[key] = nil
       recorded = recorded + 1
       if ns.Checks then
-        ns.Checks.Pass("ledger", ("%s x%d für %s"):format(tostring(inv.item), inv.count, ns.Util.Money(inv.price)))
-        ns.Checks.Pass("mailOpen", "Rechnungen beim Öffnen erfasst")
+        ns.Checks.Pass("ledger", ("%s x%d for %s"):format(tostring(inv.item), inv.count, ns.Util.Money(inv.price)))
+        ns.Checks.Pass("mailOpen", "invoices recorded when opening")
       end
     end
   end

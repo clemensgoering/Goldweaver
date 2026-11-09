@@ -5,9 +5,12 @@
 --
 -- Public API (ns.Diagnose)
 --   Run() -> findings                finding = { id, severity = "error"|"warn"|"info", title, detail, fixLabel?, fix?, fixed? }
+--                                    rules pass English keys (title, detail, fixLabel) with optional format arguments targs/dargs
+--                                    (an argument { key } is translated); Run() returns them translated, the stored copy stays English
 --   Latest() -> findings
---   RegisterRule(id, fn(add))  ★     add{...} appends a finding
+--   RegisterRule(id, fn(add))  ★     add{...} appends a finding (id, severity, title, detail, targs, dargs, fixLabel, fix, fixed)
 local ADDON, ns = ...
+local L = ns.L
 
 local Diagnose = { rules = {}, latest = {} }
 ns.Diagnose = Diagnose
@@ -22,27 +25,27 @@ local R = Diagnose.RegisterRule
 
 R("errors", function(add)
   if #ns.Health.detached > 0 then
-    add({ id = "detached", severity = "error", title = ("%d Funktion(en) nach Fehlern abgeschaltet"):format(#ns.Health.detached),
-      detail = table.concat(ns.Health.detached, ", ") .. ". Startet beim nächsten /reload neu; der Fehlertext liegt im Bericht.",
-      fixLabel = "Neu laden", fix = function() if ReloadUI then ReloadUI() end end })
+    add({ id = "detached", severity = "error", title = "%d function(s) disabled after errors", targs = { #ns.Health.detached },
+      detail = "%s. Restarts on the next /reload; the error text is in the report.", dargs = { table.concat(ns.Health.detached, ", ") },
+      fixLabel = "Reload", fix = function() if ReloadUI then ReloadUI() end end })
   elseif #ns.Health.errors > 0 then
     local e = ns.Health.errors[#ns.Health.errors]
-    add({ id = "error", severity = "warn", title = "Ein Fehler wurde abgefangen", detail = e.where .. ": " .. e.err })
+    add({ id = "error", severity = "warn", title = "An error was caught", detail = e.where .. ": " .. e.err })
   end
 end)
 
 R("interface", function(add)
   local _, _, _, interface = GetBuildInfo()
   if interface and not ns.Secret.IsSecret(interface) and interface ~= ns.INTERFACE then
-    add({ id = "interface", severity = "warn", title = "Neuer Spiel-Patch erkannt",
-      detail = ("Client %s, Goldweaver für %s gebaut. Funktionen, deren Spiel-API fehlt, schalten sich still ab."):format(tostring(interface), tostring(ns.INTERFACE)) })
+    add({ id = "interface", severity = "warn", title = "New game patch detected",
+      detail = "Client %s, Goldweaver built for %s. Features whose game API is missing switch off silently.", dargs = { tostring(interface), tostring(ns.INTERFACE) } })
   end
 end)
 
 R("features", function(add)
   for _, row in ipairs(ns.Features.Status()) do
     if not row.ok and not ns.Features.Disabled(row.name) then
-      add({ id = "feature-" .. row.name, severity = "warn", title = row.label .. " nicht verfügbar", detail = row.detail })
+      add({ id = "feature-" .. row.name, severity = "warn", title = "%s not available", targs = { { row.label } }, detail = row.detail })
     end
   end
 end)
@@ -50,9 +53,9 @@ end)
 R("roles", function(add)
   local market = ns.Chars.MarketKey()
   if #ns.Chars.ByRole("processor", market) == 0 then
-    add({ id = "noProcessor", severity = "info", title = "Noch kein Verarbeiter",
-      detail = "Loggt ein Twink mit Herstellungsberuf ein, wird er automatisch Verarbeiter. Sonst im Team-Reiter festlegen.",
-      fixLabel = "Team öffnen", fix = function() ns.UI.Open("team") end })
+    add({ id = "noProcessor", severity = "info", title = "No processor yet",
+      detail = "When an alt with a crafting profession logs in, it becomes the processor automatically. Otherwise set it in the Team tab.",
+      fixLabel = "Open Team", fix = function() ns.UI.Open("team") end })
   end
 end)
 
@@ -62,9 +65,9 @@ R("books", function(add)
   local missing = ns.Adapter.MissingBooks(me)
   local blocked = ns.Autopilot and ns.Autopilot.status.blocked
   if #missing > 0 and blocked then
-    add({ id = "books", severity = "warn", title = ("%d Beruf(e) nicht eingelesen"):format(#missing),
-      detail = "Das Hintergrund-Lesen wurde vom Spiel blockiert. Ein Klick öffnet den Beruf einmal.",
-      fixLabel = "Rezepte laden", fix = function() ns.Adapter.Open(missing[1].skillLine) end })
+    add({ id = "books", severity = "warn", title = "%d profession(s) not read", targs = { #missing },
+      detail = "The game blocked background reading. One click opens the profession once.",
+      fixLabel = "Load recipes", fix = function() ns.Adapter.Open(missing[1].skillLine) end })
   end
 end)
 
@@ -73,8 +76,8 @@ R("prices", function(add)
   local hasOwn = market and next(market) ~= nil
   local hasAuctionator = Auctionator and Auctionator.API and Auctionator.API.v1
   if not hasOwn and not hasAuctionator then
-    add({ id = "prices", severity = "info", title = "Noch keine Marktpreise",
-      detail = "Einmal im Auktionshaus suchen oder Auctionator installieren; bis dahin rechnet Goldweaver mit Händlerpreisen." })
+    add({ id = "prices", severity = "info", title = "No market prices yet",
+      detail = "Search the auction house once or install Auctionator; until then Goldweaver uses vendor prices." })
   end
 end)
 
@@ -88,7 +91,7 @@ R("panel", function(add)
     ns.db.settings.panelPos = nil
     f:ClearAllPoints()
     f:SetPoint("RIGHT", UIParent, "RIGHT", -16, -150)
-    add({ id = "panelPos", severity = "info", title = "Seitenpanel war außerhalb des Bildschirms", detail = "Position zurückgesetzt.", fixed = true })
+    add({ id = "panelPos", severity = "info", title = "Side panel was off-screen", detail = "Position reset.", fixed = true })
   end
 end)
 
@@ -97,21 +100,38 @@ R("storage", function(add)
   for _, market in pairs(ns.db.prices) do for _ in pairs(market) do n = n + 1 end end
   if n > 20000 then
     ns.Price.Prune(math.max(7, (ns.db.settings.priceHistoryDays or 30) - 10))
-    add({ id = "storage", severity = "info", title = "Preisdaten verkleinert", detail = ("%d Einträge; alte Tageswerte gekürzt, aktuelle Preise bleiben."):format(n), fixed = true })
+    add({ id = "storage", severity = "info", title = "Price data trimmed", detail = "%d entries; old daily values trimmed, current prices stay.", dargs = { n }, fixed = true })
   end
 end)
+
+-- Finding text: key + optional format arguments; an argument { key } is itself a key and is translated.
+local function render(key, args, translate)
+  if not key then return nil end
+  local text = translate and L[key] or key
+  if not args then return text end
+  local shown = {}
+  for i, a in ipairs(args) do
+    if type(a) == "table" then shown[i] = translate and L[a[1]] or a[1] else shown[i] = a end
+  end
+  return text:format(unpack(shown))
+end
 
 function Diagnose.Run()
   local findings = {}
   local function add(f) findings[#findings + 1] = f end
   for _, rule in ipairs(Diagnose.rules) do
     local ok, err = pcall(rule.fn, add)
-    if not ok then findings[#findings + 1] = { id = "rule-" .. rule.id, severity = "warn", title = "Diagnoseregel " .. rule.id .. " fehlgeschlagen", detail = tostring(err) } end
+    if not ok then findings[#findings + 1] = { id = "rule-" .. rule.id, severity = "warn", title = "Diagnosis rule %s failed", targs = { rule.id }, detail = tostring(err) } end
   end
   table.sort(findings, function(a, b) return (SEVERITY[a.severity] or 9) < (SEVERITY[b.severity] or 9) end)
-  Diagnose.latest = findings
   local stored = {}
-  for _, f in ipairs(findings) do stored[#stored + 1] = { id = f.id, severity = f.severity, title = f.title, detail = f.detail, fixed = f.fixed } end
+  for _, f in ipairs(findings) do
+    stored[#stored + 1] = { id = f.id, severity = f.severity, title = render(f.title, f.targs, false), detail = render(f.detail, f.dargs, false), fixed = f.fixed }
+    f.title = render(f.title, f.targs, true)
+    f.detail = render(f.detail, f.dargs, true)
+    if f.fixLabel then f.fixLabel = L[f.fixLabel] end
+  end
+  Diagnose.latest = findings
   ns.db.debug.diagnosis = { when = time(), findings = stored }
   if ns.Minimap and ns.Minimap.SetAlert then
     local red = false
@@ -134,7 +154,7 @@ function Diagnose.OnError()
     local top = findings[1]
     if top and top.severity == "error" and not Diagnose.announced then
       Diagnose.announced = true
-      ns.Print(top.title .. ". Details im Leitfaden unten (automatischer Bericht gespeichert).")
+      ns.Print((L["%s. Details in the guide below (automatic report saved)."]):format(top.title))
       if ns.Debug and ns.Debug.Build then pcall(ns.Debug.Build) end
     end
   end)
@@ -151,6 +171,6 @@ ns:RegisterModule("Diagnose", {
   end,
   SelfTest = function()
     local n = #Diagnose.latest
-    return { { name = "Diagnose", ok = true, detail = n == 0 and "keine Befunde" or (n .. " Befund(e): " .. Diagnose.latest[1].title) } }
+    return { { name = L["Diagnosis"], ok = true, detail = n == 0 and L["no findings"] or (L["%d finding(s): %s"]):format(n, Diagnose.latest[1].title) } }
   end,
 })

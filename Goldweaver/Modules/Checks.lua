@@ -2,6 +2,7 @@
 -- game (an event fired, a button worked, data arrived), never by hand. Pending checks carry a hint telling the player
 -- what to do in game to trigger them. Status lives in GoldweaverDB.checks and shows in Heute and /gw debug run.
 local ADDON, ns = ...
+local L = ns.L
 
 local Checks = { defs = {}, order = {} }
 ns.Checks = Checks
@@ -71,43 +72,43 @@ end
 
 -- Definitions (group = Abnahme A / Fragen F / Roadmap B) ------------------------------------------
 local D = Checks.Define
-D("load", { group = "A", title = "Addon lädt ohne Fehler", hint = "Einloggen; Fehler erscheinen im Chat und im Bericht." })
-D("interface", { group = "A", title = "Interface-Nummer passt zum Client", hint = "Automatisch beim Login." })
-D("char", { group = "A", title = "Charakter registriert (Vorname Nachname, Markt-Key)", hint = "Automatisch beim Login." })
-D("roles", { group = "A", title = "Rollen gesetzt: mindestens ein Main und ein Verarbeiter", hint = "Fenster » Charaktere, Rollen wählen." })
-D("onboarding", { group = "A", title = "Erstlauf-Karte gezeigt oder übersprungen", hint = "Einen Charakter ohne Rolle einloggen." })
-D("hud", { group = "A", title = "HUD-Zeile sichtbar auf dem Main", hint = "Mit dem Main einloggen (oder /gw hud on)." })
-D("tooltip", { group = "A", title = "Tooltip-Zeile erscheint", hint = "Ein Item in der Tasche anschauen." })
-D("stock", { group = "A", title = "Bestand über Bank/Twinks im Tooltip", hint = "Bank besuchen, dann ein Item ansehen, das auch dort liegt." })
-D("mailButtons", { group = "A", title = "Briefkasten-Knöpfe erscheinen", hint = "Briefkasten öffnen." })
-D("mailAttach", { group = "A", title = "Anhängen füllt Empfänger und Anhänge", hint = "Im Briefkasten 'Anhängen für …' klicken." })
-D("mailSend", { group = "A", title = "Post an den Verarbeiter zugestellt (Empfängerformat bestätigt)", hint = "Nach dem Anhängen 'Senden an …' klicken." })
-D("mailOpen", { group = "A", title = "Posteingang mit AH-Post geöffnet (Blizzard 'Alle öffnen'), Rechnungen erfasst", hint = "Nach einem Verkauf den Briefkasten öffnen und 'Alle öffnen' klicken." })
-D("ledger", { group = "A", title = "Verkauf aus einer AH-Rechnung erfasst", hint = "Etwas im AH verkaufen, Post öffnen." })
-D("book", { group = "A", title = "Rezeptbuch gelesen (C_TradeSkillUI)", hint = "Fenster » Berufe » 'Rezepte laden' (öffnet den Beruf per Knopf).",
+D("load", { group = "A", title = "Addon loads without errors", hint = "Log in; errors appear in chat and in the report." })
+D("interface", { group = "A", title = "Interface number matches the client", hint = "Automatic at login." })
+D("char", { group = "A", title = "Character registered (first name surname, market key)", hint = "Automatic at login." })
+D("roles", { group = "A", title = "Roles set: at least one main and one processor", hint = "Window » Team, choose roles." })
+D("onboarding", { group = "A", title = "First-run card shown or skipped", hint = "Log in a character without a role." })
+D("hud", { group = "A", title = "HUD line visible on the main", hint = "Log in with the main (or /gw hud on)." })
+D("tooltip", { group = "A", title = "Tooltip line appears", hint = "Look at an item in your bag." })
+D("stock", { group = "A", title = "Stock across bank/alts in the tooltip", hint = "Visit the bank, then look at an item that is also stored there." })
+D("mailButtons", { group = "A", title = "Mailbox buttons appear", hint = "Open the mailbox." })
+D("mailAttach", { group = "A", title = "Attach fills recipient and attachments", hint = "In the mailbox click 'Attach for …'." })
+D("mailSend", { group = "A", title = "Mail delivered to the processor (recipient format confirmed)", hint = "After attaching, click 'Send to …'." })
+D("mailOpen", { group = "A", title = "Inbox with AH mail opened (Blizzard 'Open all'), invoices recorded", hint = "After a sale, open the mailbox and click 'Open all'." })
+D("ledger", { group = "A", title = "Sale recorded from an AH invoice", hint = "Sell something at the AH, open the mail." })
+D("book", { group = "A", title = "Recipe book read (C_TradeSkillUI)", hint = "Window » Professions » 'Load recipes' (opens the profession by button).",
   action = function() ns.UI.Open("berufe") end })
-D("plan", { group = "A", title = "Skill-up-Plan mit Einkaufsliste berechnet", hint = "Beruf mit lernbaren Rezepten laden, dann Fenster » Berufe.",
+D("plan", { group = "A", title = "Skill-up plan with shopping list calculated", hint = "Load a profession with learnable recipes, then Window » Professions.",
   action = function() ns.UI.Open("berufe") end })
-D("craft", { group = "A", title = "Herstellen über den Leitfaden-Knopf", hint = "Im Leitfaden 'Herstellen ×N' bei geladenem Beruf klicken.",
+D("craft", { group = "A", title = "Crafting via the guide button", hint = "In the guide click 'Craft ×N' with a profession loaded.",
   action = function() ns.UI.Open("berufe") end })
-D("disenchant", { group = "A", title = "Entzaubern über die Queue (Secure-Button)", hint = "/gw de auf dem Verzauberer, Knopf klicken.",
+D("disenchant", { group = "A", title = "Disenchanting via the queue (secure button)", hint = "/gw de on the enchanter, click the button.",
   action = function() if ns.Destroy then ns.Destroy.Show() end end })
-D("ahObserve", { group = "A", title = "AH-Suchseite in die Preisdatenbank übernommen", hint = "Im AH nach einem Item suchen." })
-D("ahSuggest", { group = "A", title = "Verkaufsvorschlag angezeigt und Preis vorbelegt", hint = "Ein Item in den Verkaufen-Tab legen." })
-D("contacts", { group = "A", title = "Lehrer oder Händler aufgezeichnet", hint = "Einen Berufslehrer oder Händler ansprechen." })
-D("selftest", { group = "A", title = "Debug-Bericht ohne rote Modulzeilen", hint = "/gw debug run.", action = function() if ns.Debug then ns.Debug.Run() end end })
+D("ahObserve", { group = "A", title = "AH search page stored in the price database", hint = "Search for an item at the AH." })
+D("ahSuggest", { group = "A", title = "Sell suggestion shown and price prefilled", hint = "Put an item into the Sell tab." })
+D("contacts", { group = "A", title = "Trainer or vendor recorded", hint = "Talk to a profession trainer or vendor." })
+D("selftest", { group = "A", title = "Debug report without red module lines", hint = "/gw debug run.", action = function() if ns.Debug then ns.Debug.Run() end end })
 -- open questions answered by observation
-D("f6deposit", { group = "F", title = "F6 Einzahlungsformel aus echten Werten", hint = "Items in den Verkaufen-Tab legen (drei verschiedene genügen)." })
-D("f7crate", { group = "F", title = "F7 Kisten-Bündel und Favor aus einem Kisten-Tooltip", hint = "Eine Waylaid Crate im Tooltip ansehen." })
-D("f10mail", { group = "F", title = "F10 Post-Empfängerformat", hint = "Einmal über den Knopf an den Verarbeiter senden." })
-D("f11skillup", { group = "F", title = "F11 Skill-up-Chancen aus eigenen Crafts (mind. 15)", hint = "Herstellen; das Addon zählt Crafts und Skill-ups je Farbe." })
-D("recipeFields", { group = "F", title = "Rezeptfelder erkannt (Quelle, Anforderungen)", hint = "Ein Berufefenster öffnen." })
-D("trainerRanks", { group = "F", title = "Rang-Anforderungen beim Lehrer gelesen", hint = "Einen Berufslehrer ansprechen." })
-D("autoRead", { group = "B", title = "Berufe automatisch im Hintergrund gelesen", hint = "Läuft beim Login von selbst (außerhalb des Kampfs)." })
-D("fieldZone", { group = "B", title = "Aktuelle Zone erkannt (Unterwegs)", hint = "Läuft von selbst." })
-D("fieldObserve", { group = "B", title = "Sammelfund einer Zone zugeordnet", hint = "Ein Kraut, Erz oder Leder sammeln." })
-D("recipeSources", { group = "B", title = "Mindestens eine Rezeptquelle (Lehrer/Händler) zugeordnet", hint = "Lehrer oder Rezept-Händler besuchen." })
-D("deObserved", { group = "B", title = "Entzauber-Ergebnis geloggt (Kalibrierung)", hint = "Einmal entzaubern." })
+D("f6deposit", { group = "F", title = "F6 Deposit formula from real values", hint = "Put items into the Sell tab (three different ones are enough)." })
+D("f7crate", { group = "F", title = "F7 Crate bundles and favor from a crate tooltip", hint = "Look at a Waylaid Crate in the tooltip." })
+D("f10mail", { group = "F", title = "F10 Mail recipient format", hint = "Send once to the processor via the button." })
+D("f11skillup", { group = "F", title = "F11 Skill-up chances from own crafts (min. 15)", hint = "Craft; the addon counts crafts and skill-ups per colour." })
+D("recipeFields", { group = "F", title = "Recipe fields detected (source, requirements)", hint = "Open a profession window." })
+D("trainerRanks", { group = "F", title = "Rank requirements read from the trainer", hint = "Talk to a profession trainer." })
+D("autoRead", { group = "B", title = "Professions read automatically in the background", hint = "Runs by itself at login (out of combat)." })
+D("fieldZone", { group = "B", title = "Current zone detected (On the road)", hint = "Runs by itself." })
+D("fieldObserve", { group = "B", title = "Gathering find assigned to a zone", hint = "Gather an herb, ore or leather." })
+D("recipeSources", { group = "B", title = "At least one recipe source (trainer/vendor) assigned", hint = "Visit a trainer or recipe vendor." })
+D("deObserved", { group = "B", title = "Disenchant result logged (calibration)", hint = "Disenchant once." })
 
 ns:RegisterModule("Checks", {
   Init = function()
@@ -115,27 +116,27 @@ ns:RegisterModule("Checks", {
       C_Timer.After(6, function()
         if #ns.Health.errors == 0 then Checks.Pass("load", ns.version) else Checks.Fail("load", ns.Health.errors[1].where .. ": " .. ns.Health.errors[1].err) end
         local _, _, _, interface = GetBuildInfo()
-        if interface == ns.INTERFACE then Checks.Pass("interface", tostring(interface)) else Checks.Fail("interface", ("Client %s, Addon %s"):format(tostring(interface), tostring(ns.INTERFACE))) end
+        if interface == ns.INTERFACE then Checks.Pass("interface", tostring(interface)) else Checks.Fail("interface", ("Client %s, addon %s"):format(tostring(interface), tostring(ns.INTERFACE))) end
       end)
     end, "Checks")
   end,
   SelfTest = function()
     local s = Checks.Summary()
-    local rows = { { name = "Prüfungen", ok = s.fail == 0, warn = s.pending > 0, detail = ("%d bestanden, %d offen, %d fehlgeschlagen, %d übersprungen"):format(s.pass, s.pending, s.fail, s.skip) } }
+    local rows = { { name = L["Checks"], ok = s.fail == 0, warn = s.pending > 0, detail = L["%d passed, %d pending, %d failed, %d skipped"]:format(s.pass, s.pending, s.fail, s.skip) } }
     for _, r in ipairs(Checks.Status()) do
       -- failed acceptance checks are hints (evidence from play), not runtime breakage: warn, never red
-      if r.status == "fail" then rows[#rows + 1] = { name = r.title, ok = false, warn = true, detail = r.detail } end
+      if r.status == "fail" then rows[#rows + 1] = { name = L[r.title], ok = false, warn = true, detail = r.detail and L[r.detail] } end
     end
     return rows
   end,
 })
 
 ns.Slash.Register("checks", function(arg)
-  if arg == "reset" then Checks.Reset(); return ns.Print("Prüfungen zurückgesetzt") end
+  if arg == "reset" then Checks.Reset(); return ns.Print(L["Checks reset"]) end
   for _, r in ipairs(Checks.Status()) do
     local mark = r.status == "pass" and "|cff7fd17f✓|r" or (r.status == "fail" and "|cffd9534f✗|r" or (r.status == "skip" and "|cff999999–|r" or "|cffffd27f…|r"))
-    ns.Print(("%s %s%s"):format(mark, r.title, r.status == "pending" and (" » " .. (r.hint or "")) or (r.detail and (" (" .. tostring(r.detail) .. ")") or "")))
+    ns.Print(("%s %s%s"):format(mark, L[r.title], r.status == "pending" and (" » " .. L[r.hint or ""]) or (r.detail and (" (" .. L[tostring(r.detail)] .. ")") or "")))
   end
   local s = Checks.Summary()
-  ns.Print(("%d/%d bestanden"):format(s.pass, s.total))
+  ns.Print((L["%d/%d passed"]):format(s.pass, s.total))
 end, "automatic acceptance checks (reset)")

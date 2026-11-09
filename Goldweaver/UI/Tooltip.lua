@@ -1,16 +1,17 @@
 -- Goldweaver: tooltip lines (docs/08-UX.md 4.1). One gold line with the best use and its value; Shift shows the
 -- other options; a grey stock line when the item exists in bank or on alts. Uses TooltipDataProcessor (verified on Forever).
 local ADDON, ns = ...
+local L = ns.L
 
 local Tooltip = {}
 ns.Tooltip = Tooltip
 
 local GOLD = { 0.83, 0.66, 0.31 }
-local ACTION_LABEL = { vendor = "Händler", auction = "AH", convert = nil, crate = "Kiste~", keep = "Behalten" }
+local ACTION_LABEL = { vendor = "Vendor", auction = "AH", convert = nil, crate = "Crate~", keep = "Keep" } -- English keys, translated at display
 
 local function optionLabel(o)
-  if o.action == "convert" then return o.conversion and (o.conversion.name or o.conversion.kind) or "Umwandeln" end
-  return ACTION_LABEL[o.action] or o.action
+  if o.action == "convert" then return o.conversion and L[o.conversion.name or o.conversion.kind] or L["Convert"] end
+  return L[ACTION_LABEL[o.action] or o.action]
 end
 
 local function whoCan(conv)
@@ -46,7 +47,7 @@ function Tooltip.Lines(itemID, quantity, isBound)
   local ctx = ns.Advisor.LiveContext()
   local options = ns.Advisor.Evaluate(item, ctx)
   if #options == 0 then
-    return { { text = "Goldweaver: kein Preis bekannt · im AH suchen oder Auctionator scannen lassen", color = { 0.6, 0.6, 0.6 } } }
+    return { { text = L["Goldweaver: no price known · search the AH or let Auctionator scan"], color = { 0.6, 0.6, 0.6 } } }
   end
   local best = options[1]
   local lines = {}
@@ -57,13 +58,13 @@ function Tooltip.Lines(itemID, quantity, isBound)
 
   local main
   if best.value <= 0 and best.action == "vendor" and item.vendorSell == 0 then
-    main = "Goldweaver: kein Preis bekannt · AH öffnen oder Auctionator installieren"
+    main = L["Goldweaver: no price known · open the AH or install Auctionator"]
   else
     local label = optionLabel(best)
     local who = best.action == "convert" and whoCan(best.conversion) or nil
-    main = ("Goldweaver: %s ≈ %s"):format(label, ns.Util.Money(best.value))
+    main = (L["Goldweaver: %s ≈ %s"]):format(label, ns.Util.Money(best.value))
     if who then main = main .. " (" .. who .. ")" end
-    if target then main = ("Goldweaver: an %s schicken » %s ≈ %s"):format(target.firstName or target.name, label, ns.Util.Money(best.value)) end
+    if target then main = (L["Goldweaver: send to %s » %s ≈ %s"]):format(target.firstName or target.name, label, ns.Util.Money(best.value)) end
   end
   lines[#lines + 1] = { text = main, color = GOLD }
 
@@ -72,34 +73,34 @@ function Tooltip.Lines(itemID, quantity, isBound)
     for i = 2, math.min(#options, 5) do
       local o = options[i]
       local v = ns.Util.Money(o.value)
-      if o.action == "crate" and o.detail and o.detail.partial then v = v .. " (" .. o.detail.bundleQty .. " nötig)" end
+      if o.action == "crate" and o.detail and o.detail.partial then v = v .. " (" .. (L["%d needed"]):format(o.detail.bundleQty) .. ")" end
       parts[#parts + 1] = optionLabel(o) .. " " .. v
     end
-    if reason and not target then parts[#parts + 1] = "Regel: " .. reason end
+    if reason and not target then parts[#parts + 1] = (L["Rule: %s"]):format(reason) end
     if #parts > 0 then lines[#lines + 1] = { text = "  " .. table.concat(parts, " · "), color = { 0.7, 0.7, 0.7 } } end
     local p = ns.Price.Get(itemID)
     if p then
       local age = p.age and p.age >= 3600 and (math.floor(p.age / 3600) .. " h") or (p.age and (math.floor((p.age or 0) / 60) .. " min") or "?")
-      lines[#lines + 1] = { text = ("  Preis %s · %s, %s"):format(ns.Util.Money(p.copper), p.source, age), color = { 0.7, 0.7, 0.7 } }
+      lines[#lines + 1] = { text = (L["  Price %s · %s, %s"]):format(ns.Util.Money(p.copper), p.source, age), color = { 0.7, 0.7, 0.7 } }
     end
   else
-    lines[#lines + 1] = { text = "  Shift: alle Optionen", color = { 0.45, 0.45, 0.45 } }
+    lines[#lines + 1] = { text = L["  Shift: all options"], color = { 0.45, 0.45, 0.45 } }
   end
 
   -- team demand: the processor needs this for its next skill-ups
   local need = ns.Demand and ns.Demand.For(itemID)
   if need then
     local who, why = next(need.by)
-    lines[#lines + 1] = { text = ("  Gefragt: %s braucht %d (%s)"):format((who or "Team"):match("^(%S+)") or "Team", need.qty, tostring(why or "")), color = { 1, 0.82, 0 } }
+    lines[#lines + 1] = { text = (L["  Wanted: %s needs %d (%s)"]):format((who or L["Team"]):match("^(%S+)") or L["Team"], need.qty, tostring(why or "")), color = { 1, 0.82, 0 } }
   end
 
   -- stock line (Baganator-style alt counts), only when something is beyond the bags
   local total, br = ns.Inventory.Count(itemID, { bank = true, alts = true })
   if total > (br.bags or 0) then
-    local parts = { ("Taschen %d"):format(br.bags or 0) }
-    if (br.bank or 0) > 0 then parts[#parts + 1] = ("Bank %d"):format(br.bank) end
+    local parts = { (L["Bags %d"]):format(br.bags or 0) }
+    if (br.bank or 0) > 0 then parts[#parts + 1] = (L["Bank %d"]):format(br.bank) end
     for _, a in ipairs(br.alts or {}) do parts[#parts + 1] = ("%s %d"):format(a.name:match("^(%S+)") or a.name, a.count) end
-    lines[#lines + 1] = { text = "  Bestand: " .. table.concat(parts, " · "), color = { 0.6, 0.6, 0.6 } }
+    lines[#lines + 1] = { text = (L["  Stock: %s"]):format(table.concat(parts, " · ")), color = { 0.6, 0.6, 0.6 }, stock = true }
   end
   return lines
 end
@@ -131,7 +132,7 @@ local function onItemTooltip(tooltip, data)
   tooltip:AddLine(" ")
   for _, l in ipairs(lines) do
     tooltip:AddLine(l.text, l.color[1], l.color[2], l.color[3], true)
-    if ns.Checks and l.text:find("Bestand:", 1, true) then ns.Checks.Pass("stock", l.text) end
+    if ns.Checks and l.stock then ns.Checks.Pass("stock", l.text) end
   end
   if ns.Checks then ns.Checks.Pass("tooltip", lines[1].text) end
 end
@@ -144,19 +145,19 @@ ns:RegisterModule("Tooltip", {
       TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, onItemTooltip)
       registered = true
     else
-      ns.Print("Tooltip-Zeilen aus: " .. tostring(why or "Enum.TooltipDataType fehlt"))
+      ns.Print((L["Tooltip lines off: %s"]):format(tostring(why or "Enum.TooltipDataType missing")))
     end
   end,
   SelfTest = function()
     local ok, lines = pcall(Tooltip.Lines, 2589, 20, false)
     return {
-      { name = "Tooltip-Hook registriert", ok = registered, detail = registered and "TooltipDataProcessor" or "nein" },
-      { name = "Zeilen für Leinenstoff", ok = ok and lines ~= nil, warn = true, detail = ok and (lines and lines[1].text or "keine (Item nicht gecacht?)") or tostring(lines) },
+      { name = "Tooltip hook registered", ok = registered, detail = registered and "TooltipDataProcessor" or "no" },
+      { name = "Lines for linen cloth", ok = ok and lines ~= nil, warn = true, detail = ok and (lines and lines[1].text or "none (item not cached?)") or tostring(lines) },
     }
   end,
 })
 
 ns.Slash.Register("tooltip", function(arg)
   ns.db.settings.tooltipOff = (arg == "off")
-  ns.Print("Tooltip-Zeilen " .. (ns.db.settings.tooltipOff and "aus" or "an"))
+  ns.Print(ns.db.settings.tooltipOff and L["Tooltip lines off"] or L["Tooltip lines on"])
 end, "tooltip lines on|off")

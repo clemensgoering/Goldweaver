@@ -2,13 +2,14 @@
 -- engine; no extra requests are sent (ReplicateItems is dead on Forever, F13). (2) Sell helper: when an item is
 -- placed in the sell frame, a suggestion line shows undercut price, deposit and net, and prefills the price input.
 local ADDON, ns = ...
+local L = ns.L
 
 local Auction = {}
 ns.Auction = Auction
 
 -- Observe -------------------------------------------------------------------------------------
 local function observed(itemID, n)
-  if n > 0 and ns.Checks then ns.Checks.Pass("ahObserve", ("Item %d: %d Angebote"):format(itemID, n)) end
+  if n > 0 and ns.Checks then ns.Checks.Pass("ahObserve", ("Item %d: %d offers"):format(itemID, n)) end
 end
 
 local function observeCommodity(itemID)
@@ -72,7 +73,7 @@ end
 
 local function ageText(age)
   if not age then return "?" end
-  if age >= 86400 then return math.floor(age / 86400) .. " Tage" end
+  if age >= 86400 then return (L["%d days"]):format(math.floor(age / 86400)) end
   if age >= 3600 then return math.floor(age / 3600) .. " h" end
   return math.floor(age / 60) .. " min"
 end
@@ -99,18 +100,18 @@ local function showSuggestion(sellFrame, itemLocation)
   end
   local s = Auction.Suggest(itemID, quantity)
   if not s then
-    helperText:SetText("Goldweaver: kein Preis bekannt für dieses Item. Erst suchen, dann posten.")
+    helperText:SetText(L["Goldweaver: no price known for this item. Search first, then post."])
     helper:Show()
     return
   end
-  helperText:SetText(("Goldweaver: Vorschlag %s je Stück · unterbietet %s (%s, %s) · Einzahlung %s · Erlös nach Cut %s"):format(
+  helperText:SetText((L["Goldweaver: suggestion %s each · undercuts %s (%s, %s) · deposit %s · proceeds after cut %s"]):format(
     ns.Util.Money(s.unitPrice), ns.Util.Money(s.market), s.source, ageText(s.age), s.deposit and ns.Util.Money(s.deposit) or "?", ns.Util.Money(s.net)))
   helper:Show()
   local filled = false
   if ns.db.settings.autofillPrice ~= false and sellFrame.PriceInput and sellFrame.PriceInput.SetAmount then
     filled = pcall(sellFrame.PriceInput.SetAmount, sellFrame.PriceInput, s.unitPrice)
   end
-  if ns.Checks then ns.Checks.Pass("ahSuggest", ("%s%s"):format(ns.Util.Money(s.unitPrice), filled and ", vorbelegt" or "")) end
+  if ns.Checks then ns.Checks.Pass("ahSuggest", ("%s%s"):format(ns.Util.Money(s.unitPrice), filled and ", prefilled" or "")) end
 end
 
 local function hookSellFrames()
@@ -140,9 +141,9 @@ ns:RegisterModule("Auction", {
     local hooked = Auction.hooked and (Auction.hooked.CommoditiesSellFrame or Auction.hooked.ItemSellFrame)
     local s = Auction.Suggest(2589, 20, 2)
     return {
-      { name = "C_AuctionHouse", ok = C_AuctionHouse ~= nil, detail = C_AuctionHouse and "vorhanden" or "fehlt" },
-      { name = "Verkaufsfenster gehookt", ok = hooked and true or false, warn = true, detail = hooked and "ja" or "erst nach dem ersten AH-Besuch" },
-      { name = "Vorschlag Leinenstoff x20", ok = s ~= nil, warn = true, detail = s and ("%s je Stück, Einzahlung %s"):format(ns.Util.Money(s.unitPrice), s.deposit and ns.Util.Money(s.deposit) or "?") or "kein Preis" },
+      { name = "C_AuctionHouse", ok = C_AuctionHouse ~= nil, detail = C_AuctionHouse and "present" or "missing" },
+      { name = "Sell frame hooked", ok = hooked and true or false, warn = true, detail = hooked and "yes" or "only after the first AH visit" },
+      { name = "Suggestion linen cloth x20", ok = s ~= nil, warn = true, detail = s and ("%s each, deposit %s"):format(ns.Util.Money(s.unitPrice), s.deposit and ns.Util.Money(s.deposit) or "?") or "no price" },
     }
   end,
   Init = function()

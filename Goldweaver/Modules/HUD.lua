@@ -1,5 +1,6 @@
 -- Goldweaver: one-line HUD (docs/08-UX.md 4.6). Shown for mains once a processor exists; click opens the window.
 local ADDON, ns = ...
+local L = ns.L
 
 local HUD = {}
 ns.HUD = HUD
@@ -30,7 +31,7 @@ local function create()
   frame:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
     GameTooltip:AddLine("Goldweaver", 0.83, 0.66, 0.31)
-    GameTooltip:AddLine("Klick: Fenster · Ziehen: verschieben · /gw hud off blendet aus", 1, 1, 1)
+    GameTooltip:AddLine(L["Click: window · Drag: move · /gw hud off hides it"], 1, 1, 1)
     GameTooltip:Show()
   end)
   frame:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -52,14 +53,14 @@ function HUD.Refresh()
   local count, value, target = ns.Mail.Pending()
   local processors = ns.Chars.ByRole("processor", ns.Chars.MarketKey())
   if target then
-    parts[#parts + 1] = ("Für %s: %s (%d)"):format(target.firstName or target.name, ns.Util.Money(value), count)
+    parts[#parts + 1] = (L["For %s: %s (%d)"]):format(target.firstName or target.name, ns.Util.Money(value), count)
   elseif #processors > 0 then
-    parts[#parts + 1] = ("Nichts für %s"):format(processors[1].firstName or processors[1].name)
+    parts[#parts + 1] = (L["Nothing for %s"]):format(processors[1].firstName or processors[1].name)
   else
-    parts[#parts + 1] = "Kein Verarbeiter gesetzt"
+    parts[#parts + 1] = L["No processor set"]
   end
   local delta = ns.Ledger.SessionDelta()
-  parts[#parts + 1] = ("Session %s%s"):format(delta >= 0 and "+" or "", ns.Util.Money(delta))
+  parts[#parts + 1] = (L["Session %s%s"]):format(delta >= 0 and "+" or "", ns.Util.Money(delta))
   text:SetText(table.concat(parts, "  ·  "))
   frame:SetWidth(math.max(220, text:GetStringWidth() + 24))
   frame:Show()
@@ -71,7 +72,7 @@ ns:RegisterModule("HUD", {
     ns.Events:On("PLAYER_LOGIN", function() C_Timer.After(4, HUD.Refresh) end, "HUD")
   end,
   SelfTest = function()
-    return { { name = "HUD", ok = true, detail = HUD.ShouldShow() and ("sichtbar: " .. (text and text:GetText() or "")) or "aus (nur für Mains oder /gw hud on)" } }
+    return { { name = "HUD", ok = true, detail = HUD.ShouldShow() and ("visible: " .. (text and text:GetText() or "")) or "off (mains only, or /gw hud on)" } }
   end,
 })
 
@@ -79,6 +80,6 @@ ns.Slash.Register("hud", function(arg)
   if arg == "off" then ns.db.settings.hudOff = true; ns.db.settings.hudOn = nil
   elseif arg == "on" then ns.db.settings.hudOn = true; ns.db.settings.hudOff = nil
   elseif arg == "auto" then ns.db.settings.hudOn = nil; ns.db.settings.hudOff = nil
-  else return ns.Print("usage: /gw hud on|off|auto") end
+  else return ns.Print(L["usage: /gw hud on|off|auto"]) end
   HUD.Refresh()
 end, "HUD line on|off|auto (auto = shown for mains)")

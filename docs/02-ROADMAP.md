@@ -141,7 +141,7 @@ Noch nicht automatisierbar (brauchen Entwicklung, nicht Spielzeit): B2 Profile, 
 | B7 | Einkaufsliste als Auctionator-Shopping-Liste exportieren (`CreateShoppingList`) | Auctionator installiert | klein |
 | B8 | Kalibrierung: Skill-up-Chancen und Entzauber-Ausbeuten aus `observations` zurückrechnen (F11) | Spielzeit | mittel |
 | B9 | Unterbietungs-Check eigener Auktionen (WP3.5) throttle-bewusst | AH-Beobachtung | mittel |
-| B10 | Lokalisierung enUS/deDE (Strings extrahieren), Settings-Panel in Blizzard-Optionen | – | mittel |
+| B10 | ~~Lokalisierung enUS/deDE, Settings-Panel in Blizzard-Optionen~~ erledigt 09.11.2026: alle Texte über `ns.L`, Sprache in den Einstellungen (Automatisch/Deutsch/English), Prüfung in `locale_test.lua` und Simulator | – | erledigt |
 | B11 | Packaging: Repo-Seite fertig (`12-CURSEFORGE.md`). Offen nur Kontoinhaber-Schritte: Projekt anlegen, IDs in TOC, Secrets, Repo public, Tag `v0.1.0`; lokaler Packager-Testlauf (`release.sh -d -z`) | Abnahme | klein |
 | B12 | Grafiken nach `11-ASSETS.md` (Icon, Minimap, Rollen, Glyphen) | Codex/Grafik | klein |
 | B13 | Kistenbündel und Favor-Sätze aus Tooltips bestätigen (F7), Einzahlungsformel aus Rechnung (F6), Post-Empfängerformat (F10) | Spielzeit | klein |

@@ -1,5 +1,6 @@
 -- Goldweaver: first-run card (docs/08-UX.md 4.8). One question per character: what does this character do?
 local ADDON, ns = ...
+local L = ns.L
 
 local Onboarding = {}
 ns.Onboarding = Onboarding
@@ -17,19 +18,19 @@ local function create()
     card:SetBackdropColor(0.05, 0.05, 0.05, 0.92)
     card:SetBackdropBorderColor(0.83, 0.66, 0.31, 1)
   end
-  local title = ns.UI.Header(card, "Goldweaver: Was macht dieser Charakter?")
+  local title = ns.UI.Header(card, L["Goldweaver: What does this character do?"])
   title:SetPoint("TOPLEFT", 14, -12)
   local hint = card:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
   hint:SetPoint("TOPLEFT", 14, -34); hint:SetWidth(410); hint:SetJustifyH("LEFT")
-  hint:SetText("Main sammelt unterwegs und schickt Material. Verarbeiter stellt her, entzaubert und verkauft. Später änderbar im Fenster (Reiter Team).")
+  hint:SetText(L["Main gathers on the road and sends materials. Processor crafts, disenchants and sells. Changeable later in the window (Team tab)."])
   local x = 14
-  for _, def in ipairs({ { "main", "Sammelt unterwegs", 140 }, { "processor", "Verarbeiter & Bank", 150 }, { "none", "Später", 70 } }) do
+  for _, def in ipairs({ { "main", L["Gathers on the road"], 140 }, { "processor", L[ns.Chars.ROLE_LABELS.processor], 150 }, { "none", L["Later"], 70 } }) do
     local b = ns.UI.Button(card, def[2], def[3], function()
       ns.Chars.SetRole(ns.Chars.FullName(), def[1])
       local me = ns.Chars.Current()
       if me then me.onboarded = true end
       card:Hide()
-      if def[1] ~= "none" then ns.Print(("Rolle gesetzt: %s. Tooltip, Briefkasten und Berufe-Leitfaden sind aktiv. /gw öffnet das Fenster."):format(ns.Chars.ROLE_LABELS[def[1]])) end
+      if def[1] ~= "none" then ns.Print((L["Role set: %s. Tooltip, mailbox and profession guide are active. /gw opens the window."]):format(L[ns.Chars.ROLE_LABELS[def[1]]])) end
       if ns.HUD then ns.HUD.Refresh() end
     end)
     b:SetPoint("BOTTOMLEFT", x, 14)
@@ -42,12 +43,12 @@ function Onboarding.Check()
   if not me or me.onboarded then return end
   if (me.role or "none") ~= "none" then
     me.onboarded = true
-    if ns.Checks then ns.Checks.Pass("onboarding", "übersprungen, Rolle war gesetzt") end
+    if ns.Checks then ns.Checks.Pass("onboarding", "skipped, role was already set") end
     return
   end
   create()
   card:Show()
-  if ns.Checks then ns.Checks.Pass("onboarding", "Karte gezeigt") end
+  if ns.Checks then ns.Checks.Pass("onboarding", "card shown") end
 end
 
 ns:RegisterModule("Onboarding", {

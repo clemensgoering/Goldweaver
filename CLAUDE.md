@@ -38,7 +38,7 @@ b. `docs/14-UI-FUEHRUNG.md`: Reiter Leitfaden · Unterwegs · Berufe · Team, Sc
 - SavedVariables: `GoldweaverDB` (Account), `GoldweaverCharDB` (Charakter). Init nur in `ADDON_LOADED`. Preise unter `GoldweaverDB.prices[marketKey][itemID]`, `marketKey` = Regelsatz + Fraktion (Fallback Realm), nie `Name-Realm` für Charaktere ohne Prüfung des Namensformats (F3).
 - Geld immer in Kupfer (Integer); Formatierung über `ns.Util.Money(copper)`.
 - Preise tragen `{copper, source, age, confidence}`; Anzeige nennt Quelle und Alter.
-- Texte über `ns.L["KEY"]` (Locales), Deutsch und Englisch.
+- Texte über `ns.L["English text"]`: der englische Text im Code ist der Schlüssel, die deutsche Übersetzung steht in `Locales/deDE.lua` (Platzhalter gleich und in gleicher Reihenfolge). `ns.L` nie beim Laden der Datei auswerten (Konstanten, Tab-Titel, Slash-Hilfe behalten den englischen Schlüssel und werden bei der Anzeige übersetzt). Text, der mit Spieltext verglichen wird, bleibt unübersetzt und trägt den Kommentar `-- locale-ok`. `tools/tests/locale_test.lua` und der Simulator prüfen beides automatisch.
 - Chat-Ausgaben über `ns.Print(...)`, Debug über `ns.Log(...)` (nur mit `/gw debug on`).
 - Kein `OnUpdate`-Polling; Batches großer Datenmengen über `C_Timer.After`/Frames.
 - Geschützte Frame-Änderungen: `InCombatLockdown()` prüfen, bei `PLAYER_REGEN_ENABLED` nachholen.

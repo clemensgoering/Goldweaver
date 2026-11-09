@@ -1,4 +1,4 @@
--- Goldweaver: "Unterwegs" - what is worth gathering or killing here, for this character's level and skills.
+-- Goldweaver: "On the road" - what is worth gathering or killing here, for this character's level and skills.
 -- Sources, best first: own gathering observations in this zone (GoldweaverDB.learned.zoneGathers), the static zone
 -- table (Data/Zones.lua, Classic data), the gathering facts (Data/Gathering.lua), the team's demand (Modules/Demand.lua),
 -- prices (Core/Price.lua) and, when RestedXP is installed, the zones the current guide visits next.
@@ -12,6 +12,7 @@
 -- report = { id, name, zone, level, fit, gather = { rows }, mobs = { cloth, leather, skin }, route, best }
 -- row    = { item, kind, required, color, chance, price, demand, observed, profession }
 local ADDON, ns = ...
+local L = ns.L
 
 local Field = {}
 ns.Field = Field
@@ -89,7 +90,7 @@ function Field.RecordGather(kind, items, zoneID)
     z[key] = e
   end
   ns.db.learned.zoneGathers[zoneID] = z
-  if ns.Checks then ns.Checks.Pass("fieldObserve", ("%s: %d Item(s) in Zone %s"):format(kind, #items, tostring(zoneID))) end
+  if ns.Checks then ns.Checks.Pass("fieldObserve", ("%s: %d item(s) in zone %s"):format(kind, #items, tostring(zoneID))) end
 end
 
 local function rowFor(itemID, kind, rec, observed)
@@ -228,7 +229,7 @@ function Field.SetWaypoint(mapID, x, y, label)
     C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(mapID, x / 100, y / 100))
     if C_SuperTrack and C_SuperTrack.SetSuperTrackedUserWaypoint then C_SuperTrack.SetSuperTrackedUserWaypoint(true) end
   end)
-  if ok and label then ns.Print("Wegpunkt gesetzt: " .. label) end
+  if ok and label then ns.Print((L["Waypoint set: %s"]):format(label)) end
   return ok
 end
 
@@ -259,12 +260,12 @@ ns:RegisterModule("Field", {
     local id, raw, name = Field.CurrentZone()
     local route = Field.Route()
     local rows = {
-      { name = "Zone erkannt", ok = id ~= nil, warn = true, detail = ("%s (Karte %s, Tabelle %s)"):format(tostring(name), tostring(raw), tostring(id)) },
-      { name = "RestedXP-Route", ok = true, detail = route and ("%s, Schritt %d, %d Zonen voraus"):format(route.guide, route.step, #route.zones) or "RestedXP nicht aktiv" },
+      { name = "Zone detected", ok = id ~= nil, warn = true, detail = ("%s (map %s, table %s)"):format(tostring(name), tostring(raw), tostring(id)) },
+      { name = "RestedXP route", ok = true, detail = route and ("%s, step %d, %d zones ahead"):format(route.guide, route.step, #route.zones) or "RestedXP not active" },
     }
     local learnedZones = 0
     for _ in pairs(ns.db.learned.zoneGathers or {}) do learnedZones = learnedZones + 1 end
-    rows[#rows + 1] = { name = "Eigene Sammeldaten", ok = true, detail = learnedZones .. " Zone(n)" }
+    rows[#rows + 1] = { name = "Own gathering data", ok = true, detail = learnedZones .. " zone(s)" }
     if ns.Checks and id then ns.Checks.Pass("fieldZone", tostring(name)) end
     return rows
   end,

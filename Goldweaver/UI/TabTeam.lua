@@ -1,11 +1,12 @@
 -- Goldweaver: tab "Team" - characters with their roles (set automatically, changeable here), the self check status
 -- and shortcuts to the settings (Blizzard options) and the debug report.
 local ADDON, ns = ...
+local L = ns.L
 
 local UI = ns.UI
 local Chars = ns.Chars
 local W = 752
-local ROLE_OPTIONS = { { "main", "Main (sammelt)" }, { "processor", "Verarbeiter & Bank" }, { "none", "Inaktiv" } }
+local ROLE_OPTIONS = { { "main", Chars.ROLE_LABELS.main }, { "processor", Chars.ROLE_LABELS.processor }, { "none", Chars.ROLE_LABELS.none } } -- English keys, UI.Dropdown translates
 local ROLE_ICON = {
   main = "Interface\\Icons\\INV_Misc_Bag_08", processor = "Interface\\Icons\\Trade_BlackSmithing",
   bank = "Interface\\Icons\\INV_Misc_Bag_10_Blue", none = "Interface\\Icons\\INV_Misc_QuestionMark",
@@ -16,9 +17,9 @@ UI.RegisterTab("team", "Team", function(frame)
 
   local list = UI.Inset(frame, W, 340)
   list:SetPoint("TOPLEFT", 0, 0)
-  local listTitle = UI.Section(list, "DEIN TEAM", W - 20)
+  local listTitle = UI.Section(list, L["YOUR TEAM"], W - 20)
   listTitle:SetPoint("TOPLEFT", 10, -8)
-  local hint = UI.Text(list, "Rollen werden automatisch vergeben (höchstes Level = Main, Handwerker = Verarbeiter & Bank). Eine Auswahl legt sie fest.", "GameFontDisableSmall")
+  local hint = UI.Text(list, L["Roles are assigned automatically (highest level = Main, crafters = Processor & bank). Choosing one fixes it."], "GameFontDisableSmall")
   hint:SetPoint("TOPLEFT", 10, -26); hint:SetWidth(W - 20)
 
   local function row(i)
@@ -46,14 +47,14 @@ UI.RegisterTab("team", "Team", function(frame)
   local status = UI.Inset(frame, W, 10)
   status:SetPoint("TOPLEFT", list, "BOTTOMLEFT", 0, -8)
   status:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
-  local statusTitle = UI.Section(status, "FUNKTIONSSTATUS", W - 20)
+  local statusTitle = UI.Section(status, L["FEATURE STATUS"], W - 20)
   statusTitle:SetPoint("TOPLEFT", 10, -8)
   local statusLines = UI.Lines(status, 4, W - 200, "GameFontHighlightSmall", -28, true)
-  local settingsButton = UI.Button(status, "Einstellungen", 170, function() if ns.Settings then ns.Settings.Open() end end)
+  local settingsButton = UI.Button(status, L["Settings"], 170, function() if ns.Settings then ns.Settings.Open() end end)
   settingsButton:SetPoint("TOPRIGHT", -10, -28)
-  local reportButton = UI.Button(status, "Debug-Bericht", 170, function() ns.Debug.Run() end)
+  local reportButton = UI.Button(status, L["Debug report"], 170, function() ns.Debug.Run() end)
   reportButton:SetPoint("TOPRIGHT", settingsButton, "BOTTOMRIGHT", 0, -6)
-  local backupButton = UI.Button(status, "Backup anlegen", 170, function() ns.DB.Backup("manuell"); ns.Print("Backup angelegt.") end)
+  local backupButton = UI.Button(status, L["Create backup"], 170, function() ns.DB.Backup("manual"); ns.Print(L["Backup created."]) end)
   backupButton:SetPoint("TOPRIGHT", reportButton, "BOTTOMRIGHT", 0, -6)
 
   function content:Refresh()
@@ -64,12 +65,12 @@ UI.RegisterTab("team", "Team", function(frame)
       r.rec = rec
       r:Show()
       r.icon:SetContent(ROLE_ICON[rec.role or "none"])
-      local auto = rec.roleSource == "auto" and " |cff999999(automatisch)|r" or ""
-      r.name:SetText(rec.name .. (rec.name == Chars.FullName() and " |cff80ff80(du)|r" or "") .. auto)
+      local auto = rec.roleSource == "auto" and " |cff999999" .. L["(automatic)"] .. "|r" or ""
+      r.name:SetText(rec.name .. (rec.name == Chars.FullName() and " |cff80ff80" .. L["(you)"] .. "|r" or "") .. auto)
       local profs = {}
       for _, p in pairs(rec.professions or {}) do if not p.former then profs[#profs + 1] = (p.name or "?") .. " " .. tostring(p.rank or 0) end end
       table.sort(profs)
-      r.info:SetText(("Level %s · %s · %s"):format(tostring(rec.level or "?"), rec.market or "?", #profs > 0 and table.concat(profs, ", ") or "keine Berufe"))
+      r.info:SetText((L["Level %s · %s · %s"]):format(tostring(rec.level or "?"), rec.market or "?", #profs > 0 and table.concat(profs, ", ") or L["no professions"]))
       r.role:SetValue(rec.role or "none")
     end
     for i = #all + 1, #content.rows do content.rows[i]:Hide() end
@@ -78,15 +79,15 @@ UI.RegisterTab("team", "Team", function(frame)
     local s = ns.Checks.Summary()
     local lines = {}
     if h then
-      lines[#lines + 1] = h.red > 0 and { ("%d Funktion(en) eingeschränkt: %s"):format(h.red, h.rows[1] or "?"), 1, 0.5, 0.4 }
-        or { "Selbstprüfung beim Login: alles in Ordnung.", 0.5, 1, 0.5 }
+      lines[#lines + 1] = h.red > 0 and { (L["%d feature(s) limited: %s"]):format(h.red, h.rows[1] or "?"), 1, 0.5, 0.4 }
+        or { L["Self-test at login: all fine."], 0.5, 1, 0.5 }
     else
-      lines[#lines + 1] = { "Selbstprüfung läuft 15 Sekunden nach dem Login.", 0.8, 0.8, 0.8 }
+      lines[#lines + 1] = { L["Self-test runs 15 seconds after login."], 0.8, 0.8, 0.8 }
     end
-    lines[#lines + 1] = { ("Im Spiel bestätigt: %d von %d Funktionen (füllt sich beim normalen Spielen)."):format(s.pass, s.total), 0.85, 0.85, 0.85 }
+    lines[#lines + 1] = { (L["Confirmed in game: %d of %d features (fills up as you play)."]):format(s.pass, s.total), 0.85, 0.85, 0.85 }
     local ap = ns.Autopilot and ns.Autopilot.status or {}
-    lines[#lines + 1] = { ("Berufe im Hintergrund gelesen: %d%s"):format(ap.books or 0, ap.blocked and " · vom Client blockiert" or ""), 0.7, 0.7, 0.7 }
-    lines[#lines + 1] = { ("Backup: %s"):format(ns.DB.HasBackup() and (GoldweaverBackupDB.reason .. ", " .. date("%d.%m. %H:%M", GoldweaverBackupDB.when)) or "noch keins"), 0.7, 0.7, 0.7 }
+    lines[#lines + 1] = { (L["Professions read in the background: %d%s"]):format(ap.books or 0, ap.blocked and (" · " .. L["blocked by the client"]) or ""), 0.7, 0.7, 0.7 }
+    lines[#lines + 1] = { (L["Backup: %s"]):format(ns.DB.HasBackup() and (L[GoldweaverBackupDB.reason] .. ", " .. date("%d.%m. %H:%M", GoldweaverBackupDB.when)) or L["none yet"]), 0.7, 0.7, 0.7 }
     statusLines:Set(lines)
   end
   return content

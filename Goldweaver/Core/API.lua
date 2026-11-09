@@ -5,6 +5,7 @@
 -- Features (ns.Features) group the APIs a module needs; a module whose feature is unavailable stays dormant and
 -- says so in /gw debug, instead of throwing errors all session long. See docs/10-KOMPATIBILITAET.md.
 local ADDON, ns = ...
+local L = ns.L
 
 local API = { failures = {} }
 ns.API = API
@@ -82,7 +83,7 @@ function API.UseContainerItem(bag, slot) return (API.Call("C_Container.UseContai
 local Features = { defs = {}, order = {} }
 ns.Features = Features
 
--- Features.Define("tooltip", { label = "Tooltip-Zeilen", requires = { "TooltipDataProcessor.AddTooltipPostCall" } })
+-- Features.Define("tooltip", { label = "Tooltip lines", requires = { "TooltipDataProcessor.AddTooltipPostCall" } })
 function Features.Define(name, def)
   def.name = name
   def.requires = def.requires or {}
@@ -115,9 +116,9 @@ end
 
 -- Available = all required APIs exist and the user has not switched it off.
 function Features.Available(name)
-  if Features.Disabled(name) then return false, "abgeschaltet" end
+  if Features.Disabled(name) then return false, L["switched off"] end
   local missing = Features.Missing(name)
-  if #missing > 0 then return false, "fehlt: " .. table.concat(missing, ", ") end
+  if #missing > 0 then return false, (L["missing: %s"]):format(table.concat(missing, ", ")) end
   return true
 end
 
@@ -137,29 +138,29 @@ function Features.Status()
   return rows
 end
 
-Features.Define("items", { label = "Item-Daten", requires = { "C_Item.GetItemInfo", "C_Item.GetItemInfoInstant", "C_Item.GetItemCount" } })
-Features.Define("bags", { label = "Taschen lesen", requires = { "C_Container.GetContainerNumSlots", "C_Container.GetContainerItemInfo" } })
-Features.Define("tooltip", { label = "Tooltip-Zeilen", requires = { "TooltipDataProcessor.AddTooltipPostCall", "C_Item.GetItemInfo" } })
-Features.Define("mail", { label = "Post-Pipeline", requires = { "SendMail", "C_Container.UseContainerItem", "GetInboxNumItems", "GetInboxHeaderInfo", "AutoLootMailItem" } })
-Features.Define("ledger", { label = "Verkaufs-Ledger", requires = { "GetInboxInvoiceInfo" } })
-Features.Define("professions", { label = "Berufe lesen", requires = { "C_TradeSkillUI.GetAllRecipeIDs", "C_TradeSkillUI.GetRecipeInfo", "C_TradeSkillUI.GetRecipeSchematic", "C_TradeSkillUI.GetBaseProfessionInfo" } })
-Features.Define("craft", { label = "Herstellen-Knopf", requires = { "C_TradeSkillUI.CraftRecipe", "C_TradeSkillUI.IsTradeSkillReady" } })
-Features.Define("disenchant", { label = "Entzauber-Queue", requires = { "C_Spell.GetSpellName", "CreateFrame" } })
-Features.Define("auction", { label = "AH-Preise mitlesen", requires = { "C_AuctionHouse.GetNumCommoditySearchResults", "C_AuctionHouse.GetCommoditySearchResultInfo", "C_AuctionHouse.GetBrowseResults" } })
-Features.Define("auctionSell", { label = "AH-Verkaufsvorschlag", requires = { "C_AuctionHouse.CalculateCommodityDeposit" } })
-Features.Define("contacts", { label = "Lehrer/Händler merken", requires = { "C_Map.GetBestMapForUnit", "C_Map.GetPlayerMapPosition", "GetMerchantNumItems", { "C_MerchantFrame.GetItemInfo", "GetMerchantItemInfo" } } })
-Features.Define("openProfession", { label = "Beruf per Knopf öffnen", requires = { "C_TradeSkillUI.OpenTradeSkill" } })
-Features.Define("minimap", { label = "Minimap-Button", requires = { "Minimap" } })
+Features.Define("items", { label = "Item data", requires = { "C_Item.GetItemInfo", "C_Item.GetItemInfoInstant", "C_Item.GetItemCount" } })
+Features.Define("bags", { label = "Reading bags", requires = { "C_Container.GetContainerNumSlots", "C_Container.GetContainerItemInfo" } })
+Features.Define("tooltip", { label = "Tooltip lines", requires = { "TooltipDataProcessor.AddTooltipPostCall", "C_Item.GetItemInfo" } })
+Features.Define("mail", { label = "Mail pipeline", requires = { "SendMail", "C_Container.UseContainerItem", "GetInboxNumItems", "GetInboxHeaderInfo", "AutoLootMailItem" } })
+Features.Define("ledger", { label = "Sales ledger", requires = { "GetInboxInvoiceInfo" } })
+Features.Define("professions", { label = "Reading professions", requires = { "C_TradeSkillUI.GetAllRecipeIDs", "C_TradeSkillUI.GetRecipeInfo", "C_TradeSkillUI.GetRecipeSchematic", "C_TradeSkillUI.GetBaseProfessionInfo" } })
+Features.Define("craft", { label = "Craft button", requires = { "C_TradeSkillUI.CraftRecipe", "C_TradeSkillUI.IsTradeSkillReady" } })
+Features.Define("disenchant", { label = "Disenchant queue", requires = { "C_Spell.GetSpellName", "CreateFrame" } })
+Features.Define("auction", { label = "Watching AH prices", requires = { "C_AuctionHouse.GetNumCommoditySearchResults", "C_AuctionHouse.GetCommoditySearchResultInfo", "C_AuctionHouse.GetBrowseResults" } })
+Features.Define("auctionSell", { label = "AH sell suggestion", requires = { "C_AuctionHouse.CalculateCommodityDeposit" } })
+Features.Define("contacts", { label = "Remembering trainers and vendors", requires = { "C_Map.GetBestMapForUnit", "C_Map.GetPlayerMapPosition", "GetMerchantNumItems", { "C_MerchantFrame.GetItemInfo", "GetMerchantItemInfo" } } })
+Features.Define("openProfession", { label = "Open profession by button", requires = { "C_TradeSkillUI.OpenTradeSkill" } })
+Features.Define("minimap", { label = "Minimap button", requires = { "Minimap" } })
 
 ns.Slash.Register("feature", function(arg)
   local name, state = arg:match("^(%S+)%s*(%S*)$")
   if not name or not Features.defs[name] then
     for _, row in ipairs(Features.Status()) do ns.Print(("%s: %s"):format(row.name, row.detail)) end
-    return ns.Print("usage: /gw feature <name> on|off")
+    return ns.Print(L["usage: /gw feature <name> on|off"])
   end
   if state == "on" or state == "off" then
     Features.SetEnabled(name, state == "on")
-    ns.Print(("Feature %s %s (wirkt nach /reload)"):format(name, state == "on" and "an" or "aus"))
+    ns.Print((L["Feature %s %s (takes effect after /reload)"]):format(name, state == "on" and L["on"] or L["off"]))
   else
     local ok, why = Features.Available(name)
     ns.Print(("%s: %s"):format(name, ok and "ok" or why))

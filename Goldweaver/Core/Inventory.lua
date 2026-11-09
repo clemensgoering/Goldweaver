@@ -2,6 +2,7 @@
 -- Snapshots live in GoldweaverDB.chars[name].inventory = { bags = {[itemID]=count}, bank = {[itemID]=count}, when = time }.
 -- ns.Inventory.Count(itemID, { bank = true, alts = true }) answers "how many do we have" for planner and advisor.
 local ADDON, ns = ...
+local L = ns.L
 
 local Inventory = {}
 ns.Inventory = Inventory
@@ -109,9 +110,9 @@ ns:RegisterModule("Inventory", {
     local n = 0
     for _ in pairs(inv and inv.bags or {}) do n = n + 1 end
     return {
-      { name = "Taschen-Snapshot", ok = inv ~= nil and inv.when ~= nil, detail = inv and inv.when and (n .. " Itemarten, " .. (time() - inv.when) .. " s alt") or "noch keiner" },
-      { name = "Bank-Snapshot", ok = inv ~= nil and inv.bankWhen ~= nil, warn = true, detail = inv and inv.bankWhen and ((time() - inv.bankWhen) .. " s alt") or "Bank noch nicht besucht" },
-      { name = "Freie Taschenplätze", ok = true, detail = tostring(Inventory.FreeBagSlots()) },
+      { name = L["Bag snapshot"], ok = inv ~= nil and inv.when ~= nil, detail = inv and inv.when and (L["%d item types, %d s old"]):format(n, time() - inv.when) or L["no snapshot yet"] },
+      { name = L["Bank snapshot"], ok = inv ~= nil and inv.bankWhen ~= nil, warn = true, detail = inv and inv.bankWhen and (L["%d s old"]):format(time() - inv.bankWhen) or L["bank not visited yet"] },
+      { name = L["Free bag slots"], ok = true, detail = tostring(Inventory.FreeBagSlots()) },
     }
   end,
   Init = function()

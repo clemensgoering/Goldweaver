@@ -2,6 +2,7 @@
 -- that disenchants the top item per click (/cast <Disenchant>, /use bag slot). Verified 08.11.2026: secure macro
 -- attributes run on Forever (F4); /run is blocked (F12) and not used. Results are logged for calibration (F11).
 local ADDON, ns = ...
+local L = ns.L
 
 local Destroy = {}
 ns.Destroy = Destroy
@@ -65,7 +66,7 @@ local function createFrame()
     frame:SetBackdropColor(0.05, 0.05, 0.05, 0.85)
     frame:SetBackdropBorderColor(0.5, 0.42, 0.25, 0.9)
   end
-  title = ns.UI.Header(frame, "ENTZAUBERN")
+  title = ns.UI.Header(frame, L["DISENCHANT"])
   title:SetPoint("TOPLEFT", 10, -8)
   local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
   close:SetPoint("TOPRIGHT", 2, 2)
@@ -90,23 +91,23 @@ function Destroy.Refresh()
   Destroy.lastQueue = queue
   local top = queue[1]
   if InCombatLockdown() then
-    button:SetText("Im Kampf nicht möglich")
+    button:SetText(L["Not possible in combat"])
     button:Disable()
     return
   end
   if not top then
-    button:SetText("Nichts zu entzaubern")
+    button:SetText(L["Nothing to disenchant"])
     button:Disable()
     button:SetAttribute("macrotext", "")
-    line:SetText(Destroy.CanDisenchant() and "Keine grünen oder besseren Items, bei denen Entzaubern mehr bringt als Verkaufen." or "Dieser Charakter hat keine Verzauberkunst.")
+    line:SetText(Destroy.CanDisenchant() and L["No green or better items where disenchanting beats selling."] or L["This character has no Enchanting."])
     listLines:Set({})
     return
   end
   button:Enable()
   button:SetAttribute("macrotext", ("/cast %s\n/use %d %d"):format(spellName(), top.bag, top.slot))
   local name = top.link and top.link:match("%[(.-)%]") or tostring(top.itemID)
-  button:SetText(("Entzaubern: %s (≈%s)"):format(name, ns.Util.Money(top.deValue)))
-  line:SetText(("Statt verkaufen für %s · noch %d Item(s) in der Liste"):format(ns.Util.Money(top.altValue), #queue))
+  button:SetText((L["Disenchant: %s (≈%s)"]):format(name, ns.Util.Money(top.deValue)))
+  line:SetText((L["Instead of selling for %s · %d more item(s) in the list"]):format(ns.Util.Money(top.altValue), #queue))
   local rows = {}
   for i = 2, math.min(5, #queue) do
     local q = queue[i]
@@ -134,10 +135,10 @@ ns:RegisterModule("Destroy", {
     local queue = can and Destroy.Queue() or {}
     local obs = ns.db.observations.disenchant or {}
     return {
-      { name = "Verzauberkunst auf diesem Charakter", ok = can, warn = true, detail = can and "ja" or "nein" },
-      { name = "Zauber-Name", ok = spellName() ~= "Disenchant" or GetLocale() == "enUS", warn = true, detail = spellName() },
-      { name = "Queue", ok = true, detail = #queue .. " Item(s)" },
-      { name = "Entzauber-Beobachtungen", ok = true, detail = #obs .. " geloggt" },
+      { name = "Enchanting on this character", ok = can, warn = true, detail = can and "yes" or "no" },
+      { name = "Spell name", ok = spellName() ~= "Disenchant" or GetLocale() == "enUS", warn = true, detail = spellName() },
+      { name = "Queue", ok = true, detail = #queue .. " item(s)" },
+      { name = "Disenchant observations", ok = true, detail = #obs .. " logged" },
     }
   end,
   Init = function()
@@ -159,8 +160,8 @@ ns:RegisterModule("Destroy", {
       while #ns.db.observations.disenchant > 500 do table.remove(ns.db.observations.disenchant, 1) end
       lastCastAt = nil
       if ns.Checks then
-        ns.Checks.Pass("deObserved", #obs.items .. " Ergebnis(se)")
-        if Destroy.lastClickAt and GetTime() - Destroy.lastClickAt < 10 then ns.Checks.Pass("disenchant", "über die Queue") end
+        ns.Checks.Pass("deObserved", #obs.items .. " result(s)")
+        if Destroy.lastClickAt and GetTime() - Destroy.lastClickAt < 10 then ns.Checks.Pass("disenchant", "via the queue") end
       end
     end, "Destroy")
     ns.Events:On("PLAYER_REGEN_ENABLED", function() Destroy.Refresh() end)

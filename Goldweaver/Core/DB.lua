@@ -14,6 +14,7 @@
 --   ns.DB.RestoreBackup()         replace ns.db with the backup (asks for /reload)
 --   ns.INTERFACE                  TOC interface number, compared with the client on login
 local ADDON, ns = ...
+local L = ns.L
 
 ns.INTERFACE = 16001
 local SCHEMA = 4
@@ -71,7 +72,7 @@ local MIGRATIONS = {
       if not crate.favor and #(crate.bundles or {}) == 0 then learned.crates[itemID] = nil end
     end
     local checks = db.checks or {}
-    if checks.f7crate and tostring(checks.f7crate.detail):find("0 Bündelzeilen, Favor %?") then checks.f7crate = nil end
+    if checks.f7crate and tostring(checks.f7crate.detail):find("0 Bündelzeilen, Favor %?") then checks.f7crate = nil end -- locale-ok: matches old stored German text
     -- the blocked background reading turned these red; they re-evaluate on the next login
     for _, id in ipairs({ "load", "selftest", "autoRead" }) do
       if checks[id] and checks[id].status == "fail" then checks[id] = nil end
@@ -102,7 +103,7 @@ end
 
 -- Replaces the live database with the backup. Takes effect fully after /reload (modules keep references).
 function ns.DB.RestoreBackup()
-  if not ns.DB.HasBackup() then return false, "kein Backup vorhanden" end
+  if not ns.DB.HasBackup() then return false, L["no backup available"] end
   local restored = deepCopy(GoldweaverBackupDB.data)
   for k in pairs(GoldweaverDB) do GoldweaverDB[k] = nil end
   for k, v in pairs(restored) do GoldweaverDB[k] = v end
@@ -144,7 +145,7 @@ function ns.DB.Stats()
   return {
     schema = ns.db.schema, chars = count(ns.db.chars), recipeBooks = count(ns.db.recipes), prices = prices,
     contacts = count(ns.db.contacts), vendors = count(ns.db.vendors), errors = count(ns.db.debug and ns.db.debug.errors),
-    backup = ns.DB.HasBackup() and (GoldweaverBackupDB.reason .. " @ " .. tostring(GoldweaverBackupDB.when)) or "keins",
+    backup = ns.DB.HasBackup() and (GoldweaverBackupDB.reason .. " @ " .. tostring(GoldweaverBackupDB.when)) or "none",
   }
 end
 
@@ -155,13 +156,15 @@ ns.Events:On("ADDON_LOADED", function(_, name)
   ns.db = GoldweaverDB
   ns.cdb = GoldweaverCharDB
   ns.DB.Prepare(ns.db)
+  -- language before any module builds text (settings.language: nil/"auto" = game language)
+  ns.Locale.Set(ns.db.settings.language)
 
   ns:EachModule(function(modName, module)
     if type(module.Init) == "function" then
       local ok, err = pcall(module.Init, module)
       if not ok then
         ns.Health.Record("init " .. modName, err)
-        ns.Print("Modul " .. modName .. " konnte nicht starten: " .. tostring(err))
+        ns.Print((L["Module %s could not start: %s"]):format(modName, tostring(err)))
       end
     end
   end)
@@ -174,9 +177,9 @@ ns.Events:On("PLAYER_LOGIN", function()
   if ns.Secret.Any(build, interface) then return end
   ns.db.debug.lastBuild = ns.db.debug.lastBuild or build
   if interface ~= ns.INTERFACE then
-    ns.Print(("Achtung: Client-Interface %s, Addon gebaut für %s. Bitte /gw debug run ausführen und den Bericht weitergeben."):format(tostring(interface), tostring(ns.INTERFACE)))
+    ns.Print((L["Warning: client interface %s, addon built for %s. Please run /gw debug run and pass on the report."]):format(tostring(interface), tostring(ns.INTERFACE)))
   elseif ns.db.debug.lastBuild ~= build then
-    ns.Print(("Neuer Client-Build %s erkannt. /gw debug run prüft, ob alles noch funktioniert."):format(tostring(build)))
+    ns.Print((L["New client build %s detected. /gw debug run checks that everything still works."]):format(tostring(build)))
   end
   ns.db.debug.lastBuild = build
 end, "DB")
@@ -185,24 +188,24 @@ ns.Slash.Register("debug", function(arg)
   local sub = (arg or ""):match("^%S*"):lower()
   if sub == "on" or sub == "off" then
     ns.db.settings.debug = (sub == "on")
-    ns.Print("debug " .. (ns.db.settings.debug and "on" or "off"))
+    ns.Print((L["debug %s"]):format(ns.db.settings.debug and L["on"] or L["off"]))
   elseif ns.Debug and (sub == "run" or sub == "" or sub == "show") then
     if sub == "show" then ns.Debug.Show() else ns.Debug.Run() end
   else
-    ns.Print("usage: /gw debug run | show | on | off")
+    ns.Print(L["usage: /gw debug run | show | on | off"])
   end
 end, "run the self test and open the report (run|show|on|off)")
 
 ns.Slash.Register("backup", function()
-  ns.DB.Backup("manuell")
-  ns.Print("Backup der Goldweaver-Daten angelegt (GoldweaverBackupDB). Wiederherstellen mit /gw restore.")
+  ns.DB.Backup("manual")
+  ns.Print(L["Goldweaver data backed up (GoldweaverBackupDB). Restore with /gw restore."])
 end, "copy all Goldweaver data into the backup slot")
 
 ns.Slash.Register("restore", function(arg)
   if arg ~= "confirm" then
-    local s = ns.DB.HasBackup() and (GoldweaverBackupDB.reason .. ", Schema " .. tostring(GoldweaverBackupDB.schema)) or "kein Backup"
-    return ns.Print(("Backup: %s. Zum Wiederherstellen: /gw restore confirm (danach /reload)."):format(s))
+    local s = ns.DB.HasBackup() and ((L["%s, schema %s"]):format(L[GoldweaverBackupDB.reason], tostring(GoldweaverBackupDB.schema))) or L["no backup"]
+    return ns.Print((L["Backup: %s. To restore: /gw restore confirm (then /reload)."]):format(s))
   end
   local ok, err = ns.DB.RestoreBackup()
-  ns.Print(ok and "Backup wiederhergestellt. Bitte /reload." or ("Wiederherstellen fehlgeschlagen: " .. tostring(err)))
+  ns.Print(ok and L["Backup restored. Please /reload."] or (L["Restore failed: %s"]):format(tostring(err)))
 end, "restore the backup slot (restore confirm)")
