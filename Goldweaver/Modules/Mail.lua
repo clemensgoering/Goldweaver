@@ -167,7 +167,8 @@ local function refreshSendButton()
   -- keeps pointing at the target it was filled for (bug found by tools/tests/sim.lua, 09.11.2026).
   if attached and attached > 0 and sendButton.plan then
     local rec = sendButton.plan.rec
-    sendButton:SetText((L["Send to %s (%d attachments)"]):format(rec.firstName or rec.name, attached))
+    sendButton:SetText((L["Send %d » %s"]):format(attached, rec.firstName or rec.name))
+    sendButton.tip = (L["Send to %s (%d attachments)"]):format(rec.name, attached)
     sendButton:Enable(); sendButton:Show()
     return
   end
@@ -175,16 +176,19 @@ local function refreshSendButton()
   local first
   for _, p in pairs(plan) do if not first or p.value > first.value then first = p end end
   if not first then
-    sendButton:SetText(L["Nothing to send (/gw mail shows why)"])
+    sendButton:SetText(L["Nothing to send"])
+    sendButton.tip = L["Nothing to send (/gw mail shows why)"]
     sendButton:Disable(); sendButton:Show(); return
   end
   sendButton.plan = first
   sendButton:Enable(); sendButton:Show()
   if attached and attached > 0 then
-    sendButton:SetText((L["Send to %s (%d attachments)"]):format(first.rec.firstName or first.rec.name, attached))
+    sendButton:SetText((L["Send %d » %s"]):format(attached, first.rec.firstName or first.rec.name))
+    sendButton.tip = (L["Send to %s (%d attachments)"]):format(first.rec.name, attached)
   else
     local n = math.min(MAX_ATTACH, #first.items)
-    sendButton:SetText((L["Attach for %s: %d of %d (%s)"]):format(first.rec.firstName or first.rec.name, n, first.count, ns.Util.Money(first.value)))
+    sendButton:SetText((L["Attach %d » %s"]):format(n, first.rec.firstName or first.rec.name))
+    sendButton.tip = (L["Attach for %s: %d of %d (%s)"]):format(first.rec.name, n, first.count, ns.Util.Money(first.value))
   end
 end
 
@@ -222,8 +226,16 @@ end
 local function createButton()
   if sendButton or not MailFrame then return end
   -- beside the mail frame (top right, outside): never covers the Inbox/Send tabs or the frame's own buttons
-  sendButton = ns.UI.Button(MailFrame, "", 230, onSendClick)
+  sendButton = ns.UI.Button(MailFrame, "", 150, onSendClick)
   sendButton:SetPoint("TOPLEFT", MailFrame, "TOPRIGHT", 4, -30)
+  -- short label on the button, the full sentence (recipient, counts, value) on hover
+  sendButton:SetScript("OnEnter", function(self)
+    if not self.tip then return end
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:AddLine(self.tip, 1, 1, 1, true)
+    GameTooltip:Show()
+  end)
+  sendButton:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
 ns:RegisterModule("Mail", {
