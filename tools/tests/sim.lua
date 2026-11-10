@@ -189,7 +189,9 @@ local function newClient(opts)
   env.Enum = { TooltipDataType = { Item = 0 }, CraftingReagentType = { Basic = 1 },
     AuctionHouseTimeLeftBand = { Short = 0, Medium = 1, Long = 2, VeryLong = 3 } }
   env.C_AddOns = { GetAddOnMetadata = function() return "@project-version@" end, GetNumAddOns = function() return 1 end,
-    GetAddOnInfo = function() return "Goldweaver", nil, nil, true end }
+    GetAddOnInfo = function() return "Goldweaver", nil, nil, true end,
+    IsAddOnLoaded = function(name) return (name == "Auctionator" and opts.auctionator) or (name == "TradeSkillMaster" and opts.tsm) or false end,
+    DoesAddOnExist = function(name) return name == "GatherMate2" or (name == "Auctionator" and opts.auctionator) or (name == "TradeSkillMaster" and opts.tsm) or false end }
 
   -- character
   local char = opts.char
@@ -606,7 +608,15 @@ local function session(label, opts, savedDB)
     end
     env._advance(5)
   end)
-  s("settings", function() ns.Settings.Open() end)
+  s("settings", function()
+    ns.Settings.Open()
+    -- optional addons section: active / installed but off / missing
+    local want = { Auctionator = opts.auctionator and "active" or "missing", GatherMate2 = "disabled", RXPGuides = "missing" }
+    for folder, state in pairs(want) do
+      local got = ns.Settings.AddonState(folder)
+      if got ~= state then fail(("%s: optional addon %s shows %s, expected %s"):format(label, folder, tostring(got), state)) end
+    end
+  end)
   s("debug report", function()
     ns.Debug.Run()
     if not (ns.db.debug.report and #ns.db.debug.report > 500) then fail(label .. ": debug report too short") end

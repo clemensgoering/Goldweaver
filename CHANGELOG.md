@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Einstellungen: neuer Abschnitt „Optionale Addons“ (GatherMate2, Auctionator, TradeSkillMaster, RestedXP) mit Nutzen, Status (aktiv / installiert, aber ausgeschaltet / nicht installiert) und kopierbarem Link, wenn es nicht aktiv ist; Einstellungsseite scrollt. GatherMate2 in `OptionalDeps`. Simulator prüft die drei Zustände.
 - Wettbewerbsvergleich umgesetzt (B2, B15–B24, `docs/02-ROADMAP.md`):
   - Berufsprofile für alle zwölf Berufe (neu: Alchemie, Schmiedekunst, Ingenieurskunst, Lederverarbeitung, Kräuterkunde, Bergbau, Kürschnerei, Angeln, Kochen, Erste Hilfe) mit Rang-Lehrern je Fraktion, Startpfaden und Hinweisen; Sammelberufe mit Zonen je Skill-Abschnitt („Leveln in: …“ im Berufe-Reiter). Daten aus Classic-Leitfäden, auf Forever teils ungetestet.
   - Händler-Reiter: „Kaufen 12 × Grobes Garn“ (nur die Planlücke, beim Main auch für den Twink), „Verkaufen 1/7: …“ (ein Plunder-Item pro Klick statt „Alles verkaufen“), „Reparieren“.

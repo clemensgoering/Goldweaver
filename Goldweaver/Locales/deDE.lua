@@ -900,3 +900,13 @@ L["Profit tags in the profession window"] = "Gewinnmarken im Berufsfenster"
 L["Open a profession; recipe rows show +/- profit."] = "Einen Beruf öffnen; die Rezeptzeilen zeigen +/- Gewinn."
 L["Waypoint to a GatherMate2 node"] = "Wegpunkt zu einem GatherMate2-Fundort"
 L["With GatherMate2: On the road tab, Nearest node."] = "Mit GatherMate2: Reiter Unterwegs, Nächster Fundort."
+
+-- settings: optional addons
+L["OPTIONAL ADDONS"] = "OPTIONALE ADDONS"
+L["Goldweaver works without them; each one adds something. Click a link and copy it with Ctrl+C."] = "Goldweaver läuft auch ohne sie; jedes bringt etwas dazu. Link anklicken und mit Strg+C kopieren."
+L["installed, switched off"] = "installiert, aber ausgeschaltet"
+L["not installed"] = "nicht installiert"
+L["Node map: 'Nearest node' sets a waypoint to what the twink needs."] = "Fundorte: „Nächster Fundort“ setzt einen Wegpunkt zu dem, was der Twink braucht."
+L["Auction prices for every advice, also without your own scans."] = "Auktionspreise für jede Empfehlung, auch ohne eigene Scans."
+L["Price sources (market value) as a second opinion."] = "Preisquellen (Marktwert) als zweite Meinung."
+L["Levelling route: the guide shows the next zones and what grows there."] = "Levelroute: der Leitfaden zeigt die nächsten Zonen und was dort wächst."

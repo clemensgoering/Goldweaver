@@ -2,7 +2,7 @@
 -- Falls back to a small standalone window if the Settings API is missing. At most ten switches, all with defaults
 -- that work (docs/08-UX.md rule 7).
 --
--- Public API (ns.Settings): Open()
+-- Public API (ns.Settings): Open(), AddonState(folder) -> "active" | "disabled" | "missing"
 local ADDON, ns = ...
 
 local Settings_ = {}
@@ -29,9 +29,85 @@ local function defs()
   }
 end
 
+-- Optional addons Goldweaver reads (public APIs only, all optional). WoW cannot open a browser: the link sits in a
+-- read-only text box, a click selects it for Ctrl+C. { folder, title, what it adds (English key), link }
+local OPTIONAL = {
+  { "GatherMate2", "GatherMate2", "Node map: 'Nearest node' sets a waypoint to what the twink needs.", "https://www.curseforge.com/wow/addons/gathermate2" },
+  { "Auctionator", "Auctionator", "Auction prices for every advice, also without your own scans.", "https://www.curseforge.com/wow/addons/auctionator" },
+  { "TradeSkillMaster", "TradeSkillMaster", "Price sources (market value) as a second opinion.", "https://www.curseforge.com/wow/addons/tradeskill-master" },
+  { "RXPGuides", "RestedXP", "Levelling route: the guide shows the next zones and what grows there.", "https://www.restedxp.com" },
+}
+
+-- "active" | "disabled" (installed, switched off) | "missing"
+local function addonState(folder)
+  local A = C_AddOns
+  if not A then return "missing" end
+  local ok, loaded = pcall(A.IsAddOnLoaded, folder)
+  if ok and loaded then return "active" end
+  if A.DoesAddOnExist then
+    local okE, exists = pcall(A.DoesAddOnExist, folder)
+    if okE and exists then return "disabled" end
+  elseif A.GetAddOnInfo then
+    local okI, _, _, _, _, reason = pcall(A.GetAddOnInfo, folder)
+    if okI and reason ~= nil and reason ~= "MISSING" then return "disabled" end
+  end
+  return "missing"
+end
+
+local function linkBox(parent, url)
+  local eb, template = ns.UI.SafeCreate("EditBox", parent, { "InputBoxTemplate" })
+  if not template then ns.UI.Skin(eb, "ghost"); eb:SetFontObject("GameFontHighlightSmall") end
+  eb:SetSize(280, 20)
+  eb:SetAutoFocus(false)
+  eb:SetText(url)
+  eb:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
+  eb:SetScript("OnTextChanged", function(self, userInput) if userInput then self:SetText(url); self:HighlightText() end end)
+  eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+  eb:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+  return eb
+end
+
+local function optionalSection(f, top)
+  local L = ns.L
+  local head = ns.UI.Section(f, L["OPTIONAL ADDONS"], 560)
+  head:SetPoint("TOPLEFT", 16, top)
+  local hint = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  hint:SetPoint("TOPLEFT", 16, top - 20); hint:SetWidth(560); hint:SetJustifyH("LEFT")
+  hint:SetText(L["Goldweaver works without them; each one adds something. Click a link and copy it with Ctrl+C."])
+  local rows = {}
+  for i, a in ipairs(OPTIONAL) do
+    local y = top - 42 - (i - 1) * 46
+    local name = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    name:SetPoint("TOPLEFT", 20, y); name:SetText(a[2])
+    local state = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    state:SetPoint("LEFT", name, "RIGHT", 10, 0)
+    local what = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    what:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0, -3); what:SetWidth(270); what:SetJustifyH("LEFT"); what:SetWordWrap(false)
+    what:SetText(L[a[3]])
+    local box = linkBox(f, a[4])
+    box:SetPoint("TOPLEFT", 300, y - 6)
+    rows[i] = { folder = a[1], state = state, box = box }
+  end
+  function rows:Refresh()
+    for _, r in ipairs(self) do
+      local s = addonState(r.folder)
+      if s == "active" then r.state:SetText("|cff60e060" .. L["active"] .. "|r")
+      elseif s == "disabled" then r.state:SetText("|cffffd27a" .. L["installed, switched off"] .. "|r")
+      else r.state:SetText("|cff9b9283" .. L["not installed"] .. "|r") end
+      r.box:SetShown(s ~= "active")
+    end
+  end
+  return rows
+end
+Settings_.AddonState = addonState
+
 local function build(parent)
-  local f = CreateFrame("Frame", nil, parent)
-  f:SetAllPoints()
+  -- the page scrolls: switches plus the optional addons do not fit the options canvas
+  local scroll = ns.UI.SafeCreate("ScrollFrame", parent, { "UIPanelScrollFrameTemplate" })
+  scroll:SetPoint("TOPLEFT", 0, 0); scroll:SetPoint("BOTTOMRIGHT", -26, 0)
+  local f = CreateFrame("Frame", nil, scroll)
+  f:SetSize(600, 740)
+  scroll:SetScrollChild(f)
   local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
   title:SetPoint("TOPLEFT", 16, -16)
   title:SetText("Goldweaver")
@@ -71,13 +147,16 @@ local function build(parent)
   calc:SetPoint("TOPLEFT", 16, -134 - #f.checks * 30 - 12)
   calc:SetJustifyH("LEFT")
   f.calc = calc
-  f:SetScript("OnShow", function(self)
+  f.addons = optionalSection(f, -134 - #f.checks * 30 - 48)
+  scroll:SetScript("OnShow", function()
+    local self = f
+    self.addons:Refresh()
     for _, c in ipairs(self.checks) do c.check:SetChecked(c.get() and true or false) end
     local s = ns.db.settings
     self.calc:SetText(ns.L["Value per favor: %s (/gw favor)  ·  Undercut by: %s (/gw undercut)  ·  Market: %s (/gw market)"]:format(
       ns.Util.Money(s.favorValueCopper or 500), ns.Util.Money(s.undercutCopper or 1), ns.Chars.MarketKey()))
   end)
-  return f
+  return scroll
 end
 
 function Settings_.Open()
@@ -88,12 +167,12 @@ function Settings_.Open()
   -- fallback: standalone window
   if not panel then
     panel = ns.UI.SafeCreate("Frame", UIParent, { "BasicFrameTemplateWithInset", "BackdropTemplate" }, "GoldweaverSettingsWindow")
-    panel:SetSize(520, 520); panel:SetPoint("CENTER"); panel:SetFrameStrata("DIALOG")
+    panel:SetSize(660, 560); panel:SetPoint("CENTER"); panel:SetFrameStrata("DIALOG")
     panel:SetMovable(true); panel:EnableMouse(true); panel:RegisterForDrag("LeftButton")
     panel:SetScript("OnDragStart", panel.StartMoving); panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
     tinsert(UISpecialFrames, "GoldweaverSettingsWindow")
     local body = build(panel)
-    body:ClearAllPoints(); body:SetPoint("TOPLEFT", 4, -24); body:SetPoint("BOTTOMRIGHT", -4, 4)
+    body:ClearAllPoints(); body:SetPoint("TOPLEFT", 4, -24); body:SetPoint("BOTTOMRIGHT", -30, 4)
   end
   panel:Show()
 end
