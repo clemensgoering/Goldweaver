@@ -474,6 +474,47 @@ function UI.IconRows(parent, count, width, firstY, rowHeight)
   return rows
 end
 
+-- Action tabs under a Blizzard frame (mailbox, merchant, bank, auction house, trainer): gold tabs at the bottom right,
+-- opposite Blizzard's own tabs, each as wide as its label, chained right to left; hidden tabs close the gap.
+-- One click = one action (docs/04-COMPLIANCE.md). tabs[i]:Set(label, tip, onClick, enabled) / :Clear()
+function UI.FrameTabs(frame, count)
+  local tabs = { frame = frame }
+  local function layout()
+    local prev
+    for _, b in ipairs(tabs) do
+      if b:IsShown() then
+        b:ClearAllPoints()
+        if prev then b:SetPoint("TOPRIGHT", prev, "TOPLEFT", -4, 0) else b:SetPoint("TOPRIGHT", frame, "BOTTOMRIGHT", -6, 2) end
+        prev = b
+      end
+    end
+  end
+  for i = 1, count do
+    local b = UI.Button(frame, "", 100, nil, "tabOn")
+    b:SetHeight(28)
+    b:SetScript("OnEnter", function(self)
+      if not self.tip then return end
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+      GameTooltip:AddLine(self.tip, 1, 1, 1, true)
+      GameTooltip:Show()
+    end)
+    b:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    function b:Set(label, tip, onClick, enabled)
+      self:SetText(label or "")
+      local fs = self:GetFontString()
+      self:SetWidth(math.max(80, math.min(240, ((fs and fs:GetStringWidth()) or 80) + 28)))
+      self.tip = tip
+      self:SetScript("OnClick", onClick)
+      if enabled == false then self:Disable() else self:Enable() end
+      self:Show(); layout()
+    end
+    function b:Clear() self:Hide(); layout() end
+    b:Hide()
+    tabs[i] = b
+  end
+  return tabs
+end
+
 -- Gather-list rows: icon, name with a coloured note, a bar (gold = there, blue = in the mail, green = enough),
 -- "have / need" on the right and, when rowHeight >= 34, a grey sub line under the bar.
 -- rows:Set({ { item, icon, text, note = { text, r, g, b }, sub, have, need, mail, right } })
@@ -656,6 +697,11 @@ function UI.SetSubtitle(text)
   if window and window.subtitle then window.subtitle:SetText(text or "") end
 end
 
+-- Window size from the settings (80-130 %).
+function UI.ApplyScale()
+  if window then window:SetScale(ns.db.settings.windowScale or 1) end
+end
+
 -- Short line at the right of the header band (session gold and the like).
 function UI.SetHeaderInfo(text)
   if window and window.info then window.info:SetText(text or "") end
@@ -755,6 +801,7 @@ local function buildWindow()
   window:SetFrameStrata("HIGH")
   window:SetToplevel(true)
   UI.Skin(window, "window")
+  window:SetScale(ns.db.settings.windowScale or 1)
   tinsert(UISpecialFrames, "GoldweaverMainWindow")
   buildHeader()
 

@@ -21,11 +21,16 @@ UI.RegisterTab("field", "On the road", function(frame)
   title:SetPoint("TOPLEFT", 12, -10)
   local sub = UI.Text(header, "", "GameFontHighlightSmall")
   sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-  sub:SetWidth(W - 300)
+  sub:SetWidth(W - 380)
   local back = UI.Button(header, L["Current zone"], 120, function() viewZone = nil; content:Refresh() end)
   back:SetPoint("TOPRIGHT", -12, -16)
   local mapButton = UI.Button(header, L["World map"], 100, nil)
   mapButton:SetPoint("RIGHT", back, "LEFT", -6, 0)
+  -- GatherMate2 installed: waypoint to the nearest node of something needed here (B21)
+  local nodeButton = UI.Button(header, L["Nearest node"], 120, function()
+    if not ns.Field.NearestNeededNode() then ns.Print(L["GatherMate2 knows no matching node in this zone yet."]) end
+  end)
+  nodeButton:SetPoint("RIGHT", mapButton, "LEFT", -6, 0)
 
   local left = UI.Inset(frame, LEFT, 10)
   left:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -8)
@@ -142,6 +147,11 @@ UI.RegisterTab("field", "On the road", function(frame)
       sub:SetText((L["Level %d–%d · %s%d|r · Classic data, plus your own finds"]):format(report.zone.min, report.zone.max, fit, report.level))
     else
       sub:SetText(L["No zone data on file. Goldweaver remembers what you gather here."])
+    end
+    nodeButton:SetShown(viewZone == nil and ns.Field.HasGatherMate())
+    if viewZone == nil and ns.Field.HasGatherMate() then
+      local n = #ns.Field.GatherMateNodes(select(2, ns.Field.CurrentZone()))
+      sub:SetText(sub:GetText() .. "  ·  " .. (L["GatherMate2: %d nodes"]):format(n))
     end
     mapButton:SetScript("OnClick", function()
       if OpenWorldMap and report.id then pcall(OpenWorldMap, report.id) elseif ToggleWorldMap then ToggleWorldMap() end

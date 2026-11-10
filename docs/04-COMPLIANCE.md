@@ -19,7 +19,7 @@ Quelle: US-Forum „UI Add-On Development Policy" (Erstveröffentlichung 20.03.2
 
 ## 2. Terms of Use / EULA: Automatisierung und Kampfvorteil
 
-- **Keine Automatisierung.** Jede geschützte Aktion (Posten, Kaufen, Abbrechen, Post senden, Herstellen, Entzaubern) wird genau einmal pro Hardware-Event ausgelöst. Keine Queues, die ohne Klick weiterlaufen. Keine Timer, die Aktionen auslösen; Timer dürfen nur Anzeigen aktualisieren.
+- **Keine Automatisierung.** Jede geschützte Aktion (Posten, Kaufen, Abbrechen, Post senden, Herstellen, Entzaubern) wird genau einmal pro Hardware-Event ausgelöst. Keine Queues, die ohne Klick weiterlaufen. Keine Timer, die Aktionen auslösen; Timer dürfen nur Anzeigen aktualisieren. Das gilt auch für die Helfer-Reiter an Händler (Kaufen, Verkaufen, Reparieren), Bank (Holen, Einlagern), Auktionshaus (Suchen, Kaufen, Bestätigen) und Lehrer (Lernen): „Alles verkaufen“ gibt es nur als Folge von Klicks, ein Item pro Klick.
 - **Keine Umgehung von Throttles oder Secret Values.** Kein Vergleich, keine Arithmetik, kein Speichern geheimer Werte; `issecretvalue()` vor jeder Verwendung von Event-Argumenten. Kein Rekonstruieren von Kampfinformationen.
 - **Kein Kampfvorteil.** Goldweaver liest keine Unit-, Auren-, Cooldown- oder Combat-Log-Daten. Blizzards Grundsatz, für Forever bestätigt am 15.09.2026: „Addons should no longer offer a competitive advantage in WoW combat".
 - **Kein Echtgeld-Bezug.** Kein GDKP-Feature (auf NA/EU-Forever untersagt), kein Gold-Verkauf, keine Boost-Vermittlung.

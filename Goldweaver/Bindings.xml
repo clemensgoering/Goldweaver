@@ -1,0 +1,9 @@
+<Bindings>
+  <!-- Goldweaver key bindings (Options > Keybindings > AddOns). Labels: BINDING_* set in UI/Minimap.lua. -->
+  <Binding name="GOLDWEAVER_TOGGLE" header="GOLDWEAVER" category="ADDONS">
+    if Goldweaver and Goldweaver.ns and Goldweaver.ns.UI then Goldweaver.ns.UI.Toggle() end
+  </Binding>
+  <Binding name="GOLDWEAVER_FIELD" category="ADDONS">
+    if Goldweaver and Goldweaver.ns and Goldweaver.ns.UI then Goldweaver.ns.UI.Toggle("field") end
+  </Binding>
+</Bindings>

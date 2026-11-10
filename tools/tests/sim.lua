@@ -76,7 +76,7 @@ local function newClient(opts)
     "SetStatusBarTexture", "SetStatusBarColor", "SetFontObject", "SetHighlightTexture", "SetNormalFontObject", "SetMultiLine",
     "SetAutoFocus", "SetFocus", "ClearFocus", "HighlightText", "SetScrollChild", "SetDrawLayer", "SetOwner", "SetColorTexture",
     "SetTextColor", "SetParent", "SetID", "SetHighlightFontObject", "SetDisabledFontObject", "SetPushedTextOffset",
-    "SetHitRectInsets", "SetDesaturated" }) do m(n, noop) end
+    "SetHitRectInsets", "SetDesaturated", "SetScale" }) do m(n, noop) end
   m("SetFontString", function(self, fs) self._fs = fs end)
   m("SetSize", function(self, w, h) self._w, self._h = w, h end)
   m("SetWidth", function(self, w) self._w = w end)
@@ -338,13 +338,19 @@ local function newClient(opts)
   env.C_AuctionHouse = {
     IsThrottledMessageSystemReady = function() return true end,
     GetNumCommoditySearchResults = function() return 2 end,
-    GetCommoditySearchResultInfo = function(_, i) return { unitPrice = 40 + i, quantity = 10, auctionID = i } end,
+    GetCommoditySearchResultInfo = function(_, i) return { unitPrice = 40 + i, quantity = i == 2 and 500 or 10, auctionID = i } end,
     GetNumItemSearchResults = function() return 0 end,
     GetItemSearchResultInfo = function() return nil end,
     GetBrowseResults = function() return { { itemKey = { itemID = 2589 }, minPrice = 45, totalQuantity = 50 } } end,
     CalculateCommodityDeposit = function() return 100 end,
     CalculateItemDeposit = function() return 100 end,
-    SendSearchQuery = noop, ReplicateItems = noop, GetNumReplicateItems = function() return 0 end,
+    MakeItemKey = function(id) return { itemID = id } end,
+    StartCommoditiesPurchase = function(id, qty)
+      env.C_Timer.After(0.3, function() env._fire("COMMODITY_PRICE_UPDATED", 41, 41 * qty) end)
+    end,
+    ConfirmCommoditiesPurchase = function() env.C_Timer.After(0.3, function() env._fire("COMMODITY_PURCHASE_SUCCEEDED") end) end,
+    CancelCommoditiesPurchase = function() end,
+    SendSearchQuery = function(key) env.C_Timer.After(0.3, function() env._fire("COMMODITY_SEARCH_RESULTS_UPDATED", key and key.itemID) end) end, ReplicateItems = noop, GetNumReplicateItems = function() return 0 end,
   }
 
   -- merchant / trainer / loot
@@ -359,6 +365,11 @@ local function newClient(opts)
   env.GetTrainerServiceSkillReq = function(i) return i == 1 and 50 or 20 end
   env.GetTrainerServiceLevelReq = function(i) return i == 1 and 10 or 0 end
   env.GetTrainerServiceCost = function() return 500 end
+  env.BuyTrainerService = function(i) env._trained = i end
+  env.CanMerchantRepair = function() return true end
+  env.GetRepairAllCost = function() return 250, true end
+  env.RepairAllItems = function() env._repaired = true end
+  env.BuyMerchantItem = function(i, n) env._bought = { i, n } end
   env._loot = {}
   env.GetNumLootItems = function() return #env._loot end
   env.GetLootSlotLink = function(i) return "|Hitem:" .. env._loot[i] .. "|h[x]|h" end
@@ -428,10 +439,10 @@ local function step(name, fn)
   if not ok then fail(name .. ": " .. tostring(err)) end
 end
 
-local function findButton(env, pattern)
+local function findButton(env, pattern, parent)
   for i = #env._frames, 1, -1 do
     local f = env._frames[i]
-    if f._kind == "Button" and f._shown and type(f._text) == "string" and f._text:find(pattern) then return f end
+    if f._kind == "Button" and f._shown and type(f._text) == "string" and f._text:find(pattern) and (not parent or f._parent == parent) then return f end
   end
   return nil
 end
@@ -534,6 +545,16 @@ local function session(label, opts, savedDB)
   s("auction house", function()
     env.AuctionHouseFrame._shown = true
     env._fire("AUCTION_HOUSE_SHOW"); env._advance(1)
+    -- shopping list tab: search -> buy -> confirm, each a click (B19)
+    if findButton(env, "^Suchen") or findButton(env, "^Search") then
+      for _ = 1, 4 do
+        local b = findButton(env, "^Suchen") or findButton(env, "^Search") or findButton(env, "^Kaufen") or findButton(env, "^Buy")
+          or findButton(env, "^Bestätigen") or findButton(env, "^Confirm")
+        if not b then break end
+        b:Click(); env._advance(1.5)
+      end
+      if ns.Checks.Get("ahBuy").status ~= "pass" then fail(label .. ": auction shopping did not complete a purchase") end
+    end
     env._fire("COMMODITY_SEARCH_RESULTS_UPDATED", 2589)
     env._fire("AUCTION_HOUSE_BROWSE_RESULTS_UPDATED")
     env.AuctionHouseFrame.CommoditiesSellFrame:SetItem({ itemID = 2589 })
@@ -542,8 +563,21 @@ local function session(label, opts, savedDB)
   end)
   s("merchant and trainer", function()
     env._npc = "Händler Hans"; env.MerchantFrame._shown = true
-    env._fire("MERCHANT_SHOW"); env._advance(1); env.MerchantFrame._shown = false
-    env._npc = "Magar"; env._fire("TRAINER_SHOW"); env._advance(1); env._fire("TRAINER_UPDATE")
+    env._fire("MERCHANT_SHOW"); env._advance(1)
+    -- merchant tabs (B15): repair is always offered here; a buy tab when the plan lacks the thread
+    local repair = findButton(env, "^Reparieren", env.MerchantFrame) or findButton(env, "^Repair", env.MerchantFrame)
+    if not repair then fail(label .. ": no repair tab at the merchant") else repair:Click(); if not env._repaired then fail(label .. ": repair click did nothing") end end
+    local buy = findButton(env, "^Kaufen", env.MerchantFrame) or findButton(env, "^Buy ", env.MerchantFrame)
+    if buy then buy:Click(); if not env._bought then fail(label .. ": buy click did nothing") end end
+    env.MerchantFrame._shown = false
+    env._npc = "Magar"; env.ClassTrainerFrame._shown = true
+    env._fire("TRAINER_SHOW"); env._advance(1); env._fire("TRAINER_UPDATE"); env._advance(1)
+    local learn = findButton(env, "^Lernen") or findButton(env, "^Learn")
+    if learn then learn:Click(); if not env._trained then fail(label .. ": learn click did nothing") end end
+    env.ClassTrainerFrame._shown = false; env._fire("TRAINER_CLOSED")
+    -- bank tabs (B16): open and close without errors
+    env.BankFrame._shown = true; env._fire("BANKFRAME_OPENED"); env._advance(1)
+    env.BankFrame._shown = false; env._fire("BANKFRAME_CLOSED")
   end)
   s("gathering loot", function()
     env._fire("UNIT_SPELLCAST_SUCCEEDED", "player", nil, 2366)

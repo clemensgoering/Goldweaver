@@ -116,10 +116,12 @@ function Panel.Refresh()
     coopRows:Set(data)
     local line = (L["You carry: +%d skill points for %s"]):format(view.fromGatherer, who)
     if #hereNames > 0 then line = (L["Here: %s"]):format(table.concat(hereNames, ", ")) .. " · " .. line end
+    local sess = ns.Coop.session
+    if sess.items > 0 then line = line .. "\n" .. (L["This session: %d items · +%d skill · %s"]):format(sess.items, sess.points, ns.Util.Money(sess.value)) end
     routeText:ClearAllPoints()
     routeText:SetPoint("TOPLEFT", frame.holder, "TOPLEFT", 2, -38 - #data * 28 - 2)
     routeText:SetText("|cffffd27a" .. line .. "|r")
-    frame:SetHeight(22 + 2 + 38 + #data * 28 + 30)
+    frame:SetHeight(22 + 2 + 38 + #data * 28 + (sess.items > 0 and 44 or 30))
     return
   end
   coopRows:Set({})

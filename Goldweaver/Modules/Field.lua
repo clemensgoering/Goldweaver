@@ -233,6 +233,82 @@ function Field.SetWaypoint(mapID, x, y, label)
   return ok
 end
 
+-- GatherMate2 (optional, public API only, B21) -----------------------------------------------------
+-- Node types as GatherMate2 names them; our gather kinds map onto them.
+local GM_TYPES = { herb = "Herb Gathering", ore = "Mining" }
+
+local function gatherMate()
+  local gm = _G.GatherMate2
+  if type(gm) == "table" and gm.GetNodesForZone and gm.GetNameForNode and gm.DecodeLoc then return gm end
+  return nil
+end
+
+function Field.HasGatherMate() return gatherMate() ~= nil end
+
+-- Nodes GatherMate2 knows on a map: { { x, y, name, kind } } (x/y in 0-100).
+function Field.GatherMateNodes(mapID, kind)
+  local gm = gatherMate()
+  local out = {}
+  if not (gm and mapID) then return out end
+  for k, nodeType in pairs(GM_TYPES) do
+    if not kind or kind == k then
+      pcall(function()
+        for coord, nodeID in gm:GetNodesForZone(mapID, nodeType, true) do
+          local x, y = gm:DecodeLoc(coord)
+          local name = gm:GetNameForNode(nodeType, nodeID)
+          if x and y then out[#out + 1] = { x = x * 100, y = y * 100, name = name, kind = k } end
+        end
+      end)
+    end
+  end
+  return out
+end
+
+-- Item name vs. node name: herbs share the name, veins share the first part ("Copper Ore" / "Copper Vein").
+local function nodeMatches(nodeName, itemName)
+  if not (nodeName and itemName) then return false end
+  if nodeName == itemName then return true end
+  local n = 0
+  for i = 1, math.min(#nodeName, #itemName) do
+    if nodeName:sub(i, i) ~= itemName:sub(i, i) then break end
+    n = i
+  end
+  return n >= 4
+end
+
+-- Waypoint to the nearest GatherMate2 node of something the team needs here (or any node of an own gathering
+-- skill). Returns label or nil.
+function Field.NearestNeededNode()
+  local _, mapID = Field.CurrentZone()
+  if not (mapID and C_Map and C_Map.GetPlayerMapPosition) then return nil end
+  local pos = C_Map.GetPlayerMapPosition(mapID, "player")
+  if not pos then return nil end
+  local px, py = pos:GetXY()
+  if not px or ns.Secret.Any(px, py) then return nil end
+  px, py = px * 100, py * 100
+  local wanted = {}
+  local view = ns.Coop and ns.Coop.Needs()
+  for _, r in ipairs(view and view.rows or {}) do
+    if r.here and r.have < r.need then wanted[#wanted + 1] = ns.API.ItemName(r.item) end
+  end
+  local best, bestD
+  for _, node in ipairs(Field.GatherMateNodes(mapID)) do
+    local ok = #wanted == 0
+    for _, w in ipairs(wanted) do if nodeMatches(node.name, w) then ok = true break end end
+    if ok then
+      local d = (node.x - px) ^ 2 + (node.y - py) ^ 2
+      if not bestD or d < bestD then best, bestD = node, d end
+    end
+  end
+  if not best then return nil end
+  local label = best.name or "?"
+  if Field.SetWaypoint(mapID, best.x, best.y, label) then
+    if ns.Checks then ns.Checks.Pass("gatherMate", label) end
+    return label
+  end
+  return nil
+end
+
 -- Gather observation: remember the last gathering cast, then read the loot window.
 local lastGather
 ns:RegisterModule("Field", {

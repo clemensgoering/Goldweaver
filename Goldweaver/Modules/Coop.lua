@@ -12,6 +12,8 @@
 --   RecordSent(rec, items)                 items = { [itemID] = count }; called on MAIL_SEND_SUCCESS
 --   ScanInbox()                            snapshot of the items in the own inbox
 --   Invalidate()
+--   Shopping() -> { { item, need, have, missing, source, forRec } }  what the plan lacks (team list or own plan)
+--   session = { items, value, points, start, login }, SessionLine()  session tally for the gatherer (B17)
 -- view = { gatherer, crafter, rows = { row }, plans = { {skillLine, name, from, to} }, points, fromGatherer, fromMail }
 -- row  = { item, need, have, gatherer, mail, crafter, here, source = "here"|"gatherer"|"vendor"|"elsewhere", via }
 --
@@ -178,6 +180,61 @@ function Coop.Needs()
   return cache or nil
 end
 
+-- What the plan still lacks, for the helpers at merchant, bank and auction house: the team's gather list when a
+-- main/processor pair exists, else this character's own skill-up plans.
+-- -> { { item, need, have, missing, source, forRec } }  (forRec = the character the materials are for)
+function Coop.Shopping()
+  local out = {}
+  local view = Coop.Needs()
+  if view then
+    for _, r in ipairs(view.rows) do
+      if r.have < r.need then
+        out[#out + 1] = { item = r.item, need = r.need, have = r.have, missing = r.need - r.have, source = r.source, forRec = view.crafter }
+      end
+    end
+    return out
+  end
+  local me = ns.Chars.Current()
+  local byItem = {}
+  for skillLine, p in pairs(me and me.professions or {}) do
+    if not p.former and ns.Adapter.Book(skillLine) then
+      local ok, plan = pcall(ns.Planner.Plan, skillLine, me)
+      if ok and plan and plan.shopping then
+        for _, s in ipairs(plan.shopping) do
+          if s.buy > 0 then
+            local row = byItem[s.item]
+            if not row then
+              row = { item = s.item, need = 0, have = s.have, missing = 0, forRec = me,
+                source = ns.Data.VendorReagents[s.item] and "vendor" or "elsewhere" }
+              byItem[s.item] = row
+              out[#out + 1] = row
+            end
+            row.need, row.missing = row.need + s.need, row.missing + s.buy
+          end
+        end
+      end
+    end
+  end
+  return out
+end
+
+-- Session tally for the gatherer: what was picked up for the crafter since login (B17).
+Coop.session = { items = 0, value = 0, points = 0, start = nil, login = nil }
+
+-- "Session +1g 18s (2g 40s/h)" plus, for the gatherer, "for Grel: 34 items · +6 skill".
+function Coop.SessionLine()
+  local delta = ns.Ledger.SessionDelta()
+  local s = Coop.session
+  local hours = math.max(0.25, (time() - (s.login or time())) / 3600)
+  local line = (L["Session %s (%s/h)"]):format((delta >= 0 and "+" or "-") .. ns.Util.Money(math.abs(delta)),
+    ns.Util.Money(math.max(0, math.floor(delta / hours))))
+  local view = Coop.Needs()
+  if s.items > 0 and view then
+    line = line .. " · " .. (L["for %s: %d items · +%d skill"]):format(view.crafter.firstName or view.crafter.name, s.items, s.points)
+  end
+  return line
+end
+
 -- Mail ------------------------------------------------------------------------------------------
 
 function Coop.RecordSent(rec, items)
@@ -248,7 +305,18 @@ local function onBags()
   for _, row in ipairs(view.rows) do counts[row.item] = row.gatherer end
   local before, prevPoints = lastCounts, Coop.lastPoints
   lastCounts, Coop.lastPoints = counts, view.fromGatherer
-  if not before or busy() or ns.db.settings.coopToast == false then return end
+  if not before or busy() then return end
+  local s = Coop.session
+  for _, row in ipairs(view.rows) do
+    local gained = row.gatherer - (before[row.item] or row.gatherer)
+    if gained > 0 and row.source ~= "vendor" then
+      s.start = s.start or time()
+      s.items = s.items + gained
+      s.value = s.value + gained * (ns.Price.Copper(row.item) or 0)
+      if prevPoints and view.fromGatherer > prevPoints then s.points = s.points + (view.fromGatherer - prevPoints) end
+    end
+  end
+  if ns.db.settings.coopToast == false then return end
   for _, row in ipairs(view.rows) do
     local gained = row.gatherer - (before[row.item] or row.gatherer)
     if gained > 0 and row.source ~= "vendor" then
@@ -268,7 +336,10 @@ ns:RegisterModule("Coop", {
   Init = function()
     ns.Events:On("BAG_UPDATE_DELAYED", function() C_Timer.After(0.3, function() pcall(onBags) end) end, "Coop")
     ns.Events:On("MAIL_INBOX_UPDATE", Coop.ScanInbox, "Coop")
-    ns.Events:On("PLAYER_LOGIN", function() C_Timer.After(8, function() pcall(onBags) end) end, "Coop")
+    ns.Events:On("PLAYER_LOGIN", function()
+      Coop.session.login = time()
+      C_Timer.After(8, function() pcall(onBags) end)
+    end, "Coop")
   end,
   SelfTest = function()
     local gatherer, crafter = Coop.Team()

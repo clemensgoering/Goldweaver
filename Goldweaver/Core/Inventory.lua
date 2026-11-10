@@ -26,10 +26,12 @@ local function scan(containers)
 end
 
 -- Full list of bag items with location, for mail planning and the disenchant queue.
-function Inventory.BagItems()
+-- BankItems() is the same for the bank (only while it is open).
+Inventory.BAGS, Inventory.BANK_BAGS = BAGS, BANK
+function Inventory.BagItems(bags)
   local items = {}
   if not (C_Container and C_Container.GetContainerNumSlots) then return items end
-  for _, bag in ipairs(BAGS) do
+  for _, bag in ipairs(bags or BAGS) do
     local slots = C_Container.GetContainerNumSlots(bag) or 0
     for slot = 1, slots do
       local info = C_Container.GetContainerItemInfo(bag, slot)
@@ -44,6 +46,8 @@ function Inventory.BagItems()
   end
   return items
 end
+
+function Inventory.BankItems() return Inventory.BagItems(BANK) end
 
 function Inventory.FreeBagSlots()
   local free = 0
@@ -104,9 +108,11 @@ function Inventory.Count(itemID, opts)
     for _, rec in pairs(ns.db.chars) do
       if rec ~= me and rec.market == me.market and rec.inventory then
         local inv = rec.inventory
-        local n = (inv.bags and inv.bags[itemID] or 0) + (inv.bank and inv.bank[itemID] or 0) + (opts.mail ~= false and mailed(inv) or 0)
+        local bags, bank = inv.bags and inv.bags[itemID] or 0, inv.bank and inv.bank[itemID] or 0
+        local mail = opts.mail ~= false and mailed(inv) or 0
+        local n = bags + bank + mail
         if n > 0 then
-          breakdown.alts[#breakdown.alts + 1] = { name = rec.name, count = n }
+          breakdown.alts[#breakdown.alts + 1] = { name = rec.name, count = n, bags = bags, bank = bank, mail = mail }
           total = total + n
         end
       end

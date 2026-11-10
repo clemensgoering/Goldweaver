@@ -59,6 +59,6 @@ eq(ns.Events:On("FINE_EVENT", function() end, "Test"), true, "known event regist
 ns.Events.frame.RegisterEvent = realRegister
 
 -- schema
-eq(ns.db.schema, 5, "schema migrated to 5")
+eq(ns.db.schema, ns.DB.SCHEMA, "schema migrated to current")
 local stats = ns.DB.Stats()
 eq(type(stats.chars), "number", "stats available")

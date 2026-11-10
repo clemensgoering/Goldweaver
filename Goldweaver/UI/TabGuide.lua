@@ -249,8 +249,7 @@ UI.RegisterTab("guide", "Guide", function(frame)
     end
 
     local today = ns.Ledger.Totals(1)
-    local delta = ns.Ledger.SessionDelta()
-    UI.SetHeaderInfo((L["Session %s · sold today %s"]):format((delta >= 0 and "+" or "-") .. UI.Money(math.abs(delta)), UI.Money(today.sales)))
+    UI.SetHeaderInfo(ns.Coop.SessionLine() .. " · " .. (L["sold today %s"]):format(UI.Money(today.sales)))
   end
   return content
 end)

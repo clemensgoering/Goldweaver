@@ -137,15 +137,32 @@ local function create()
   if ns.db.settings.minimapHidden then button:Hide() end
 end
 
+-- Blizzard's addon compartment (the addon list button at the minimap) and key bindings (Bindings.xml), B22.
+-- The binding labels must be globals named BINDING_*: the only globals besides "Goldweaver", by the game's design.
+local compartment = false
+local function registerLaunchers()
+  if AddonCompartmentFrame and AddonCompartmentFrame.RegisterAddon then
+    compartment = pcall(AddonCompartmentFrame.RegisterAddon, AddonCompartmentFrame, {
+      text = "Goldweaver", icon = ICON, notCheckable = true,
+      func = function(_, _, _, _, mouseButton) if mouseButton == "RightButton" then ns.UI.Open("field") else ns.UI.Toggle() end end,
+    })
+  end
+  _G.BINDING_HEADER_GOLDWEAVER = "Goldweaver"
+  _G.BINDING_NAME_GOLDWEAVER_TOGGLE = L["Open or close the window"]
+  _G.BINDING_NAME_GOLDWEAVER_FIELD = L["Open the 'On the road' tab"]
+end
+
 ns:RegisterModule("Minimap", {
   Init = function()
     create()
+    registerLaunchers()
     if ns.Chars and ns.Chars.Unassigned then Minimap_.SetBadge(ns.Chars.Unassigned()) end
   end,
   SelfTest = function()
     return {
       { name = "Button created", ok = button ~= nil, detail = button and (button:IsShown() and "visible" or "hidden") or "no" },
       { name = "Angle saved", ok = true, detail = tostring(angleFromSettings()) },
+      { name = "Addon compartment", ok = true, warn = not compartment, detail = compartment and "registered" or "not available" },
     }
   end,
 })

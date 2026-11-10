@@ -34,7 +34,7 @@ b. `docs/14-UI-FUEHRUNG.md`: Reiter Leitfaden · Unterwegs · Berufe · Team, Sc
 - Frame-Template-Kinder (z. B. `.Inset`) nie voraussetzen; eigene Frames bauen.
 
 ## Konventionen
-- Dateikopf: `local ADDON, ns = ...`. Nur ein Global: `Goldweaver`.
+- Dateikopf: `local ADDON, ns = ...`. Nur ein Global: `Goldweaver` (einzige Ausnahme: die vom Spiel vorgegebenen Tastenbelegungs-Texte `BINDING_HEADER_GOLDWEAVER`/`BINDING_NAME_GOLDWEAVER_*`).
 - SavedVariables: `GoldweaverDB` (Account), `GoldweaverCharDB` (Charakter). Init nur in `ADDON_LOADED`. Preise unter `GoldweaverDB.prices[marketKey][itemID]`, `marketKey` = Regelsatz + Fraktion (Fallback Realm), nie `Name-Realm` für Charaktere ohne Prüfung des Namensformats (F3).
 - Geld immer in Kupfer (Integer); Formatierung über `ns.Util.Money(copper)`.
 - Preise tragen `{copper, source, age, confidence}`; Anzeige nennt Quelle und Alter.

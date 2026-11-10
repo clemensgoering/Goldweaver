@@ -17,7 +17,7 @@ local ADDON, ns = ...
 local L = ns.L
 
 ns.INTERFACE = 16001
-local SCHEMA = 5
+local SCHEMA = 6
 
 local DEFAULTS = {
   schema = SCHEMA,
@@ -30,6 +30,7 @@ local DEFAULTS = {
   checks = {},       -- automatic acceptance checks                                                  (Modules/Checks.lua)
   contacts = {},     -- visited trainers and merchants                                               (Modules/Contacts.lua)
   vendors = {},      -- [itemID] = { buy, npc, limited, teaches, when }                              (Modules/Contacts.lua)
+  costs = {},        -- [itemID] = { unit, qty, when } what the account paid (merchant, AH)          (Modules/Ledger.lua)
   probe = {},        -- raw API probe results                                                        (Core/Probe.lua)
   debug = { errors = {}, log = {} },
 }
@@ -95,6 +96,10 @@ local MIGRATIONS = {
         if inv.incoming ~= nil and type(inv.incoming) ~= "table" then inv.incoming = nil end
       end
     end
+  end,
+  [6] = function(db)
+    -- 5 -> 6: new account table "costs" (purchase prices for the break-even line); the defaults add it empty.
+    if db.costs ~= nil and type(db.costs) ~= "table" then db.costs = nil end
   end,
 }
 

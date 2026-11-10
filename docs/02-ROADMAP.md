@@ -170,7 +170,9 @@ Verglichen mit den Forever-Addons der Kategorie auf CurseForge: Mastercraft (342
 
 **Größte Lücke:** B2. Die Engine ist berufsneutral, aber nur Schneiderei und Verzauberkunst haben Profile (Ränge, Lehrer, Startpfade). Alle Konkurrenten mit Leitfäden decken zehn bis zwölf Berufe ab. Ohne Profil fehlen beim Beruf Rang-Hinweise und Lehrer im Leitfaden.
 
-Vorgeschlagene Reihenfolge: B2 (Profile, zuerst die Sammelberufe Kräuterkunde/Bergbau/Kürschnerei, weil sie die Kette Main→Twink speisen), dann B15, B16, B17 (klein, stärken die Kette direkt), dann B18, B22, danach B19–B21.
+**Stand 10.11.2026:** B2 und B15–B24 umgesetzt (siehe CHANGELOG). Offen: Profildaten im Spiel bestätigen (Lehrernamen, Pfade, Mengen; viele als `untested` markiert), GatherMate2-Schnittstelle auf Forever prüfen, Kaufmenge bei `BuyMerchantItem` mit Bündeln prüfen.
+
+Vorgeschlagene Reihenfolge (erledigt): B2 (Profile, zuerst die Sammelberufe Kräuterkunde/Bergbau/Kürschnerei, weil sie die Kette Main→Twink speisen), dann B15, B16, B17 (klein, stärken die Kette direkt), dann B18, B22, danach B19–B21.
 
 ## Parallele Sessions: Spielregeln
 

@@ -104,8 +104,19 @@ local function showSuggestion(sellFrame, itemLocation)
     helper:Show()
     return
   end
-  helperText:SetText((L["Goldweaver: suggestion %s each · undercuts %s (%s, %s) · deposit %s · proceeds after cut %s"]):format(
-    ns.Util.Money(s.unitPrice), ns.Util.Money(s.market), s.source, ageText(s.age), s.deposit and ns.Util.Money(s.deposit) or "?", ns.Util.Money(s.net)))
+  local text = (L["Goldweaver: suggestion %s each · undercuts %s (%s, %s) · deposit %s · proceeds after cut %s"]):format(
+    ns.Util.Money(s.unitPrice), ns.Util.Money(s.market), s.source, ageText(s.age), s.deposit and ns.Util.Money(s.deposit) or "?", ns.Util.Money(s.net))
+  -- B23: break-even from the own purchase or craft cost
+  local breakEven = ns.Ledger.BreakEven(itemID, quantity, s.deposit)
+  helperText:SetTextColor(0.83, 0.66, 0.31)
+  if breakEven then
+    if s.unitPrice < breakEven then
+      text = text .. " · " .. (L["|cffff6040below break-even %s|r"]):format(ns.Util.Money(breakEven))
+    else
+      text = text .. " · " .. (L["break-even %s"]):format(ns.Util.Money(breakEven))
+    end
+  end
+  helperText:SetText(text)
   helper:Show()
   local filled = false
   if ns.db.settings.autofillPrice ~= false and sellFrame.PriceInput and sellFrame.PriceInput.SetAmount then
@@ -119,7 +130,7 @@ local function hookSellFrames()
   if not helper then
     helper = CreateFrame("Frame", "GoldweaverAHHelper", AuctionHouseFrame)
     helper:SetSize(700, 20)
-    helper:SetPoint("TOP", AuctionHouseFrame, "BOTTOM", 0, -2)
+    helper:SetPoint("TOP", AuctionHouseFrame, "BOTTOM", 0, -32) -- below the tabs (Blizzard left, ours right)
     helperText = helper:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     helperText:SetPoint("CENTER")
     helperText:SetTextColor(0.83, 0.66, 0.31)
@@ -136,6 +147,130 @@ local function hookSellFrames()
   end
 end
 
+-- Shopping list (B19) ------------------------------------------------------------------------
+-- Two tabs under the auction house: the action tab walks one material at a time through three clicks
+-- (search -> buy -> confirm) and the skip tab moves to the next material. A price rise of more than 15 % between
+-- search and purchase stops the purchase. Only commodities (stackable materials) are bought.
+local shop = { index = 1, state = "idle" }
+local shopTabs
+local PRICE_JUMP = 1.15
+
+local function shopList()
+  local list = {}
+  for _, row in ipairs(ns.Coop.Shopping()) do
+    if row.source ~= "vendor" and row.missing > 0 then list[#list + 1] = row end
+  end
+  -- what cannot be gathered by the team first
+  table.sort(list, function(a, b)
+    local ae, be = a.source == "elsewhere" and 0 or 1, b.source == "elsewhere" and 0 or 1
+    if ae ~= be then return ae < be end
+    return a.missing > b.missing
+  end)
+  return list
+end
+
+-- Cheapest cost for qty units from the current commodity results (nil when not enough is offered).
+local function quote(itemID, qty)
+  if not (C_AuctionHouse.GetNumCommoditySearchResults and C_AuctionHouse.GetCommoditySearchResultInfo) then return nil end
+  local total, left = 0, qty
+  for i = 1, C_AuctionHouse.GetNumCommoditySearchResults(itemID) or 0 do
+    local r = C_AuctionHouse.GetCommoditySearchResultInfo(itemID, i)
+    if r and r.unitPrice and r.quantity and not ns.Secret.Any(r.unitPrice, r.quantity) then
+      local take = math.min(left, r.quantity)
+      total, left = total + take * r.unitPrice, left - take
+      if left <= 0 then return total end
+    end
+  end
+  return nil
+end
+
+local refreshShop
+local function ready()
+  return C_AuctionHouse.IsThrottledMessageSystemReady == nil or C_AuctionHouse.IsThrottledMessageSystemReady()
+end
+
+refreshShop = function()
+  if not (shopTabs and AuctionHouseFrame and AuctionHouseFrame:IsShown()) then return end
+  local list = shopList()
+  if #list == 0 then shopTabs[1]:Clear(); shopTabs[2]:Clear(); return end
+  if shop.index > #list then shop.index = 1 end
+  local row = list[shop.index]
+  local name = ns.UI.ItemName(row.item)
+  if shop.item ~= row.item then shop.item, shop.state, shop.qty = row.item, "idle", row.missing end
+  local qty = shop.qty
+  local tip = (L["Shopping list %d/%d: %d × %s for %s's plan."]):format(shop.index, #list, qty, name, row.forRec and (row.forRec.firstName or row.forRec.name) or "?")
+  if shop.state == "idle" then
+    shopTabs[1]:Set((L["Search %s"]):format(name), tip, function()
+      if not ready() then return ns.Print(L["Auction house is busy, try again in a moment."]) end
+      local key = C_AuctionHouse.MakeItemKey and C_AuctionHouse.MakeItemKey(row.item)
+      local sorts = (Enum and Enum.AuctionHouseSortOrder) and { { sortOrder = Enum.AuctionHouseSortOrder.Price, reverseSort = false } } or {}
+      if key and C_AuctionHouse.SendSearchQuery then C_AuctionHouse.SendSearchQuery(key, sorts, true) end
+      shop.state = "searched"
+      C_Timer.After(1, refreshShop)
+    end)
+  elseif shop.state == "searched" then
+    local total = quote(row.item, qty)
+    if not total then
+      shopTabs[1]:Set((L["%s: not enough offered"]):format(name), tip, function() shop.state = "idle"; refreshShop() end, true)
+    else
+      shopTabs[1]:Set((L["Buy %d × %s ≈ %s"]):format(qty, name, ns.Util.Money(total)), tip, function()
+        if not ready() then return ns.Print(L["Auction house is busy, try again in a moment."]) end
+        shop.expectTotal = total
+        if C_AuctionHouse.StartCommoditiesPurchase then C_AuctionHouse.StartCommoditiesPurchase(row.item, qty) end
+        shop.state = "starting"
+        refreshShop()
+      end, (GetMoney and GetMoney() or 0) >= total)
+    end
+  elseif shop.state == "starting" then
+    shopTabs[1]:Set(L["Waiting for the price…"], tip, nil, false)
+  elseif shop.state == "confirm" then
+    shopTabs[1]:Set((L["Confirm %d × %s for %s"]):format(qty, name, ns.Util.Money(shop.total)), tip, function()
+      if C_AuctionHouse.ConfirmCommoditiesPurchase then C_AuctionHouse.ConfirmCommoditiesPurchase(row.item, qty) end
+      shop.state = "buying"
+      refreshShop()
+    end)
+  elseif shop.state == "jump" then
+    shopTabs[1]:Set((L["Price rose to %s, cancel"]):format(ns.Util.Money(shop.total)), tip, function()
+      if C_AuctionHouse.CancelCommoditiesPurchase then pcall(C_AuctionHouse.CancelCommoditiesPurchase) end
+      shop.state = "idle"
+      refreshShop()
+    end)
+  elseif shop.state == "buying" then
+    shopTabs[1]:Set(L["Buying…"], tip, nil, false)
+  end
+  if #list > 1 then
+    shopTabs[2]:Set((L["Next (%d/%d)"]):format(shop.index, #list), L["Skip to the next material on the list."], function()
+      if shop.state == "confirm" or shop.state == "jump" then
+        if C_AuctionHouse.CancelCommoditiesPurchase then pcall(C_AuctionHouse.CancelCommoditiesPurchase) end
+      end
+      shop.index, shop.item = shop.index % #list + 1, nil
+      refreshShop()
+    end)
+  else
+    shopTabs[2]:Clear()
+  end
+end
+Auction.RefreshShopping = refreshShop
+
+local function onPriceUpdated(_, unitPrice, totalPrice)
+  if shop.state ~= "starting" or ns.Secret.Any(unitPrice, totalPrice) then return end
+  shop.total = totalPrice
+  if shop.expectTotal and totalPrice and totalPrice > shop.expectTotal * PRICE_JUMP then shop.state = "jump" else shop.state = "confirm" end
+  refreshShop()
+end
+
+local function onPurchaseDone(ok)
+  if shop.state ~= "buying" then return end
+  if ok then
+    if ns.Ledger then ns.Ledger.RecordPurchase(shop.item, shop.qty, shop.total or 0) end
+    if ns.Checks then ns.Checks.Pass("ahBuy", ("%d × %s"):format(shop.qty or 0, tostring(shop.item))) end
+    shop.item = nil
+  else
+    shop.state = "idle"
+  end
+  C_Timer.After(0.5, refreshShop)
+end
+
 ns:RegisterModule("Auction", {
   SelfTest = function()
     local hooked = Auction.hooked and (Auction.hooked.CommoditiesSellFrame or Auction.hooked.ItemSellFrame)
@@ -148,11 +283,25 @@ ns:RegisterModule("Auction", {
   end,
   Init = function()
     if not C_AuctionHouse then return end
-    ns.Events:On("COMMODITY_SEARCH_RESULTS_UPDATED", function(_, itemID) if itemID then pcall(observeCommodity, itemID) end end)
+    ns.Events:On("COMMODITY_SEARCH_RESULTS_UPDATED", function(_, itemID)
+      if itemID then pcall(observeCommodity, itemID) end
+      if shop.state == "searched" and itemID == shop.item then pcall(refreshShop) end
+    end)
     ns.Events:On("ITEM_SEARCH_RESULTS_UPDATED", function(_, itemKey) pcall(observeItem, itemKey) end)
     -- Mainline name (verified: "BROWSE_SEARCH_RESULTS_UPDATED" does not exist on Forever 1.60.1)
     ns.Events:On("AUCTION_HOUSE_BROWSE_RESULTS_UPDATED", function() pcall(observeBrowse) end)
-    ns.Events:On("AUCTION_HOUSE_SHOW", function() C_Timer.After(0.5, function() pcall(hookSellFrames) end) end)
+    ns.Events:On("AUCTION_HOUSE_SHOW", function()
+      C_Timer.After(0.5, function()
+        pcall(hookSellFrames)
+        if not shopTabs and AuctionHouseFrame then shopTabs = ns.UI.FrameTabs(AuctionHouseFrame, 2) end
+        shop.index, shop.item = 1, nil
+        pcall(refreshShop)
+      end)
+    end)
+    ns.Events:On("COMMODITY_PRICE_UPDATED", onPriceUpdated, "Auction")
+    ns.Events:On("COMMODITY_PURCHASE_SUCCEEDED", function() onPurchaseDone(true) end, "Auction")
+    ns.Events:On("COMMODITY_PURCHASE_FAILED", function() onPurchaseDone(false) end, "Auction")
+    ns.Events:On("AUCTION_HOUSE_CLOSED", function() shop.state, shop.item = "idle", nil end, "Auction")
     ns.Events:On("ADDON_LOADED", function(_, name) if name == "Blizzard_AuctionHouseUI" then C_Timer.After(0.5, function() pcall(hookSellFrames) end) end end)
   end,
 })

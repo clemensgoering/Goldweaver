@@ -65,6 +65,48 @@ function Ledger.ScanInbox()
 end
 
 -- Totals for the last `days` days: { sales, count, deposits, cut }
+-- Purchase prices (B23): what the account paid per unit, a running average that favours recent buys.
+-- GoldweaverDB.costs[itemID] = { unit, qty, when }
+function Ledger.RecordPurchase(itemID, qty, totalCopper)
+  if not (itemID and qty and qty > 0 and totalCopper and totalCopper >= 0) then return end
+  ns.db.costs = ns.db.costs or {}
+  local c = ns.db.costs[itemID] or { unit = 0, qty = 0 }
+  local weight = math.min(c.qty, 200)
+  c.unit = math.floor((c.unit * weight + totalCopper) / (weight + qty) + 0.5)
+  c.qty = weight + qty
+  c.when = time()
+  ns.db.costs[itemID] = c
+end
+
+-- Cost basis per unit: own purchase price, else the material cost of crafting it (cheapest known recipe).
+-- Returns copper, source ("bought" | "crafted") or nil.
+function Ledger.UnitCost(itemID)
+  local c = ns.db.costs and ns.db.costs[itemID]
+  if c and c.unit and c.unit > 0 then return c.unit, "bought" end
+  local best
+  for _, book in pairs(ns.db.recipes or {}) do
+    for _, r in ipairs(book.list or {}) do
+      if r.outputItemID == itemID then
+        local ok, cost, coverage = pcall(ns.Planner.CraftCost, r)
+        if ok and cost and (coverage == nil or coverage >= 1) then
+          local per = cost / math.max(1, ((r.qtyMin or 1) + (r.qtyMax or 1)) / 2)
+          if not best or per < best then best = per end
+        end
+      end
+    end
+  end
+  if best then return math.floor(best + 0.5), "crafted" end
+  return nil
+end
+
+-- Lowest unit price that loses nothing after the AH cut and the deposit share.
+function Ledger.BreakEven(itemID, quantity, deposit)
+  local unit = Ledger.UnitCost(itemID)
+  if not unit then return nil end
+  local cut = ns.db.settings.ahCut or 0.05
+  return math.ceil((unit + (deposit or 0) / math.max(1, quantity or 1)) / (1 - cut))
+end
+
 function Ledger.Totals(days)
   local l = store()
   local since = time() - (days or 1) * DAY

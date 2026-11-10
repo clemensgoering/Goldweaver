@@ -42,6 +42,16 @@ Professions\Registry.lua
 Professions\Adapter.lua
 Professions\Tailoring.lua
 Professions\Enchanting.lua
+Professions\Alchemy.lua
+Professions\Blacksmithing.lua
+Professions\Engineering.lua
+Professions\Leatherworking.lua
+Professions\Herbalism.lua
+Professions\Mining.lua
+Professions\Skinning.lua
+Professions\Fishing.lua
+Professions\Cooking.lua
+Professions\FirstAid.lua
 
 # UI: kit first, tabs in display order (Leitfaden, Unterwegs, Berufe, Team)
 UI\Kit.lua
@@ -63,9 +73,12 @@ Modules\Autopilot.lua
 Modules\Advisor.lua
 Modules\HUD.lua
 Modules\Mail.lua
+Modules\Merchant.lua
+Modules\Bank.lua
 Modules\Destroy.lua
 Modules\Planner.lua
 Modules\CraftProfit.lua
+Modules\Trainer.lua
 Modules\Compare.lua
 Modules\Auction.lua
 Modules\Ledger.lua

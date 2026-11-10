@@ -52,15 +52,23 @@ local function build(parent)
   lang:SetValue(ns.db.settings.language or "auto")
   reload:SetPoint("LEFT", lang, "RIGHT", 10, 0)
   reload:Hide()
+  -- window size (B22)
+  local scaleLabel = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  scaleLabel:SetPoint("TOPLEFT", 20, -100)
+  scaleLabel:SetText(ns.L["Window size"])
+  local scales = { { 0.8, "80 %" }, { 0.9, "90 %" }, { 1, "100 %" }, { 1.1, "110 %" }, { 1.2, "120 %" }, { 1.3, "130 %" } }
+  local scale = ns.UI.Dropdown(f, 120, scales, function(v) ns.db.settings.windowScale = v ~= 1 and v or nil; ns.UI.ApplyScale() end)
+  scale:SetPoint("LEFT", scaleLabel, "LEFT", 150, 0)
+  scale:SetValue(ns.db.settings.windowScale or 1)
 
   f.checks = {}
   for i, d in ipairs(defs()) do
     local c = ns.UI.Check(f, d[1], d[2](), d[3])
-    c:SetPoint("TOPLEFT", 16, -100 - (i - 1) * 30)
+    c:SetPoint("TOPLEFT", 16, -134 - (i - 1) * 30)
     f.checks[i] = { check = c, get = d[2] }
   end
   local calc = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  calc:SetPoint("TOPLEFT", 16, -100 - #f.checks * 30 - 12)
+  calc:SetPoint("TOPLEFT", 16, -134 - #f.checks * 30 - 12)
   calc:SetJustifyH("LEFT")
   f.calc = calc
   f:SetScript("OnShow", function(self)
@@ -80,7 +88,7 @@ function Settings_.Open()
   -- fallback: standalone window
   if not panel then
     panel = ns.UI.SafeCreate("Frame", UIParent, { "BasicFrameTemplateWithInset", "BackdropTemplate" }, "GoldweaverSettingsWindow")
-    panel:SetSize(520, 480); panel:SetPoint("CENTER"); panel:SetFrameStrata("DIALOG")
+    panel:SetSize(520, 520); panel:SetPoint("CENTER"); panel:SetFrameStrata("DIALOG")
     panel:SetMovable(true); panel:EnableMouse(true); panel:RegisterForDrag("LeftButton")
     panel:SetScript("OnDragStart", panel.StartMoving); panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
     tinsert(UISpecialFrames, "GoldweaverSettingsWindow")

@@ -150,8 +150,14 @@ UI.RegisterTab("berufe", "Professions", function(frame)
         local text = ("%s: %s%s"):format(label, trainer, rank.trainerSeen and (" (" .. L["seen yourself"] .. ")") or "")
         lines[2] = rank.canTrain and { text, 0.6, 1, 0.6 } or { text, 0.8, 0.8, 0.8 }
       else lines[2] = { profile and profile.notes and profile.notes[1] and L[profile.notes[1]] or "", 0.7, 0.7, 0.7 } end
-      lines[3] = book and { (L["Recipes: %d of %d learned · read %s"]):format(p.learnedCount or 0, p.recipeCount or #book.list, ago(p.when)), 0.6, 0.6, 0.6 }
-        or { L["Not read yet: 'Load recipes' (otherwise happens automatically at the next login)."], 1, 0.6, 0.2 }
+      -- gathering professions have no recipe book: the zone band for the current skill instead (profile.zones)
+      local band = profile and ns.Professions.ZoneFor(profile, p.rank or 0)
+      if band then
+        lines[3] = { (L["Level in: %s (%s)"]):format(L[band.zone], L[band.note or ""]), 0.6, 0.85, 1 }
+      else
+        lines[3] = book and { (L["Recipes: %d of %d learned · read %s"]):format(p.learnedCount or 0, p.recipeCount or #book.list, ago(p.when)), 0.6, 0.6, 0.6 }
+          or { L["Not read yet: 'Load recipes' (otherwise happens automatically at the next login)."], 1, 0.6, 0.2 }
+      end
     end
     statusLines:Set(lines)
     statusTitle:SetText((L["STATUS · %s %d / %d"]):format((p and p.name or ""):upper(), p and p.rank or 0, p and p.maxRank or 0))

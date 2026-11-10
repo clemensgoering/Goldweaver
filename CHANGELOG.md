@@ -1,6 +1,19 @@
 # Changelog
 
 ## Unreleased
+- Wettbewerbsvergleich umgesetzt (B2, B15–B24, `docs/02-ROADMAP.md`):
+  - Berufsprofile für alle zwölf Berufe (neu: Alchemie, Schmiedekunst, Ingenieurskunst, Lederverarbeitung, Kräuterkunde, Bergbau, Kürschnerei, Angeln, Kochen, Erste Hilfe) mit Rang-Lehrern je Fraktion, Startpfaden und Hinweisen; Sammelberufe mit Zonen je Skill-Abschnitt („Leveln in: …“ im Berufe-Reiter). Daten aus Classic-Leitfäden, auf Forever teils ungetestet.
+  - Händler-Reiter: „Kaufen 12 × Grobes Garn“ (nur die Planlücke, beim Main auch für den Twink), „Verkaufen 1/7: …“ (ein Plunder-Item pro Klick statt „Alles verkaufen“), „Reparieren“.
+  - Bank-Reiter: „Holen“ (Stapel, die der Plan braucht; beim Main was der Twink braucht, zum Mitschicken) und „Einlagern“ (Material, das gerade niemand braucht).
+  - Auktionshaus-Reiter: Einkaufsliste in drei Klicks je Material (Suchen, Kaufen, Bestätigen), Abbruch bei Preissprung über 15 %, „Nächstes“.
+  - Lehrer-Karte: nächster Rang und Rezepte mit Gewinn pro Herstellung und Amortisation der Lernkosten, „Lernen“ je Zeile.
+  - Gewinnmarken an jeder Rezeptzeile in Blizzards Berufsfenster (aus, wenn CraftProfit oder ForeverRecipes das schon tun).
+  - Einkaufspreise werden gemerkt (Händler, Auktionshaus); beim Posten zeigt die Vorschlagszeile die Verlustgrenze und warnt darunter (Schema 6).
+  - Sitzungsbilanz: Gold pro Stunde im Kopfband, „für Grel: N Items · +P Skill“; im Seitenpanel „Diese Sitzung“.
+  - Tooltip-Bestand je Charakter mit Bank und Post („Grel 12 (Bank 4, Post 6)“).
+  - GatherMate2 optional: Fundorte in der Zone und „Nächster Fundort“ als Wegpunkt zu dem, was der Twink braucht.
+  - Start über das Addon-Menü an der Minimap, Tastenbelegung (Optionen → Tastaturbelegung → AddOns), Fenstergröße 80–130 % in den Einstellungen.
+  - Gemeinsamer Baustein `UI.FrameTabs` für Aktionsreiter unter Blizzard-Fenstern; der Simulator klickt alle neuen Reiter durch (Reparieren, Kaufen, Lernen, Einkauf im Auktionshaus).
 - Spieltest 10.11.: Post an eigene Charaktere zählt jetzt immer als „unterwegs“, auch wenn sie mit Blizzards eigenem Senden-Knopf oder vor dem Update verschickt wurde (Erfassung über `SendMail`-Hook statt nur über unseren Knopf); beim Twink zeigt die Teamansicht „Neue Post“, solange das Spiel neue Post meldet, der Briefkasten aber noch nicht geöffnet wurde. Briefkasten-Knopf als kompakter Reiter unten rechts am Postfenster (gegenüber Posteingang/Senden), Breite passt sich dem Text an. Simulator prüft, dass verschickte Post beim Empfänger als unterwegs erscheint.
 - Teamansicht im Leitfaden (Entwurf umgesetzt): Main und Twink nebeneinander mit Berufsbalken und Post-Pipeline, gemeinsame Sammelliste aus den Skill-Plänen des Verarbeiters mit Fortschritt (Taschen des Mains, Post, Taschen des Twinks), Herkunft (hier sammelbar, Main kann es sammeln, Händler) und gedeckten Skillpunkten; Seitenpanel als Sammelauftrag für den Twink; kurze Meldung beim Sammeln („+3 Leinenstoff für Grel · 35 / 60“, abschaltbar). Neues Modul `Modules/Coop.lua`; Post unterwegs und Briefkasteninhalt werden mitgezählt (auch in Planer und Bedarf). Schema 5 (additiv, mit Test), neue Selbstprüfung `coopGather`, `tools/tests/coop_test.lua`.
 - Neuer Look „Forever modern“: Kopfband mit Logo, Reiter oben mit Symbol (gleiche vier Reiter), Karten mit 1-px-Rahmen und goldenen Eckakzenten, goldene Knöpfe mit Hover-Schein, Schalter statt Häkchen, flache Skill-Balken; Seitenpanel, HUD-Zeile, Entzauber-Fenster und Rollenabfrage im selben Stil. Umsetzung zentral in `UI/Kit.lua` (`UI.Skin`), nur Farbtexturen, keine Blizzard-Templates mehr für Fenster, Reiter, Knöpfe und Insets. Abläufe und Inhalte unverändert.

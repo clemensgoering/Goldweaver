@@ -99,7 +99,14 @@ function Tooltip.Lines(itemID, quantity, isBound)
   if total > (br.bags or 0) then
     local parts = { (L["Bags %d"]):format(br.bags or 0) }
     if (br.bank or 0) > 0 then parts[#parts + 1] = (L["Bank %d"]):format(br.bank) end
-    for _, a in ipairs(br.alts or {}) do parts[#parts + 1] = ("%s %d"):format(a.name:match("^(%S+)") or a.name, a.count) end
+    if (br.mail or 0) > 0 then parts[#parts + 1] = (L["Mail %d"]):format(br.mail) end
+    -- other characters with where it is (B18): "Grel 12 (bank 4, mail 6)"
+    for _, a in ipairs(br.alts or {}) do
+      local where = {}
+      if (a.bank or 0) > 0 then where[#where + 1] = (L["bank %d"]):format(a.bank) end
+      if (a.mail or 0) > 0 then where[#where + 1] = (L["mail %d"]):format(a.mail) end
+      parts[#parts + 1] = ("%s %d%s"):format(a.name:match("^(%S+)") or a.name, a.count, #where > 0 and (" (" .. table.concat(where, ", ") .. ")") or "")
+    end
     lines[#lines + 1] = { text = (L["  Stock: %s"]):format(table.concat(parts, " · ")), color = { 0.6, 0.6, 0.6 }, stock = true }
   end
   return lines

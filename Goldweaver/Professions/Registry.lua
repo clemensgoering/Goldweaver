@@ -4,6 +4,8 @@
 --   ranks = Registry.DEFAULT_RANKS (or own), crateCategories = { "textiles" }, vendorReagents = { itemID, ... },
 --   destroy = { spellName = "Disenchant" } (optional), tools = { "Runed Copper Rod" } (optional),
 --   seedPath = { { from = 1, to = 30, recipe = "Bolt of Linen Cloth", crafts = 30, mats = { { item = 2589, qty = 60 } } }, ... },
+--   zones = { { from, to, zone = "English zone list", note = "what grows there" } } (gathering professions, optional),
+--   trainers = { Journeyman = { Horde = "...", Alliance = "..." } | { both = "..." }, Expert = ..., Artisan = ... },
 --   notes = { "..." }
 -- }
 local ADDON, ns = ...
@@ -47,6 +49,14 @@ function Registry:All()
   for _, p in pairs(self.profiles) do list[#list + 1] = p end
   table.sort(list, function(a, b) return a.key < b.key end)
   return list
+end
+
+-- Zone band for a skill value (gathering profiles): { from, to, zone, note } or nil.
+function Registry.ZoneFor(profile, skill)
+  for _, z in ipairs(profile.zones or {}) do
+    if skill >= (z.from or 0) and skill < (z.to or 0) then return z end
+  end
+  return nil
 end
 
 -- Rank entry for a skill value (the rank the player is in), and the next rank to train for.

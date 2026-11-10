@@ -40,12 +40,19 @@ Stand: 08.11.2026 (nach dem Architektur-Durchgang). Jede Session, die eine Schni
 | `ns.CraftProfit` | `Top(limit)` |
 | `ns.Compare` | `Rows()` |
 | `ns.Auction` | `Suggest(itemID, qty, duration?) → {unitPrice, market, source, age, deposit, net}`, `SearchFor(itemID)` |
-| `ns.Ledger` | `RecordInvoice(index)`, `Totals(days)`, `TrackGold()`, `GoldDelta(day?)`, `SessionDelta()` |
+| `ns.Ledger` | `RecordInvoice(index)`, `Totals(days)`, `TrackGold()`, `GoldDelta(day?)`, `SessionDelta()`, `RecordPurchase(itemID, qty, totalCopper)`, `UnitCost(itemID) → copper, "bought"|"crafted"`, `BreakEven(itemID, qty, deposit)`; Daten `GoldweaverDB.costs` (Schema 6) |
 | `ns.Dashboard` | `Recommendations(limit) → {{text, value, action, color}}` |
 | `ns.Steps` | `Build(limit) → {{id, icon, item, category, title, detail, value, actionLabel, action}}`, `RegisterSource(name, priority, fn(add, ctx))` ★, `ICON` |
 | `ns.Field` | `CurrentZone() → zoneID, rawMapID, name`, `Analyze(zoneID?, rec?) → report`, `Route()` (RestedXP, lesend), `BestZones(rec?)`, `RecordGather(kind, items, zoneID)`, `SetWaypoint(mapID, x, y, label)` |
 | `ns.Demand` | `Get() → {[itemID] = {qty, by, via}}`, `For(itemID)`, `Invalidate()` |
-| `ns.Coop` | `Partner(rec?)`, `Team() → gatherer, crafter`, `Needs() → {gatherer, crafter, rows, plans, points, fromGatherer, fromMail}` (row: `item, need, have, gatherer, mail, crafter, here, source, via`), `RecordSent(rec, items)`, `ScanInbox()`, `Invalidate()`; Daten `chars[name].inventory.mail` und `.incoming` (Schema 5) |
+| `ns.Coop` | `Partner(rec?)`, `Team() → gatherer, crafter`, `Needs() → {gatherer, crafter, rows, plans, points, fromGatherer, fromMail}` (row: `item, need, have, gatherer, mail, crafter, here, source, via`), `RecordSent(rec, items)`, `ScanInbox()`, `Invalidate()`, `Shopping() → {item, need, have, missing, source, forRec}` (Teamliste oder eigener Plan), `session`, `SessionLine()`; Daten `chars[name].inventory.mail` und `.incoming` (Schema 5) |
+| `ns.Merchant` | `BuyList()`, `SellList()`, `Refresh()`; Reiter unter dem Händlerfenster: Reparieren, Verkaufen (1 Item pro Klick), Kaufen (Planlücke) |
+| `ns.Bank` | `Wanted(itemID)`, `TakeList()`, `StoreList()`, `Refresh()`; Reiter unter dem Bankfenster: Holen, Einlagern (1 Stapel pro Klick) |
+| `ns.Trainer` | `Rows() → {index, name, cost, kind, profit?, payback?}`, `Refresh()`; Karte neben dem Lehrerfenster mit Lernen-Knopf je Zeile |
+| `ns.CraftProfit` | `Top(limit)`, `Of(recipe) → Gewinn pro Herstellung nach AH-Anteil`; Gewinnmarken in Blizzards Rezeptliste |
+| `ns.Field` (GatherMate2) | `HasGatherMate()`, `GatherMateNodes(mapID, kind?)`, `NearestNeededNode() → label` (Wegpunkt) |
+| `ns.UI` (Ergänzung) | `FrameTabs(frame, n)` (Aktionsreiter unter Blizzard-Fenstern, `tab:Set(label, tip, onClick, enabled)`/`Clear()`), `ProgressRows`, `SetHeaderInfo`, `ApplyScale()` |
+| `ns.Professions` (Ergänzung) | `ZoneFor(profile, skill) → {from, to, zone, note}`; Profile für alle zwölf Berufe |
 | `ns.Autopilot` | `GuessRole(rec, market)`, `ReadQueue(rec?)`, `StartReading()`, `QuickHealth()`, `status` |
 | `ns.Panel` | `Refresh()`, `Toggle()`, `ShouldShow()` |
 | `ns.Settings` | `Open()` |
