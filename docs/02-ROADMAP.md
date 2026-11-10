@@ -147,6 +147,31 @@ Noch nicht automatisierbar (brauchen Entwicklung, nicht Spielzeit): B2 Profile, 
 | B13 | Kistenbündel und Favor-Sätze aus Tooltips bestätigen (F7), Einzahlungsformel aus Rechnung (F6), Post-Empfängerformat (F10) | Spielzeit | klein |
 | B14 | Audit-Wiederholung für Post/Zerlegen/AH-Code (`07-AUDIT.md` Abschnitt 5) | Abnahme | klein |
 
+## Wettbewerbsvergleich (10.11.2026)
+
+Verglichen mit den Forever-Addons der Kategorie auf CurseForge: Mastercraft (342K Downloads, größter Konkurrent, sehr breit), CraftProfit Forever (41K), ForeverArtisan (31K, proprietär, nur Funktionsliste angesehen), Forever Profession Master (11K), ForeverRecipes, Forever Alt Manager, AuctionHouse Forever / auxForever / TheWoWDB. Nur Funktionsumfang verglichen, kein Code oder Text übernommen.
+
+**Alleinstellung von Goldweaver:** Main→Twink als eine Kette (Sammelliste aus dem Plan des Twinks, gedeckte Skillpunkte, Sammelauftrag unterwegs, Post unterwegs gezählt), Beute-Entscheidung inklusive „an den Twink senden“, „Welcher Beruf lohnt sich?“, Selbstprüfung und Diagnose. Mastercraft hat „Send to alt“ und geteilte Materiallisten, aber keine durchgerechnete Kette.
+
+**Bewusst nicht** (Projektregeln): Handelschat-Kundenmeldung und Handelsbrett (keine Chatfunktionen), Gilden-Sync (kein Netzwerk), Abklingzeiten über Charaktere (keine Cooldown-Daten), Auto-Verkauf/-Reparatur und „Alles kaufen“ (eine Aktion pro Klick), Angel-Leiste mit Ausrüstungswechsel (außerhalb des Zwecks).
+
+| # | Punkt | Vorbild | Wert | Größe |
+|---|---|---|---|---|
+| B15 | Händler: fehlende Händlerreagenzien des Plans (Garn, Phiolen, Farbe) als Knopf „Kaufen 12 × Grobes Garn“ am offenen Händler, ein Kauf pro Klick, nur Restmenge, Bündelgrößen beachten; beim Main auch für den Twink | Profession Master, Mastercraft | hoch | klein |
+| B16 | Bank des Twinks: Knopf „Aus der Bank holen“ für Planmaterial und „Einlagern“ für Sammelgut, ein Stapel pro Klick | Mastercraft | hoch | klein |
+| B17 | Sitzungsbilanz „Unterwegs“: gesammelte Items, Wert, Skillpunkte für den Twink, Gold pro Stunde (im Kopfband und Seitenpanel) | Mastercraft Farming-Tracker | hoch | klein |
+| B18 | Tooltip „Bei deinen Charakteren: Grel 12 (Bank), Post 6“ aus den vorhandenen Schnappschüssen | Alt Manager | mittel | klein |
+| B19 | Auktionshaus: Einkaufsliste des Plans abarbeiten, je Material Suche und ein Kauf pro Klick mit Bestätigung, Abbruch bei Preissprung | Profession Master, Mastercraft | hoch | mittel |
+| B20 | Lehrerfenster: Rezepte markieren, die der Plan braucht, mit Gewinn und Amortisation der Lernkosten (erweitert B6) | CraftProfit, Mastercraft | mittel | mittel |
+| B21 | Sammelknoten: GatherMate2 optional lesen (Knotenzahl je Zone für „Beste Zonen“, Wegpunkt zum nächsten gebrauchten Kraut/Erz) (erweitert B4) | Mastercraft, GatherPath | mittel | mittel |
+| B22 | Startknöpfe: Addon-Compartment (TOC `AddonCompartmentFunc`), Tastenbelegung für das Fenster (`Bindings.xml`), Fenster skalierbar | Profession Master, OneForAll | mittel | klein |
+| B23 | Einkaufspreise merken und Mindestpreis beim Posten anzeigen (Break-even) | Mastercraft | mittel | klein |
+| B24 | Gewinnmarke in Blizzards Berufsfenster an jeder Rezeptzeile (wer unser Fenster nicht öffnet, sieht es trotzdem) | CraftProfit, ForeverRecipes | mittel | mittel |
+
+**Größte Lücke:** B2. Die Engine ist berufsneutral, aber nur Schneiderei und Verzauberkunst haben Profile (Ränge, Lehrer, Startpfade). Alle Konkurrenten mit Leitfäden decken zehn bis zwölf Berufe ab. Ohne Profil fehlen beim Beruf Rang-Hinweise und Lehrer im Leitfaden.
+
+Vorgeschlagene Reihenfolge: B2 (Profile, zuerst die Sammelberufe Kräuterkunde/Bergbau/Kürschnerei, weil sie die Kette Main→Twink speisen), dann B15, B16, B17 (klein, stärken die Kette direkt), dann B18, B22, danach B19–B21.
+
 ## Parallele Sessions: Spielregeln
 
 1. **Eine Session = ein oder mehrere WPs mit exklusivem Dateibesitz** laut Tabellen oben. Fremde Dateien nur lesen. Gemeinsame Schnittstellen (`ns.Price`, `ns.Graph`, `ns.Events`, `ns.Recipes`, `ns.UI`) werden in `docs/06-SCHNITTSTELLEN.md` dokumentiert, bevor zwei Sessions davon abhängen.
