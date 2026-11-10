@@ -26,7 +26,7 @@ UI.GOLD = GOLD
 UI.DIM = { 0.62, 0.57, 0.50 }
 UI.TEXT = { 0.93, 0.90, 0.85 }
 UI.MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
-local ICON = "Interface\\Icons\\INV_Misc_Coin_01"
+local ICON = UI.MEDIA .. "logo"
 
 local window, activeKey
 
@@ -881,7 +881,7 @@ local function buildHeader()
   local logo = head:CreateTexture(nil, "ARTWORK")
   logo:SetSize(36, 36)
   logo:SetPoint("TOPLEFT", 16, -13)
-  logo:SetTexture(ICON); logo:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  logo:SetTexture(ICON)
   UI.Round(head, logo, "mask_logo")
   local frame = CreateFrame("Frame", nil, head)
   frame:SetPoint("TOPLEFT", logo, "TOPLEFT", -1, 1)

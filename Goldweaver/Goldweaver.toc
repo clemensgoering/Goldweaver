@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Goldweaver
-## IconTexture: Interface\Icons\INV_Misc_Coin_01
+## IconTexture: Interface\AddOns\Goldweaver\Media\logo64
 ## Notes: Professions, mail pipeline and auction house as one decision engine: what to craft, how to level cheapest, what earns gold. Built for WoW: Forever.
 ## Notes-deDE: Berufe, Post-Pipeline und Auktionshaus als eine Entscheidungskette: was herstellen, wie am günstigsten leveln, was Gold bringt. Für WoW: Forever.
 ## Author: Clemens
