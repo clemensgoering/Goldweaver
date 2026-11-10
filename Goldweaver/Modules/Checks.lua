@@ -88,7 +88,7 @@ D("bankHelp", { group = "A", title = "Bank tabs take and store", hint = "At the 
 D("ahBuy", { group = "A", title = "Shopping list bought at the auction house", hint = "In the auction house: Search, Buy, Confirm on the gold tab." })
 D("trainerHelp", { group = "A", title = "Learned at the trainer card", hint = "At a profession trainer click Learn on the Goldweaver card." })
 D("profitTags", { group = "B", title = "Profit tags in the profession window", hint = "Open a profession; recipe rows show +/- profit." })
-D("gatherMate", { group = "B", title = "Waypoint to a GatherMate2 node", hint = "With GatherMate2: On the road tab, Nearest node." })
+D("nodeWaypoint", { group = "B", title = "Waypoint to a remembered node", hint = "Gather a herb or ore, then On the road tab: Nearest node." })
 D("mailSend", { group = "A", title = "Mail delivered to the processor (recipient format confirmed)", hint = "After attaching, click 'Send to …'." })
 D("mailOpen", { group = "A", title = "Inbox with AH mail opened (Blizzard 'Open all'), invoices recorded", hint = "After a sale, open the mailbox and click 'Open all'." })
 D("ledger", { group = "A", title = "Sale recorded from an AH invoice", hint = "Sell something at the AH, open the mail." })

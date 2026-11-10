@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Abhängigkeiten vereinfacht: keine ist Pflicht. Einstellungen zeigen nur noch Auctionator (empfohlen) und RestedXP (optional) mit Status, ohne Links (WoW kann keinen Browser öffnen). TradeSkillMaster-Preisquelle entfernt. GatherMate2 ersetzt durch eigenes Fundort-Gedächtnis: beim Sammeln von Kräutern und Erzen merkt sich Goldweaver die Stelle (höchstens 40 je Item, nahe Funde zählen einmal), „Nächster Fundort“ im Reiter Unterwegs setzt den Wegpunkt zum nächsten, das der Twink braucht. Schema 7 (additiv, mit Test). Fehler behoben: Position wurde nur mit x gelesen. Simulator prüft Fundort und Wegpunkt.
 - Einstellungen: neuer Abschnitt „Optionale Addons“ (GatherMate2, Auctionator, TradeSkillMaster, RestedXP) mit Nutzen, Status (aktiv / installiert, aber ausgeschaltet / nicht installiert) und kopierbarem Link, wenn es nicht aktiv ist; Einstellungsseite scrollt. GatherMate2 in `OptionalDeps`. Simulator prüft die drei Zustände.
 - Wettbewerbsvergleich umgesetzt (B2, B15–B24, `docs/02-ROADMAP.md`):
   - Berufsprofile für alle zwölf Berufe (neu: Alchemie, Schmiedekunst, Ingenieurskunst, Lederverarbeitung, Kräuterkunde, Bergbau, Kürschnerei, Angeln, Kochen, Erste Hilfe) mit Rang-Lehrern je Fraktion, Startpfaden und Hinweisen; Sammelberufe mit Zonen je Skill-Abschnitt („Leveln in: …“ im Berufe-Reiter). Daten aus Classic-Leitfäden, auf Forever teils ungetestet.

@@ -190,8 +190,8 @@ local function newClient(opts)
     AuctionHouseTimeLeftBand = { Short = 0, Medium = 1, Long = 2, VeryLong = 3 } }
   env.C_AddOns = { GetAddOnMetadata = function() return "@project-version@" end, GetNumAddOns = function() return 1 end,
     GetAddOnInfo = function() return "Goldweaver", nil, nil, true end,
-    IsAddOnLoaded = function(name) return (name == "Auctionator" and opts.auctionator) or (name == "TradeSkillMaster" and opts.tsm) or false end,
-    DoesAddOnExist = function(name) return name == "GatherMate2" or (name == "Auctionator" and opts.auctionator) or (name == "TradeSkillMaster" and opts.tsm) or false end }
+    IsAddOnLoaded = function(name) return (name == "Auctionator" and opts.auctionator) or (name == "RXPGuides" and opts.rxp) or false end,
+    DoesAddOnExist = function(name) return name == "Auctionator" or (name == "RXPGuides" and opts.rxp) or false end }
 
   -- character
   local char = opts.char
@@ -299,7 +299,7 @@ local function newClient(opts)
   env.C_Map = {
     GetBestMapForUnit = function() return env._mapID end,
     GetMapInfo = function(id) return MAPS[id] or { name = "Zone " .. tostring(id) } end,
-    GetPlayerMapPosition = function() return { x = 0.5, y = 0.4 } end,
+    GetPlayerMapPosition = function() return { x = 0.5, y = 0.4, GetXY = function(self) return self.x, self.y end } end,
     SetUserWaypoint = function(p) env._waypoint = p end,
   }
   env.UiMapPoint = { CreateFromCoordinates = function(id, x, y) return { id = id, x = x, y = y } end }
@@ -385,7 +385,6 @@ local function newClient(opts)
   if opts.auctionator then
     env.Auctionator = { API = { v1 = { GetAuctionPriceByItemID = function(_, id) return id == 2589 and 55 or nil end, GetAuctionAgeByItemID = function() return 0 end } } }
   end
-  if opts.tsm then env.TSM_API = { GetCustomPriceValue = function(_, key) return key == "i:7026" and 160 or nil end } end
 
   -- RestedXP (optional)
   if opts.rxp then
@@ -585,6 +584,11 @@ local function session(label, opts, savedDB)
     env._fire("UNIT_SPELLCAST_SUCCEEDED", "player", nil, 2366)
     env._loot = { 2450 }
     env._fire("LOOT_OPENED")
+    -- own node memory (B21): the herb spot is kept and "Nearest node" sets a waypoint to it
+    local zoneID = ns.Field.CurrentZone()
+    if zoneID and #ns.Field.Spots(zoneID) == 0 then fail(label .. ": herb spot not remembered") end
+    env._waypoint = nil
+    if zoneID and not (ns.Field.NearestNeededNode() and env._waypoint) then fail(label .. ": no waypoint to the remembered node") end
   end)
   s("craft via guide", function()
     local line = ns.Chars.Current().professions[197] and 197 or 165
@@ -611,7 +615,7 @@ local function session(label, opts, savedDB)
   s("settings", function()
     ns.Settings.Open()
     -- optional addons section: active / installed but off / missing
-    local want = { Auctionator = opts.auctionator and "active" or "missing", GatherMate2 = "disabled", RXPGuides = "missing" }
+    local want = { Auctionator = opts.auctionator and "active" or "disabled", RXPGuides = opts.rxp and "active" or "missing" }
     for folder, state in pairs(want) do
       local got = ns.Settings.AddonState(folder)
       if got ~= state then fail(("%s: optional addon %s shows %s, expected %s"):format(label, folder, tostring(got), state)) end
@@ -631,10 +635,6 @@ local function session(label, opts, savedDB)
     if opts.auctionator then
       local p = ns.Price.Get(2589)
       if not (p and p.source == "auctionator") then fail(label .. ": Auctionator price not used") end
-    end
-    if opts.tsm then
-      local p = ns.Price.Get(7026)
-      if not (p and p.source == "tsm") then fail(label .. ": TSM price not used") end
     end
     if not opts.rxp and ns.Field.Route() then fail(label .. ": route shown without RestedXP") end
   end)
@@ -672,7 +672,7 @@ local function deepCopy(t) if type(t) ~= "table" then return t end local o = {} 
 for _, mode in ipairs({ { name = "modern", minimal = false }, { name = "minimal", minimal = true } }) do
   -- main logs in first (fresh install), then the twink with RestedXP, then the main again on a new patch
   local db = session(mode.name .. " · Main, Neuinstallation", { minimal = mode.minimal, char = MAIN }, nil)
-  db = session(mode.name .. " · Bank, RestedXP aktiv", { minimal = mode.minimal, char = BANK, rxp = true, mapID = 1454, auctionator = true, tsm = true }, deepCopy(db))
+  db = session(mode.name .. " · Bank, RestedXP aktiv", { minimal = mode.minimal, char = BANK, rxp = true, mapID = 1454, auctionator = true }, deepCopy(db))
   session(mode.name .. " · Main, neuer Patch, Spiel blockiert", { minimal = mode.minimal, char = MAIN, interface = 16002, blockOpen = true,
     unknownEvents = { AUCTION_HOUSE_BROWSE_RESULTS_UPDATED = true } }, deepCopy(db))
   if not mode.minimal then

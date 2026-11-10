@@ -50,7 +50,7 @@ Stand: 08.11.2026 (nach dem Architektur-Durchgang). Jede Session, die eine Schni
 | `ns.Bank` | `Wanted(itemID)`, `TakeList()`, `StoreList()`, `Refresh()`; Reiter unter dem Bankfenster: Holen, Einlagern (1 Stapel pro Klick) |
 | `ns.Trainer` | `Rows() → {index, name, cost, kind, profit?, payback?}`, `Refresh()`; Karte neben dem Lehrerfenster mit Lernen-Knopf je Zeile |
 | `ns.CraftProfit` | `Top(limit)`, `Of(recipe) → Gewinn pro Herstellung nach AH-Anteil`; Gewinnmarken in Blizzards Rezeptliste |
-| `ns.Field` (GatherMate2) | `HasGatherMate()`, `GatherMateNodes(mapID, kind?)`, `NearestNeededNode() → label` (Wegpunkt) |
+| `ns.Field` (Fundorte) | `PlayerSpot() → {m, x, y}`, `Spots(zoneID, items?) → {m, x, y, item}`, `NearestNeededNode() → label` (Wegpunkt); Daten `learned.zoneGathers[zone][item].spots` (Schema 7, höchstens 40 je Item) |
 | `ns.UI` (Ergänzung) | `FrameTabs(frame, n)` (Aktionsreiter unter Blizzard-Fenstern, `tab:Set(label, tip, onClick, enabled)`/`Clear()`), `ProgressRows`, `SetHeaderInfo`, `ApplyScale()` |
 | `ns.Professions` (Ergänzung) | `ZoneFor(profile, skill) → {from, to, zone, note}`; Profile für alle zwölf Berufe |
 | `ns.Autopilot` | `GuessRole(rec, market)`, `ReadQueue(rec?)`, `StartReading()`, `QuickHealth()`, `status` |

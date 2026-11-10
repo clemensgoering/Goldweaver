@@ -61,7 +61,7 @@ local API_CHECKS = {
   "C_RestrictedActions.IsRestricted", "C_ChatInfo.InChatMessagingLockdown",
   -- optional addons
   "Auctionator.API.v1.GetAuctionPriceByItemID", "Auctionator.API.v1.GetDisenchantPriceByItemID", "Auctionator.API.v1.RegisterForDBUpdate",
-  "TSM_API.GetCustomPriceValue", "Syndicator.API.GetInventoryInfoByItemID", "GatherMate2.gmdbs",
+  "Syndicator.API.GetInventoryInfoByItemID",
 }
 
 function Probe.General()

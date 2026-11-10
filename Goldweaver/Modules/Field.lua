@@ -77,8 +77,31 @@ function Field.Route(lookahead)
   return nil
 end
 
+-- Where the player stands: { m = mapID, x, y } (x/y 0-100, one decimal) or nil.
+local function playerSpot()
+  local _, raw = Field.CurrentZone()
+  if not (raw and C_Map and C_Map.GetPlayerMapPosition) then return nil end
+  local pos = C_Map.GetPlayerMapPosition(raw, "player")
+  if not (pos and pos.GetXY) then return nil end
+  local x, y = pos:GetXY() -- both values: "pos and pos:GetXY()" would keep only x
+  if not (x and y) or ns.Secret.Any(x, y) then return nil end
+  return { m = raw, x = math.floor(x * 1000 + 0.5) / 10, y = math.floor(y * 1000 + 0.5) / 10 }
+end
+Field.PlayerSpot = playerSpot
+
+-- Own node memory (replaces GatherMate2): herb and ore finds keep where they were gathered, nearby finds count once.
+local MAX_SPOTS, NEAR = 40, 1.5
+local function addSpot(e, spot)
+  e.spots = e.spots or {}
+  for _, s in ipairs(e.spots) do
+    if s.m == spot.m and math.abs(s.x - spot.x) < NEAR and math.abs(s.y - spot.y) < NEAR then return end
+  end
+  e.spots[#e.spots + 1] = spot
+  if #e.spots > MAX_SPOTS then table.remove(e.spots, 1) end
+end
+
 -- Record what a gathering spell yielded in this zone (called on LOOT_OPENED after a gather cast).
-function Field.RecordGather(kind, items, zoneID)
+function Field.RecordGather(kind, items, zoneID, spot)
   if not zoneID then return end
   ns.db.learned.zoneGathers = ns.db.learned.zoneGathers or {}
   local z = ns.db.learned.zoneGathers[zoneID] or {}
@@ -87,6 +110,7 @@ function Field.RecordGather(kind, items, zoneID)
     local e = z[key] or { kind = kind, count = 0 }
     e.count = e.count + (it.qty or 1)
     e.last = time()
+    if spot and (kind == "herb" or kind == "ore") then addSpot(e, spot) end
     z[key] = e
   end
   ns.db.learned.zoneGathers[zoneID] = z
@@ -233,77 +257,43 @@ function Field.SetWaypoint(mapID, x, y, label)
   return ok
 end
 
--- GatherMate2 (optional, public API only, B21) -----------------------------------------------------
--- Node types as GatherMate2 names them; our gather kinds map onto them.
-local GM_TYPES = { herb = "Herb Gathering", ore = "Mining" }
-
-local function gatherMate()
-  local gm = _G.GatherMate2
-  if type(gm) == "table" and gm.GetNodesForZone and gm.GetNameForNode and gm.DecodeLoc then return gm end
-  return nil
-end
-
-function Field.HasGatherMate() return gatherMate() ~= nil end
-
--- Nodes GatherMate2 knows on a map: { { x, y, name, kind } } (x/y in 0-100).
-function Field.GatherMateNodes(mapID, kind)
-  local gm = gatherMate()
+-- Remembered nodes (B21, own data instead of GatherMate2) ----------------------------------------------
+-- Spots of the current zone: { { m, x, y, item } }, optionally only for the given items.
+function Field.Spots(zoneID, items)
   local out = {}
-  if not (gm and mapID) then return out end
-  for k, nodeType in pairs(GM_TYPES) do
-    if not kind or kind == k then
-      pcall(function()
-        for coord, nodeID in gm:GetNodesForZone(mapID, nodeType, true) do
-          local x, y = gm:DecodeLoc(coord)
-          local name = gm:GetNameForNode(nodeType, nodeID)
-          if x and y then out[#out + 1] = { x = x * 100, y = y * 100, name = name, kind = k } end
-        end
-      end)
+  local z = zoneID and ns.db.learned.zoneGathers and ns.db.learned.zoneGathers[zoneID]
+  for itemID, e in pairs(z or {}) do
+    if not items or items[itemID] then
+      for _, sp in ipairs(e.spots or {}) do out[#out + 1] = { m = sp.m, x = sp.x, y = sp.y, item = itemID } end
     end
   end
   return out
 end
 
--- Item name vs. node name: herbs share the name, veins share the first part ("Copper Ore" / "Copper Vein").
-local function nodeMatches(nodeName, itemName)
-  if not (nodeName and itemName) then return false end
-  if nodeName == itemName then return true end
-  local n = 0
-  for i = 1, math.min(#nodeName, #itemName) do
-    if nodeName:sub(i, i) ~= itemName:sub(i, i) then break end
-    n = i
-  end
-  return n >= 4
-end
-
--- Waypoint to the nearest GatherMate2 node of something the team needs here (or any node of an own gathering
--- skill). Returns label or nil.
+-- Waypoint to the nearest remembered node of something the twink still needs here (else of anything gathered
+-- here). Returns the item name or nil.
 function Field.NearestNeededNode()
-  local _, mapID = Field.CurrentZone()
-  if not (mapID and C_Map and C_Map.GetPlayerMapPosition) then return nil end
-  local pos = C_Map.GetPlayerMapPosition(mapID, "player")
-  if not pos then return nil end
-  local px, py = pos:GetXY()
-  if not px or ns.Secret.Any(px, py) then return nil end
-  px, py = px * 100, py * 100
-  local wanted = {}
+  local zoneID = Field.CurrentZone()
+  local me = playerSpot()
+  if not (zoneID and me) then return nil end
+  local wanted
   local view = ns.Coop and ns.Coop.Needs()
   for _, r in ipairs(view and view.rows or {}) do
-    if r.here and r.have < r.need then wanted[#wanted + 1] = ns.API.ItemName(r.item) end
+    if r.have < r.need then wanted = wanted or {}; wanted[r.item] = true end
   end
+  local spots = wanted and Field.Spots(zoneID, wanted) or {}
+  if #spots == 0 then spots = Field.Spots(zoneID) end
   local best, bestD
-  for _, node in ipairs(Field.GatherMateNodes(mapID)) do
-    local ok = #wanted == 0
-    for _, w in ipairs(wanted) do if nodeMatches(node.name, w) then ok = true break end end
-    if ok then
-      local d = (node.x - px) ^ 2 + (node.y - py) ^ 2
-      if not bestD or d < bestD then best, bestD = node, d end
+  for _, sp in ipairs(spots) do
+    if sp.m == me.m then
+      local d = (sp.x - me.x) ^ 2 + (sp.y - me.y) ^ 2
+      if not bestD or d < bestD then best, bestD = sp, d end
     end
   end
   if not best then return nil end
-  local label = best.name or "?"
-  if Field.SetWaypoint(mapID, best.x, best.y, label) then
-    if ns.Checks then ns.Checks.Pass("gatherMate", label) end
+  local label = ns.API.ItemName(best.item) or ("Item " .. best.item)
+  if Field.SetWaypoint(best.m, best.x, best.y, label) then
+    if ns.Checks then ns.Checks.Pass("nodeWaypoint", label) end
     return label
   end
   return nil
@@ -328,7 +318,7 @@ ns:RegisterModule("Field", {
         if id and not ns.Secret.Any(id, qty) then items[#items + 1] = { item = id, qty = qty or 1 } end
       end
       local zoneID = Field.CurrentZone()
-      Field.RecordGather(lastGather.kind, items, zoneID)
+      Field.RecordGather(lastGather.kind, items, zoneID, playerSpot())
       lastGather = nil
     end, "Field")
   end,

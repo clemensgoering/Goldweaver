@@ -17,7 +17,7 @@ local ADDON, ns = ...
 local L = ns.L
 
 ns.INTERFACE = 16001
-local SCHEMA = 6
+local SCHEMA = 7
 
 local DEFAULTS = {
   schema = SCHEMA,
@@ -100,6 +100,17 @@ local MIGRATIONS = {
   [6] = function(db)
     -- 5 -> 6: new account table "costs" (purchase prices for the break-even line); the defaults add it empty.
     if db.costs ~= nil and type(db.costs) ~= "table" then db.costs = nil end
+  end,
+  [7] = function(db)
+    -- 6 -> 7: gathering finds may keep where they were gathered (learned.zoneGathers[zone][item].spots, own node
+    -- memory instead of GatherMate2); filled on use, malformed values from test builds are dropped.
+    for _, z in pairs(db.learned and db.learned.zoneGathers or {}) do
+      if type(z) == "table" then
+        for _, e in pairs(z) do
+          if type(e) == "table" and e.spots ~= nil and type(e.spots) ~= "table" then e.spots = nil end
+        end
+      end
+    end
   end,
 }
 

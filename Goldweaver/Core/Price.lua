@@ -134,11 +134,6 @@ Price.RegisterSource("auctionator", 10, function(itemID)
   return copper, age and age * DAY or 0, 3
 end)
 
-Price.RegisterSource("tsm", 20, function(itemID)
-  if not (TSM_API and TSM_API.GetCustomPriceValue) then return nil end
-  return TSM_API.GetCustomPriceValue("DBMinBuyout", "i:" .. itemID), 0, 3
-end)
-
 Price.RegisterSource("observed", 30, function(itemID)
   return Price.Observed(itemID)
 end)

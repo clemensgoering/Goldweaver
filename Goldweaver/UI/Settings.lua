@@ -29,13 +29,12 @@ local function defs()
   }
 end
 
--- Optional addons Goldweaver reads (public APIs only, all optional). WoW cannot open a browser: the link sits in a
--- read-only text box, a click selects it for Ctrl+C. { folder, title, what it adds (English key), link }
+-- Optional addons (docs/10-KOMPATIBILITAET.md): none is required. Auctionator adds full auction scans (Forever allows
+-- no own full scan), RestedXP the levelling route. Everything else Goldweaver does itself (node memory, alt stock,
+-- profit, shopping). { folder, title, what it adds (English key) }
 local OPTIONAL = {
-  { "GatherMate2", "GatherMate2", "Node map: 'Nearest node' sets a waypoint to what the twink needs.", "https://www.curseforge.com/wow/addons/gathermate2" },
-  { "Auctionator", "Auctionator", "Auction prices for every advice, also without your own scans.", "https://www.curseforge.com/wow/addons/auctionator" },
-  { "TradeSkillMaster", "TradeSkillMaster", "Price sources (market value) as a second opinion.", "https://www.curseforge.com/wow/addons/tradeskill-master" },
-  { "RXPGuides", "RestedXP", "Levelling route: the guide shows the next zones and what grows there.", "https://www.restedxp.com" },
+  { "Auctionator", "Auctionator", "Recommended: auction prices for every advice from its full scans." },
+  { "RXPGuides", "RestedXP", "Optional: the guide shows the zones of your levelling route." },
 }
 
 -- "active" | "disabled" (installed, switched off) | "missing"
@@ -54,39 +53,24 @@ local function addonState(folder)
   return "missing"
 end
 
-local function linkBox(parent, url)
-  local eb, template = ns.UI.SafeCreate("EditBox", parent, { "InputBoxTemplate" })
-  if not template then ns.UI.Skin(eb, "ghost"); eb:SetFontObject("GameFontHighlightSmall") end
-  eb:SetSize(280, 20)
-  eb:SetAutoFocus(false)
-  eb:SetText(url)
-  eb:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
-  eb:SetScript("OnTextChanged", function(self, userInput) if userInput then self:SetText(url); self:HighlightText() end end)
-  eb:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-  eb:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-  return eb
-end
-
 local function optionalSection(f, top)
   local L = ns.L
   local head = ns.UI.Section(f, L["OPTIONAL ADDONS"], 560)
   head:SetPoint("TOPLEFT", 16, top)
   local hint = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   hint:SetPoint("TOPLEFT", 16, top - 20); hint:SetWidth(560); hint:SetJustifyH("LEFT")
-  hint:SetText(L["Goldweaver works without them; each one adds something. Click a link and copy it with Ctrl+C."])
+  hint:SetText(L["None is required: node memory, stock of your characters, profit and shopping lists are built in."])
   local rows = {}
   for i, a in ipairs(OPTIONAL) do
-    local y = top - 42 - (i - 1) * 46
+    local y = top - 42 - (i - 1) * 22
     local name = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    name:SetPoint("TOPLEFT", 20, y); name:SetText(a[2])
+    name:SetPoint("TOPLEFT", 20, y); name:SetWidth(110); name:SetJustifyH("LEFT"); name:SetText(a[2])
     local state = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    state:SetPoint("LEFT", name, "RIGHT", 10, 0)
+    state:SetPoint("LEFT", name, "RIGHT", 4, 0); state:SetWidth(150); state:SetJustifyH("LEFT")
     local what = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    what:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0, -3); what:SetWidth(270); what:SetJustifyH("LEFT"); what:SetWordWrap(false)
+    what:SetPoint("LEFT", state, "RIGHT", 4, 0); what:SetWidth(300); what:SetJustifyH("LEFT"); what:SetWordWrap(false)
     what:SetText(L[a[3]])
-    local box = linkBox(f, a[4])
-    box:SetPoint("TOPLEFT", 300, y - 6)
-    rows[i] = { folder = a[1], state = state, box = box }
+    rows[i] = { folder = a[1], state = state }
   end
   function rows:Refresh()
     for _, r in ipairs(self) do
@@ -94,7 +78,6 @@ local function optionalSection(f, top)
       if s == "active" then r.state:SetText("|cff60e060" .. L["active"] .. "|r")
       elseif s == "disabled" then r.state:SetText("|cffffd27a" .. L["installed, switched off"] .. "|r")
       else r.state:SetText("|cff9b9283" .. L["not installed"] .. "|r") end
-      r.box:SetShown(s ~= "active")
     end
   end
   return rows
@@ -106,7 +89,7 @@ local function build(parent)
   local scroll = ns.UI.SafeCreate("ScrollFrame", parent, { "UIPanelScrollFrameTemplate" })
   scroll:SetPoint("TOPLEFT", 0, 0); scroll:SetPoint("BOTTOMRIGHT", -26, 0)
   local f = CreateFrame("Frame", nil, scroll)
-  f:SetSize(600, 740)
+  f:SetSize(600, 620)
   scroll:SetScrollChild(f)
   local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
   title:SetPoint("TOPLEFT", 16, -16)

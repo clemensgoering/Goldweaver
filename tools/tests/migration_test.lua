@@ -26,7 +26,7 @@ eq(type(old.checks), "table", "checks table added")
 
 -- backup written before migrating
 eq(ns.DB.HasBackup(), true, "backup exists")
-eq(GoldweaverBackupDB.reason, "migration 1 -> 6", "backup reason")
+eq(GoldweaverBackupDB.reason, "migration 1 -> 7", "backup reason")
 eq(GoldweaverBackupDB.data.version, 1, "backup holds the pre-migration state")
 eq(GoldweaverBackupDB.data.chars["Cupedos-Grel"].role, "main", "backup is a deep copy with data")
 GoldweaverBackupDB.data.chars["Cupedos-Grel"].role = "bank"
@@ -77,7 +77,7 @@ eq(v2.checks.load, nil, "red load check reset")
 eq(v2.checks.tooltip.status, "pass", "other checks kept")
 eq(v2.settings.favorValueCopper, 300, "settings kept")
 eq(v2.settings.autoReadProfessions, nil, "background reading off by default")
-eq(GoldweaverBackupDB.reason, "migration 2 -> 6", "backup before migration 3")
+eq(GoldweaverBackupDB.reason, "migration 2 -> 7", "backup before migration 3")
 GoldweaverBackupDB = nil
 
 -- migration 4 merges the bank role into processor
@@ -101,7 +101,7 @@ eq(v4.chars.A.inventory.mail, nil, "malformed mail snapshot dropped")
 eq(v4.chars.B.inventory.mail[2589], 2, "mail snapshot kept")
 eq(v4.chars.B.inventory.incoming.items[2589], 5, "incoming kept")
 eq(v4.chars.C.inventory, nil, "no inventory invented")
-eq(GoldweaverBackupDB.reason, "migration 4 -> 6", "backup before migration 5")
+eq(GoldweaverBackupDB.reason, "migration 4 -> 7", "backup before migration 5")
 GoldweaverBackupDB = nil
 
 -- 5 -> 6: costs table added empty, nothing else touched
@@ -110,5 +110,15 @@ GoldweaverBackupDB = nil
 ns.DB.Prepare(v5)
 eq(type(v5.costs), "table", "costs table added")
 eq(v5.chars.A.role, "main", "chars untouched by migration 6")
-eq(GoldweaverBackupDB.reason, "migration 5 -> 6", "backup before migration 6")
+eq(GoldweaverBackupDB.reason, "migration 5 -> 7", "backup before migration 6")
+GoldweaverBackupDB = nil
+
+-- 6 -> 7: node spots are optional; finds stay, malformed spots dropped
+local v6 = { schema = 6, learned = { zoneGathers = { [17] = { [2447] = { kind = "herb", count = 5, spots = "x" }, [2449] = { kind = "herb", count = 2, spots = { { m = 1, x = 1, y = 2 } } } } } } }
+GoldweaverBackupDB = nil
+ns.DB.Prepare(v6)
+eq(v6.learned.zoneGathers[17][2447].count, 5, "finds kept")
+eq(v6.learned.zoneGathers[17][2447].spots, nil, "malformed spots dropped")
+eq(#v6.learned.zoneGathers[17][2449].spots, 1, "spots kept")
+eq(GoldweaverBackupDB.reason, "migration 6 -> 7", "backup before migration 7")
 GoldweaverBackupDB = nil
