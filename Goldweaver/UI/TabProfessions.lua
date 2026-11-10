@@ -54,7 +54,7 @@ UI.RegisterTab("berufe", "Professions", function(frame)
     return b
   end
 
-  local compareButton = UI.Button(nav, L["Which profession pays off?"], NAV - 20, function() showCompare = true; content:Refresh() end)
+  local compareButton = UI.Button(nav, L["Compare professions"], NAV - 20, function() showCompare = true; content:Refresh() end)
   compareButton:SetPoint("BOTTOMLEFT", 10, 10)
 
   -- detail -----------------------------------------------------------------------------------------

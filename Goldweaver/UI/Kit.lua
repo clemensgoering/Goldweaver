@@ -1,14 +1,18 @@
--- Goldweaver: UI kit in the "Forever modern" look (docs/14-UI-FUEHRUNG.md): a window with a header band and
+-- Goldweaver: UI kit in the look shared with ClassPages (docs/14-UI-FUEHRUNG.md): a window with a header and
 -- browser-style tabs on top, cards instead of insets, gold plate buttons, switches, item buttons with quality
--- borders, skill bars. Built from colour textures only (UI.Skin), so a template change in a patch cannot break it;
--- Blizzard templates are used only where they are needed (close button, secure buttons) via SafeCreate.
+-- borders, skill bars. Built from the addon's own art set (Goldweaver/Media, white shapes tinted per style and
+-- stretched as 9-slices), so a template change in a patch cannot break it; Blizzard templates are used only where
+-- they are needed (secure buttons) via SafeCreate.
 --
 -- Public API (ns.UI)
 --   RegisterTab(key, title, builder(frame) -> { Refresh }) ★ (title = English key, translated when the tab button is built)   Open(key?), Toggle(key?), IsOpen(), Refresh()
 --   SetSubtitle(text), SetHeaderInfo(text)                       line under the title, line right in the header
 --   SafeCreate(type, parent, templates) -> frame, template       first template that exists
---   Skin(frame, style) -> frame        styles: window, card, hl, tracker, menu, button, buttonOff, ghost, tab, tabOn
---   Button(parent, text, width, onClick, style?)   Inset(parent, w, h, style?)
+--   Skin(frame, style) -> frame        styles: window, card, hl, tracker, menu, button, buttonOff, danger, ghost, row,
+--                                      tab, tabOn, tabDown   (a frame keeps the shape of its first style)
+--   Slice(frame, shape, corner, layer, sub, outset, flip)   Art(parent, name, layer, sub)   Round(owner, tex, mask)
+--   Button(parent, text, width, onClick, style?) (:SetStyle)   IconButton(parent, icon, size, onClick, style?)
+--   Inset(parent, w, h, style?)   Divider(parent)
 --   Widgets: Text, Header, Button, Check, Group, Inset, Section, Lines, Pairs, Table, IconRows,
 --            ItemButton, SkillBar, StepCard, StepList, ProgressRows, ItemName, QualityColor, Money
 local ADDON, ns = ...
@@ -17,8 +21,11 @@ local L = ns.L
 local UI = { tabs = {}, order = {}, aliases = { heute = "guide", chars = "team", settings = "team" } }
 ns.UI = UI
 
-local GOLD = { 1, 0.82, 0 }
+local GOLD = { 1, 0.82, 0.45 }
 UI.GOLD = GOLD
+UI.DIM = { 0.62, 0.57, 0.50 }
+UI.TEXT = { 0.93, 0.90, 0.85 }
+UI.MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\Media\\"
 local ICON = "Interface\\Icons\\INV_Misc_Coin_01"
 
 local window, activeKey
@@ -45,66 +52,116 @@ end
 function UI.Money(copper) return ns.Util.Money(copper or 0) end
 
 -- Skin -------------------------------------------------------------------------------------------
--- "Forever modern" look (docs/14-UI-FUEHRUNG.md): dark warm surfaces, a 1 px edge, a faint sheen at the top and
--- short gold accents at two corners of highlighted frames. Colour textures only: no template, no art files, so it
--- looks the same on every client build.
+-- Shared look with ClassPages (docs/14-UI-FUEHRUNG.md, values from ClassPages docs/07-DESIGN.md): dark warm
+-- surfaces, a 1 px bronze ring, gold as the only accent, restrained rounding (5 px panels, 3 px controls, 4 px tabs).
+-- Built from the addon's own art set (Goldweaver/Media, tools/assets/make_assets.py): white shapes tinted with
+-- SetVertexColor and stretched as 9-slices, so no Blizzard template or art can change the look in a patch.
 
-local SKINS = {
-  window    = { bg = { 0.055, 0.047, 0.038, 0.97 }, edge = { 0.42, 0.32, 0.17, 1 }, sheen = 0.025, accent = true },
-  card      = { bg = { 0.090, 0.077, 0.060, 0.92 }, edge = { 0.23, 0.18, 0.12, 1 }, sheen = 0.02 },
-  hl        = { bg = { 0.125, 0.092, 0.050, 0.95 }, edge = { 0.55, 0.42, 0.20, 1 }, sheen = 0.05, accent = true },
-  tracker   = { bg = { 0.055, 0.045, 0.032, 0.80 }, edge = { 0.36, 0.27, 0.15, 0.9 }, sheen = 0.03 },
-  menu      = { bg = { 0.060, 0.050, 0.040, 0.97 }, edge = { 0.55, 0.42, 0.20, 1 }, sheen = 0.02 },
-  button    = { bg = { 0.300, 0.200, 0.070, 1 }, edge = { 0.78, 0.60, 0.29, 1 }, sheen = 0.10 },
-  buttonOff = { bg = { 0.130, 0.120, 0.110, 1 }, edge = { 0.30, 0.28, 0.25, 1 }, sheen = 0.03 },
-  ghost     = { bg = { 0.070, 0.060, 0.050, 0.9 }, edge = { 0.23, 0.18, 0.12, 1 }, sheen = 0.02 },
-  tab       = { bg = { 0.080, 0.067, 0.050, 1 }, edge = { 0.23, 0.18, 0.12, 1 }, sheen = 0.02 },
-  tabOn     = { bg = { 0.200, 0.140, 0.060, 1 }, edge = { 0.78, 0.60, 0.29, 1 }, sheen = 0.08 },
-}
-UI.SKINS = SKINS
-
-local function colorTex(f, layer, sub)
-  local t = f:CreateTexture(nil, layer, nil, sub)
-  t:SetColorTexture(1, 1, 1, 1)
+function UI.Art(parent, name, layer, sub)
+  local t = parent:CreateTexture(nil, layer or "ARTWORK", nil, sub)
+  t:SetTexture(UI.MEDIA .. name)
   return t
 end
 
-local function accent(f, point, x, y)
-  local h, v = colorTex(f, "BORDER", 2), colorTex(f, "BORDER", 2)
-  h:SetSize(18, 2); h:SetPoint(point, x, y)
-  v:SetSize(2, 18); v:SetPoint(point, x, y)
-  return h, v
+-- shape = { texture size, margin in texels }
+local SHAPES = { rr5 = { 16, 7 }, rr3 = { 16, 6 }, pill = { 32, 15 }, tab = { 16, 7 }, shadow = { 64, 24 } }
+for _, name in ipairs({ "rr5", "rr3", "pill", "tab" }) do SHAPES[name .. "_ring"] = SHAPES[name] end
+
+-- Nine textures that stretch a rounded shape over a frame of any size. corner = corner size on screen (px),
+-- outset = how far the slice reaches beyond the frame (shadows), flip = upside down (tabs hanging below a frame).
+function UI.Slice(f, shape, corner, layer, sub, outset, flip)
+  local def = SHAPES[shape]
+  local u = def[2] / def[1]
+  local U = { 0, u, 1 - u, 1 }
+  local c, o = corner, outset or 0
+  local X = { { "LEFT", -o }, { "LEFT", c - o }, { "RIGHT", o - c }, { "RIGHT", o } }
+  local Y = { { "TOP", o }, { "TOP", o - c }, { "BOTTOM", c - o }, { "BOTTOM", -o } }
+  local s = { parts = {} }
+  for row = 1, 3 do
+    for col = 1, 3 do
+      local t = f:CreateTexture(nil, layer, nil, sub)
+      t:SetTexture(UI.MEDIA .. shape)
+      if flip then t:SetTexCoord(U[col], U[col + 1], 1 - U[row], 1 - U[row + 1])
+      else t:SetTexCoord(U[col], U[col + 1], U[row], U[row + 1]) end
+      t:SetPoint("TOPLEFT", f, Y[row][1] .. X[col][1], X[col][2], Y[row][2])
+      t:SetPoint("BOTTOMRIGHT", f, Y[row + 1][1] .. X[col + 1][1], X[col + 1][2], Y[row + 1][2])
+      s.parts[#s.parts + 1] = t
+    end
+  end
+  function s:SetColor(r, g, b, a) for _, t in ipairs(self.parts) do t:SetVertexColor(r, g, b, a or 1) end end
+  function s:SetShown(on) for _, t in ipairs(self.parts) do t:SetShown(on) end end
+  return s
 end
 
--- Applies (or switches) a skin; safe to call again, e.g. for a disabled button or the active tab.
+local GOLD_EDGE = { 0.80, 0.62, 0.30, 1 }
+local SKINS = {
+  window    = { shape = "rr5", corner = 7, bg = { 0.063, 0.055, 0.047, 0.97 }, edge = { 0.52, 0.40, 0.21, 1 }, shadow = 0.65 },
+  card      = { shape = "rr5", corner = 7, bg = { 0.100, 0.086, 0.068, 0.94 }, edge = { 0.29, 0.23, 0.16, 1 }, sheen = 0.035 },
+  hl        = { shape = "rr5", corner = 7, bg = { 0.135, 0.100, 0.055, 0.96 }, edge = GOLD_EDGE, sheen = 0.06 },
+  tracker   = { shape = "rr5", corner = 7, bg = { 0.063, 0.055, 0.047, 0.88 }, edge = { 0.40, 0.31, 0.17, 0.95 }, sheen = 0.03, shadow = 0.4 },
+  menu      = { shape = "rr5", corner = 7, bg = { 0.075, 0.064, 0.052, 0.98 }, edge = GOLD_EDGE, sheen = 0.04, shadow = 0.7 },
+  button    = { shape = "rr3", corner = 6, bg = { 0.36, 0.25, 0.09, 1 }, edge = { 0.86, 0.67, 0.33, 1 }, sheen = 0.14, text = GOLD },
+  buttonOff = { shape = "rr3", corner = 6, bg = { 0.13, 0.12, 0.11, 1 }, edge = { 0.27, 0.25, 0.22, 1 }, sheen = 0.03, text = UI.DIM },
+  danger    = { shape = "rr3", corner = 6, bg = { 0.30, 0.085, 0.06, 1 }, edge = { 0.78, 0.33, 0.24, 1 }, sheen = 0.10, text = { 1, 0.78, 0.72 } },
+  ghost     = { shape = "rr3", corner = 6, bg = { 0.115, 0.098, 0.080, 0.95 }, edge = { 0.34, 0.27, 0.19, 1 }, sheen = 0.04, text = UI.TEXT },
+  row       = { shape = "rr3", corner = 6, bg = { 0.085, 0.072, 0.056, 0.75 }, edge = { 0.20, 0.16, 0.11, 0.9 } },
+  tab       = { shape = "tab", corner = 7, bg = { 0.090, 0.076, 0.060, 1 }, edge = { 0.27, 0.22, 0.15, 1 }, text = UI.DIM },
+  tabOn     = { shape = "tab", corner = 7, bg = { 0.205, 0.150, 0.068, 1 }, edge = GOLD_EDGE, sheen = 0.08, glow = 0.9, text = GOLD },
+  -- action tabs hanging below a Blizzard frame: the tab shape upside down, rounded at the bottom
+  tabDown   = { shape = "tab", corner = 7, flip = true, bg = { 0.205, 0.150, 0.068, 1 }, edge = GOLD_EDGE, text = GOLD },
+}
+UI.SKINS = SKINS
+
+-- Applies (or switches) a skin; safe to call again, e.g. for a disabled button or the active tab. A frame keeps
+-- the shape of its first style; later calls only recolour.
 function UI.Skin(f, style)
   local s = SKINS[style] or SKINS.card
   local k = f.gwSkin
   if not k then
-    k = {}
-    k.bg = colorTex(f, "BACKGROUND", -8); k.bg:SetAllPoints()
-    k.sheen = colorTex(f, "BACKGROUND", -7)
-    k.sheen:SetPoint("TOPLEFT", 1, -1); k.sheen:SetPoint("TOPRIGHT", -1, -1); k.sheen:SetHeight(12)
-    k.edges = {}
-    for i, side in ipairs({ { "TOPLEFT", "TOPRIGHT" }, { "BOTTOMLEFT", "BOTTOMRIGHT" }, { "TOPLEFT", "BOTTOMLEFT" }, { "TOPRIGHT", "BOTTOMRIGHT" } }) do
-      local e = colorTex(f, "BORDER", 1)
-      e:SetPoint(side[1]); e:SetPoint(side[2])
-      if i <= 2 then e:SetHeight(1) else e:SetWidth(1) end
-      k.edges[i] = e
-    end
+    k = { shape = s.shape, corner = s.corner }
+    k.fill = UI.Slice(f, k.shape, k.corner, "BACKGROUND", -6, nil, s.flip)
+    k.ring = UI.Slice(f, k.shape .. "_ring", k.corner, "BORDER", 1, nil, s.flip)
     f.gwSkin = k
   end
-  k.bg:SetColorTexture(unpack(s.bg))
-  k.sheen:SetColorTexture(1, 0.85, 0.45, s.sheen or 0)
-  for _, e in ipairs(k.edges) do e:SetColorTexture(unpack(s.edge)) end
-  if s.accent and not k.accents then
-    k.accents = { accent(f, "TOPLEFT", 0, 0) }
-    local h, v = accent(f, "BOTTOMRIGHT", 0, 0)
-    k.accents[3], k.accents[4] = h, v
+  k.fill:SetColor(s.bg[1], s.bg[2], s.bg[3], s.bg[4])
+  k.ring:SetColor(s.edge[1], s.edge[2], s.edge[3], s.edge[4])
+  if s.shadow and not k.shadow then k.shadow = UI.Slice(f, "shadow", 28, "BACKGROUND", -8, 14) end
+  if k.shadow then k.shadow:SetColor(0, 0, 0, s.shadow or 0) end
+  if s.sheen and not k.sheen then
+    k.sheen = UI.Art(f, "fade_v", "BACKGROUND", -4)
+    k.sheen:SetPoint("TOPLEFT", k.corner * 0.5, -1)
+    k.sheen:SetPoint("TOPRIGHT", -k.corner * 0.5, -1)
+    k.sheen:SetHeight(14)
   end
-  for _, a in ipairs(k.accents or {}) do a:SetColorTexture(1, 0.82, 0.45, s.accent and 0.7 or 0) end
+  if k.sheen then k.sheen:SetVertexColor(1, 0.86, 0.5, s.sheen or 0) end
+  if s.glow and not k.glow then
+    k.glow = UI.Art(f, "glow", "OVERLAY", 2)
+    k.glow:SetBlendMode("ADD")
+    k.glow:SetPoint("BOTTOMLEFT", 4, -5)
+    k.glow:SetPoint("BOTTOMRIGHT", -4, -5)
+    k.glow:SetHeight(12)
+  end
+  if k.glow then k.glow:SetVertexColor(1, 0.80, 0.38, s.glow or 0) end
   k.style = style
   return f
+end
+
+-- Rounds a texture's corners with a mask where the client supports it.
+function UI.Round(owner, tex, maskName)
+  if not (owner.CreateMaskTexture and tex.AddMaskTexture) then return end
+  local mask = owner:CreateMaskTexture()
+  mask:SetTexture(UI.MEDIA .. (maskName or "mask_rr"), "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+  mask:SetAllPoints(tex)
+  tex:AddMaskTexture(mask)
+  return mask
+end
+
+-- Thin line that fades out to both ends.
+function UI.Divider(parent)
+  local t = UI.Art(parent, "fade_h", "BORDER")
+  t:SetHeight(1)
+  t:SetVertexColor(0.55, 0.43, 0.24, 0.9)
+  return t
 end
 
 -- Basic widgets ----------------------------------------------------------------------------------
@@ -121,26 +178,44 @@ function UI.Header(parent, text)
   return fs
 end
 
--- Gold plate button; style "ghost" for quiet secondary buttons (dropdowns). Disabled buttons turn grey.
+-- Rounded plate button: gold for the one main action of an area, style "ghost" for quiet secondary buttons
+-- (dropdowns, icon buttons). Disabled buttons turn grey; hover lightens the plate. Text colour comes from the style.
+local function paintButton(b, style)
+  local s = SKINS[style] or SKINS.button
+  UI.Skin(b, style)
+  local c = s.text or GOLD
+  local fs = b:GetFontString()
+  if fs then fs:SetTextColor(c[1], c[2], c[3]) end
+  if b.iconTex then b.iconTex:SetVertexColor(c[1], c[2], c[3]) end
+end
+
 function UI.Button(parent, text, width, onClick, style)
   local b = CreateFrame("Button", nil, parent)
   b:SetSize(width or 120, 22)
   local fs = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   fs:SetPoint("LEFT", 6, 0); fs:SetPoint("RIGHT", -6, 0); fs:SetWordWrap(false)
   b:SetFontString(fs)
-  b:SetNormalFontObject("GameFontNormal")
-  b:SetHighlightFontObject("GameFontHighlight")
-  b:SetDisabledFontObject("GameFontDisable")
   b:SetPushedTextOffset(1, -1)
   b.gwStyle = style or "button"
-  UI.Skin(b, b.gwStyle)
-  local hl = b:CreateTexture(nil, "HIGHLIGHT")
-  hl:SetPoint("TOPLEFT", 1, -1); hl:SetPoint("BOTTOMRIGHT", -1, 1)
-  hl:SetColorTexture(1, 0.8, 0.4, 0.14)
-  b:SetScript("OnEnable", function(self) UI.Skin(self, self.gwStyle) end)
-  b:SetScript("OnDisable", function(self) UI.Skin(self, "buttonOff") end)
+  paintButton(b, b.gwStyle)
+  local hl = UI.Slice(b, (SKINS[b.gwStyle] or SKINS.button).shape, 6, "HIGHLIGHT", nil, nil, (SKINS[b.gwStyle] or SKINS.button).flip)
+  hl:SetColor(1, 0.86, 0.55, 0.12)
+  b:SetScript("OnEnable", function(self) paintButton(self, self.gwStyle) end)
+  b:SetScript("OnDisable", function(self) paintButton(self, "buttonOff") end)
   b:SetText(text or "")
   if onClick then b:SetScript("OnClick", onClick) end
+  function b:SetStyle(st) self.gwStyle = st; paintButton(self, self:IsEnabled() and st or "buttonOff") end
+  return b
+end
+
+-- Square ghost button with one of the art-set symbols (close, plus, minus, eye, chevron, check).
+function UI.IconButton(parent, icon, size, onClick, style)
+  local b = UI.Button(parent, "", size, onClick, style or "ghost")
+  b:SetHeight(size)
+  b.iconTex = UI.Art(b, icon, "OVERLAY")
+  b.iconTex:SetPoint("CENTER")
+  b.iconTex:SetSize(math.max(8, size - 10), math.max(8, size - 10))
+  paintButton(b, b.gwStyle)
   return b
 end
 
@@ -148,22 +223,29 @@ end
 -- The label is part of the click area.
 function UI.Check(parent, label, checked, onChange)
   local c = CreateFrame("CheckButton", nil, parent)
-  c:SetSize(34, 18)
-  UI.Skin(c, "ghost")
-  c.track = c:CreateTexture(nil, "ARTWORK")
-  c.track:SetPoint("TOPLEFT", 1, -1); c.track:SetPoint("BOTTOMRIGHT", -1, 1)
-  c.knob = c:CreateTexture(nil, "OVERLAY")
-  c.knob:SetSize(14, 14)
+  c:SetSize(30, 16)
+  c.track = UI.Slice(c, "pill", 8, "BACKGROUND", -6)
+  c.ringS = UI.Slice(c, "pill_ring", 8, "BORDER", 1)
+  c.knob = UI.Art(c, "pill", "ARTWORK")
+  c.knob:SetSize(12, 12)
   c.text = c:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-  c.text:SetPoint("LEFT", c, "RIGHT", 8, 0)
+  c.text:SetPoint("LEFT", c, "RIGHT", 7, 0)
   c.text:SetText(label)
   c:SetHitRectInsets(0, -math.min(400, (c.text:GetStringWidth() or 0) + 8), 0, 0)
   local function paint()
     local on = c:GetChecked() and true or false
-    if on then c.track:SetColorTexture(0.62, 0.47, 0.22, 1); c.knob:SetColorTexture(1, 0.93, 0.78, 1)
-    else c.track:SetColorTexture(0.20, 0.19, 0.18, 1); c.knob:SetColorTexture(0.58, 0.58, 0.60, 1) end
     c.knob:ClearAllPoints()
-    c.knob:SetPoint(on and "RIGHT" or "LEFT", c, on and "RIGHT" or "LEFT", on and -2 or 2, 0)
+    if on then
+      c.knob:SetPoint("RIGHT", -2, 0)
+      c.track:SetColor(GOLD_EDGE[1] * 0.55, GOLD_EDGE[2] * 0.55, GOLD_EDGE[3] * 0.55, 1)
+      c.ringS:SetColor(GOLD_EDGE[1], GOLD_EDGE[2], GOLD_EDGE[3], 0.9)
+      c.knob:SetVertexColor(1, 1, 1, 1)
+    else
+      c.knob:SetPoint("LEFT", 2, 0)
+      c.track:SetColor(0.06, 0.055, 0.05, 1)
+      c.ringS:SetColor(0.34, 0.28, 0.20, 1)
+      c.knob:SetVertexColor(0.55, 0.52, 0.48, 1)
+    end
   end
   local setChecked = c.SetChecked
   function c:SetChecked(v) setChecked(self, v); paint() end
@@ -182,25 +264,24 @@ function UI.Dropdown(parent, width, options, onSelect)
   local d = UI.Button(parent, "", width, nil, "ghost")
   local fs = d:GetFontString()
   fs:ClearAllPoints(); fs:SetPoint("LEFT", 8, 0); fs:SetPoint("RIGHT", -22, 0); fs:SetJustifyH("LEFT")
-  d.arrow = d:CreateTexture(nil, "OVERLAY")
+  d.arrow = UI.Art(d, "chevron", "OVERLAY")
   d.arrow:SetSize(12, 12)
-  d.arrow:SetPoint("RIGHT", -6, 0)
-  d.arrow:SetTexture("Interface\\ChatFrame\\ChatFrameExpandArrow")
+  d.arrow:SetPoint("RIGHT", -7, 0)
+  d.arrow:SetVertexColor(GOLD[1], GOLD[2], GOLD[3])
   d.menu = CreateFrame("Frame", nil, d)
-  d.menu:SetPoint("TOPLEFT", d, "BOTTOMLEFT", 0, -2)
-  d.menu:SetSize(width, #options * 22 + 8)
+  d.menu:SetPoint("TOPLEFT", d, "BOTTOMLEFT", 0, -3)
+  d.menu:SetSize(width, #options * 22 + 10)
   d.menu:SetFrameStrata("FULLSCREEN_DIALOG")
   UI.Skin(d.menu, "menu")
   d.menu:Hide()
   for i, opt in ipairs(options) do
     local item = CreateFrame("Button", nil, d.menu)
-    item:SetSize(width - 8, 22)
-    item:SetPoint("TOPLEFT", 4, -4 - (i - 1) * 22)
+    item:SetSize(width - 10, 22)
+    item:SetPoint("TOPLEFT", 5, -5 - (i - 1) * 22)
     item.text = item:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     item.text:SetPoint("LEFT", 8, 0)
     item.text:SetText(L[opt[2]])
-    local hl = item:CreateTexture(nil, "HIGHLIGHT")
-    hl:SetAllPoints(); hl:SetColorTexture(1, 0.8, 0.4, 0.14)
+    UI.Slice(item, "rr3", 6, "HIGHLIGHT"):SetColor(1, 0.8, 0.4, 0.14)
     item:SetScript("OnClick", function()
       d.menu:Hide(); openMenu = nil
       d:SetValue(opt[1])
@@ -230,13 +311,12 @@ function UI.Inset(parent, width, height, style)
   return f
 end
 
--- Section title with a thin gold divider ("GameFontNormal" gold on dark).
+-- Section title in gold with a divider that fades out to both ends; the title is flush with the content.
 function UI.Section(parent, text, width)
   local fs = UI.Text(parent, text, "GameFontNormal")
-  local line = parent:CreateTexture(nil, "ARTWORK")
-  line:SetColorTexture(0.72, 0.50, 0.12, 0.45)
-  line:SetHeight(1)
-  line:SetPoint("TOPLEFT", fs, "BOTTOMLEFT", 0, -3)
+  fs:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
+  local line = UI.Divider(parent)
+  line:SetPoint("TOPLEFT", fs, "BOTTOMLEFT", 0, -4)
   line:SetWidth(width or 200)
   fs.line = line
   return fs
@@ -391,21 +471,35 @@ function UI.ItemButton(parent, size)
 end
 
 -- Skill bar like the profession bars in the character pane: "53 / 75".
+-- Track and fill with small rounded corners; the numbers use the compact number font of the game's own bars.
 function UI.SkillBar(parent, width, height)
-  local bar = CreateFrame("StatusBar", nil, parent)
-  bar:SetSize(width, height or 12)
-  bar:SetStatusBarTexture("Interface\\Buttons\\WHITE8x8")
-  bar:SetStatusBarColor(0.25, 0.62, 0.25)
-  UI.Skin(bar, "ghost")
-  bar.text = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  bar.text:SetPoint("CENTER")
+  height = height or 14
+  local bar = CreateFrame("Frame", nil, parent)
+  bar:SetSize(width, height)
+  local corner = math.min(6, height / 2)
+  bar.track = UI.Slice(bar, "rr3", corner, "BACKGROUND", -6)
+  bar.track:SetColor(0.035, 0.032, 0.028, 0.95)
+  bar.ringS = UI.Slice(bar, "rr3_ring", corner, "BORDER", 1)
+  bar.ringS:SetColor(0.30, 0.25, 0.18, 1)
+  bar.fillFrame = CreateFrame("Frame", nil, bar)
+  bar.fillFrame:SetPoint("TOPLEFT", 1, -1)
+  bar.fillFrame:SetPoint("BOTTOMLEFT", 1, 1)
+  bar.fill = UI.Slice(bar.fillFrame, "rr3", math.max(1, corner - 1), "ARTWORK")
+  -- the numbers live on a child of the fill frame, so they are drawn above the fill
+  local over = CreateFrame("Frame", nil, bar.fillFrame)
+  over:SetAllPoints(bar)
+  bar.text = over:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+  bar.text:SetPoint("CENTER", bar, "CENTER", 0, 0)
+  function bar:SetStatusBarColor(r, g, b) self.fill:SetColor(r, g, b, 1) end
   function bar:SetSkill(rank, max, r, g, b)
     rank, max = rank or 0, math.max(1, max or 1)
-    self:SetMinMaxValues(0, max)
-    self:SetValue(rank)
+    local w = (width - 2) * math.min(1, rank / max)
+    self.fillFrame:SetWidth(math.max(1, w))
+    self.fill:SetShown(w >= 2)
     self.text:SetText(("%d / %d"):format(rank, max))
     if r then self:SetStatusBarColor(r, g, b) end
   end
+  bar:SetStatusBarColor(0.25, 0.62, 0.25)
   return bar
 end
 
@@ -432,10 +526,10 @@ function UI.IconRows(parent, count, width, firstY, rowHeight)
     r.text:SetPoint("TOPLEFT", r.item, "TOPRIGHT", 6, 1)
     r.text:SetJustifyH("LEFT"); r.text:SetWordWrap(false)
     r.sub = r:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    r.sub:SetPoint("TOPLEFT", r.text, "BOTTOMLEFT", 0, -2)
+    r.sub:SetPoint("TOPLEFT", r.text, "BOTTOMLEFT", 0, -3)
     r.sub:SetJustifyH("LEFT"); r.sub:SetWordWrap(false)
-    r.hl = r:CreateTexture(nil, "HIGHLIGHT")
-    r.hl:SetAllPoints(); r.hl:SetColorTexture(1, 0.8, 0.4, 0.07)
+    r.hl = UI.Slice(r, "rr3", 6, "HIGHLIGHT")
+    r.hl:SetColor(1, 0.8, 0.4, 0.07)
     r:SetScript("OnClick", function(self) if self.onClick then self.onClick() end end)
     r:SetScript("OnEnter", function(self) if self.item:GetScript("OnEnter") then self.item:GetScript("OnEnter")(self.item) end end)
     r:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -490,7 +584,7 @@ function UI.FrameTabs(frame, count)
     end
   end
   for i = 1, count do
-    local b = UI.Button(frame, "", 100, nil, "tabOn")
+    local b = UI.Button(frame, "", 100, nil, "tabDown")
     b:SetHeight(28)
     b:SetScript("OnEnter", function(self)
       if not self.tip then return end
@@ -553,8 +647,8 @@ function UI.ProgressRows(parent, count, width, firstY, rowHeight)
       r.sub:SetPoint("TOPLEFT", r.bar, "BOTTOMLEFT", 0, -3)
       r.sub:SetJustifyH("LEFT"); r.sub:SetWordWrap(false); r.sub:SetWidth(width - iconSize - 8)
     end
-    r.hl = r:CreateTexture(nil, "HIGHLIGHT")
-    r.hl:SetAllPoints(); r.hl:SetColorTexture(1, 0.8, 0.4, 0.07)
+    r.hl = UI.Slice(r, "rr3", 6, "HIGHLIGHT")
+    r.hl:SetColor(1, 0.8, 0.4, 0.07)
     r:SetScript("OnEnter", function(self) local f = self.item:GetScript("OnEnter"); if f then f(self.item) end end)
     r:SetScript("OnLeave", function() GameTooltip:Hide() end)
     r:Hide()
@@ -662,9 +756,10 @@ end
 
 -- Window -----------------------------------------------------------------------------------------
 
--- Layout: header band (logo, title, subtitle, close) 50 px, tab strip 30 px, body below. The body keeps the
--- 752 x 500 content area the tabs are built for.
-local HEAD_H, TABS_H = 50, 30
+-- Layout (same as ClassPages): header 64 px (logo, title, subtitle, info, close), tab strip 30 px, 14 px from the
+-- window edge to the content. The content area stays the 752 x 500 the tabs are built for.
+local HEAD_H, TABS_H = 64, 30
+local WIN_W, WIN_H = 780, 620
 local TAB_ICONS = {
   guide = "Interface\\Icons\\INV_Misc_Book_09", field = "Interface\\Icons\\INV_Misc_Flower_02",
   berufe = "Interface\\Icons\\Trade_BlackSmithing", team = "Interface\\Icons\\INV_Letter_15",
@@ -707,27 +802,24 @@ function UI.SetHeaderInfo(text)
   if window and window.info then window.info:SetText(text or "") end
 end
 
--- Browser-style tab: icon and name; the active one gets the warm gold plate and a gold line along its bottom.
+-- Browser-style tab: icon and name (one word); the active one gets the warm gold plate and a soft gold glow along
+-- its bottom edge. Lives on the header frame, so it is drawn above the header plate.
 local function tabButton(key, title)
-  local b = CreateFrame("Button", nil, window)
-  b:SetHeight(TABS_H - 3)
+  local b = CreateFrame("Button", nil, window.head)
+  b:SetHeight(TABS_H - 2)
   b.icon = b:CreateTexture(nil, "ARTWORK")
   b.icon:SetSize(16, 16); b.icon:SetPoint("LEFT", 10, 0)
   b.icon:SetTexture(TAB_ICONS[key] or ICON); b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
   b.text = b:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   b.text:SetPoint("LEFT", b.icon, "RIGHT", 6, 0)
   b.text:SetText(L[title])
-  b:SetWidth(math.max(90, (b.text:GetStringWidth() or 60) + 44))
-  b.line = b:CreateTexture(nil, "OVERLAY")
-  b.line:SetPoint("BOTTOMLEFT", 6, 0); b.line:SetPoint("BOTTOMRIGHT", -6, 0); b.line:SetHeight(2)
-  b.line:SetColorTexture(1, 0.82, 0.45, 0.9)
-  local hl = b:CreateTexture(nil, "HIGHLIGHT")
-  hl:SetPoint("TOPLEFT", 1, -1); hl:SetPoint("BOTTOMRIGHT", -1, 1); hl:SetColorTexture(1, 0.8, 0.4, 0.08)
+  b:SetWidth(math.max(80, (b.text:GetStringWidth() or 60) + 42))
+  UI.Slice(b, "tab", 7, "HIGHLIGHT"):SetColor(1, 0.86, 0.55, 0.08)
   function b:SetActive(on)
     UI.Skin(self, on and "tabOn" or "tab")
-    self.line:SetShown(on)
     self.icon:SetDesaturated(not on)
-    if on then self.text:SetTextColor(1, 0.82, 0.45) else self.text:SetTextColor(0.62, 0.57, 0.50) end
+    local c = on and GOLD or UI.DIM
+    self.text:SetTextColor(c[1], c[2], c[3])
   end
   b:SetScript("OnClick", function()
     if PlaySound and SOUNDKIT and SOUNDKIT.IG_CHARACTER_INFO_TAB then PlaySound(SOUNDKIT.IG_CHARACTER_INFO_TAB) end
@@ -744,45 +836,66 @@ local function buildTabs()
     local t = UI.tabs[key]
     t.index = i
     local b = tabButton(key, t.title)
-    if i == 1 then b:SetPoint("TOPLEFT", window, "TOPLEFT", 12, -HEAD_H - 3)
-    else b:SetPoint("TOPLEFT", window.Tabs[i - 1], "TOPRIGHT", 4, 0) end
+    if i == 1 then b:SetPoint("BOTTOMLEFT", window, "TOPLEFT", 14, -HEAD_H - TABS_H)
+    else b:SetPoint("BOTTOMLEFT", window.Tabs[i - 1], "BOTTOMRIGHT", 3, 0) end
     window.Tabs[i] = b
     window.tabButtons[key] = b
   end
 end
 
+-- Header: a plate rounded like the window at the top, a soft gold gradient over the full width, the logo as a framed
+-- square, title and subtitle, the info line and a close button. The tabs sit on a gold line that fades to both sides.
 local function buildHeader()
-  local head = window:CreateTexture(nil, "BACKGROUND", nil, -6)
-  head:SetPoint("TOPLEFT", 1, -1); head:SetPoint("TOPRIGHT", -1, -1); head:SetHeight(HEAD_H)
-  head:SetColorTexture(0.085, 0.068, 0.045, 1)
-  local strip = window:CreateTexture(nil, "BACKGROUND", nil, -6)
-  strip:SetPoint("TOPLEFT", 1, -HEAD_H - 1); strip:SetPoint("TOPRIGHT", -1, -HEAD_H - 1); strip:SetHeight(TABS_H)
-  strip:SetColorTexture(0.045, 0.038, 0.030, 1)
-  local line = window:CreateTexture(nil, "BORDER")
-  line:SetPoint("TOPLEFT", 1, -HEAD_H - TABS_H); line:SetPoint("TOPRIGHT", -1, -HEAD_H - TABS_H); line:SetHeight(1)
-  line:SetColorTexture(0.42, 0.32, 0.17, 1)
-  local ring = window:CreateTexture(nil, "ARTWORK")
-  ring:SetSize(38, 38); ring:SetPoint("TOPLEFT", 12, -6)
-  ring:SetColorTexture(0.78, 0.60, 0.29, 1)
-  local logo = window:CreateTexture(nil, "OVERLAY")
-  logo:SetPoint("TOPLEFT", ring, "TOPLEFT", 2, -2); logo:SetPoint("BOTTOMRIGHT", ring, "BOTTOMRIGHT", -2, 2)
-  logo:SetTexture(ICON); logo:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-  local title = UI.Text(window, "Goldweaver", "GameFontNormalLarge")
-  title:SetPoint("TOPLEFT", ring, "TOPRIGHT", 10, -3)
-  title:SetTextColor(1, 0.82, 0.45)
-  window.subtitle = UI.Text(window, "", "GameFontHighlightSmall")
-  window.subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-  window.subtitle:SetTextColor(0.62, 0.57, 0.50)
-  local close, template = UI.SafeCreate("Button", window, { "UIPanelCloseButton" })
-  if not template then
-    UI.Skin(close, "ghost")
-    local x = close:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    x:SetPoint("CENTER"); x:SetText("X")
+  local head = CreateFrame("Frame", nil, window)
+  head:SetPoint("TOPLEFT", 1, -1)
+  head:SetPoint("TOPRIGHT", -1, -1)
+  head:SetHeight(HEAD_H + TABS_H - 1)
+  window.head = head
+  UI.Slice(head, "tab", 7, "BACKGROUND", -5):SetColor(0.082, 0.066, 0.046, 1)
+  -- gradient over the full width: the middle part starts at the top edge, the two edge strips below the plate's
+  -- rounded corners; the corners themselves get the rounded corner of the plate shape in the same tint
+  local TINT_H, CORNER = HEAD_H + TABS_H - 4, 5
+  local function tintPart(left, right, top)
+    local t = UI.Art(head, "fade_v", "BACKGROUND", -4)
+    t:SetPoint("TOPLEFT", head, left[1], left[2], -top)
+    t:SetPoint("BOTTOMRIGHT", head, right[1], right[2], -TINT_H)
+    t:SetTexCoord(0, 1, top / TINT_H, 1)
+    t:SetVertexColor(GOLD_EDGE[1], GOLD_EDGE[2], GOLD_EDGE[3], 0.10)
   end
-  close:SetSize(26, 26)
-  close:SetPoint("TOPRIGHT", -8, -12)
-  close:SetScript("OnClick", function() window:Hide() end)
-  window.info = UI.Text(window, "", "GameFontHighlightSmall")
+  tintPart({ "TOPLEFT", CORNER }, { "TOPRIGHT", -CORNER }, 0)
+  tintPart({ "TOPLEFT", 0 }, { "TOPLEFT", CORNER }, CORNER)
+  tintPart({ "TOPRIGHT", -CORNER }, { "TOPRIGHT", 0 }, CORNER)
+  local SHAPE = 16 -- texels of the "tab" shape, drawn 1:1
+  for _, side in ipairs({ { "TOPLEFT", 0, CORNER / SHAPE }, { "TOPRIGHT", 1 - CORNER / SHAPE, 1 } }) do
+    local c = UI.Art(head, "tab", "BACKGROUND", -4)
+    c:SetSize(CORNER, CORNER)
+    c:SetPoint(side[1], head, side[1], 0, 0)
+    c:SetTexCoord(side[2], side[3], 0, CORNER / SHAPE)
+    c:SetVertexColor(GOLD_EDGE[1], GOLD_EDGE[2], GOLD_EDGE[3], 0.095)
+  end
+  local line = UI.Divider(window)
+  line:SetPoint("TOPLEFT", 2, -HEAD_H - TABS_H)
+  line:SetPoint("TOPRIGHT", -2, -HEAD_H - TABS_H)
+  line:SetVertexColor(GOLD_EDGE[1], GOLD_EDGE[2], GOLD_EDGE[3], 1)
+
+  local logo = head:CreateTexture(nil, "ARTWORK")
+  logo:SetSize(36, 36)
+  logo:SetPoint("TOPLEFT", 16, -13)
+  logo:SetTexture(ICON); logo:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  UI.Round(head, logo, "mask_logo")
+  local frame = CreateFrame("Frame", nil, head)
+  frame:SetPoint("TOPLEFT", logo, "TOPLEFT", -1, 1)
+  frame:SetPoint("BOTTOMRIGHT", logo, "BOTTOMRIGHT", 1, -1)
+  UI.Slice(frame, "rr5_ring", 7, "OVERLAY"):SetColor(GOLD_EDGE[1], GOLD_EDGE[2], GOLD_EDGE[3], 1)
+  local title = UI.Text(head, "Goldweaver", "GameFontNormalLarge")
+  title:SetPoint("TOPLEFT", logo, "TOPRIGHT", 12, -2)
+  title:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
+  window.subtitle = UI.Text(head, "", "GameFontHighlightSmall")
+  window.subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
+  window.subtitle:SetTextColor(UI.DIM[1], UI.DIM[2], UI.DIM[3])
+  local close = UI.IconButton(head, "close", 24, function() window:Hide() end, "ghost")
+  close:SetPoint("TOPRIGHT", -12, -19)
+  window.info = UI.Text(head, "", "GameFontHighlightSmall")
   window.info:SetPoint("RIGHT", close, "LEFT", -12, 0)
   window.info:SetJustifyH("RIGHT")
 end
@@ -790,7 +903,7 @@ end
 local function buildWindow()
   if window then return window end
   window = CreateFrame("Frame", "GoldweaverMainWindow", UIParent)
-  window:SetSize(780, 606)
+  window:SetSize(WIN_W, WIN_H)
   window:SetPoint("CENTER")
   window:SetMovable(true)
   window:EnableMouse(true)

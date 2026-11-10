@@ -21,7 +21,7 @@ UI.RegisterTab("field", "On the road", function(frame)
   title:SetPoint("TOPLEFT", 12, -10)
   local sub = UI.Text(header, "", "GameFontHighlightSmall")
   sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-  sub:SetWidth(W - 380)
+  sub:SetWidth(W - 380); sub:SetWordWrap(false)
   local back = UI.Button(header, L["Current zone"], 120, function() viewZone = nil; content:Refresh() end)
   back:SetPoint("TOPRIGHT", -12, -16)
   local mapButton = UI.Button(header, L["World map"], 100, nil)
@@ -39,7 +39,7 @@ UI.RegisterTab("field", "On the road", function(frame)
   leftTitle:SetPoint("TOPLEFT", 10, -8)
   -- Grouped grid (user decision 09.11.2026): one block per own profession, items as compact cells with a skill
   -- colour bar, a demand badge and the price; details (required skill, own finds) are in the item tooltip.
-  local CELL_W, CELL_H, PER_ROW, MAX_GROUPS, MAX_CELLS = 70, 74, 6, 5, 12
+  local CELL_W, CELL_H, PER_ROW, MAX_GROUPS, MAX_CELLS = 70, 80, 6, 5, 12
   local groups = {}
   for g = 1, MAX_GROUPS do
     local block = CreateFrame("Frame", nil, left)
@@ -64,10 +64,10 @@ UI.RegisterTab("field", "On the road", function(frame)
       cell.bar:SetSize(40, 3)
       cell.bar:SetPoint("TOP", cell.button, "BOTTOM", 0, -2)
       cell.label = UI.Text(cell, "", "GameFontHighlightSmall")
-      cell.label:SetPoint("TOP", cell.bar, "BOTTOM", 0, -2)
+      cell.label:SetPoint("TOP", cell.bar, "BOTTOM", 0, -3)
       cell.label:SetWidth(CELL_W - 4); cell.label:SetJustifyH("CENTER"); cell.label:SetWordWrap(false)
       cell.price = UI.Text(cell, "", "GameFontDisableSmall")
-      cell.price:SetPoint("TOP", cell.label, "BOTTOM", 0, -1)
+      cell.price:SetPoint("TOP", cell.label, "BOTTOM", 0, -3)
       cell.price:SetWidth(CELL_W - 4); cell.price:SetJustifyH("CENTER")
       cell:Hide()
       block.cells[c] = cell
@@ -141,10 +141,10 @@ UI.RegisterTab("field", "On the road", function(frame)
     title:SetText(report.name)
     back:SetShown(viewZone ~= nil)
     if report.zone and report.zone.city then
-      sub:SetText(L["City · Worth a visit: collect mail, auction house, trainers."])
+      sub:SetText(L["City · mail, auction house, trainers"])
     elseif report.zone then
       local fit = report.fit == "ok" and "|cff80ff80" .. L["fits level"] .. " " or (report.fit == "low" and "|cffaaaaaa" .. L["too easy for level"] .. " " or "|cffff8060" .. L["too hard for level"] .. " ")
-      sub:SetText((L["Level %d–%d · %s%d|r · Classic data, plus your own finds"]):format(report.zone.min, report.zone.max, fit, report.level))
+      sub:SetText((L["Level %d–%d · %s%d|r"]):format(report.zone.min, report.zone.max, fit, report.level))
     else
       sub:SetText(L["No zone data on file. Goldweaver remembers what you gather here."])
     end

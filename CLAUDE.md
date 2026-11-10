@@ -45,6 +45,7 @@ b. `docs/14-UI-FUEHRUNG.md`: Reiter Leitfaden · Unterwegs · Berufe · Team, Sc
 
 ## Prüfen
 - `tools/check.ps1` (Syntax über LuaJIT auf alle Dateien, luacheck, Headless-Tests in `tools/tests/`). Muss grün sein, bevor ein WP als fertig gilt. Toolchain ist installiert: LuaJIT unter `%LOCALAPPDATA%\Programs\LuaJIT\bin`, `luacheck.exe` unter `%LOCALAPPDATA%\Programs\luacheck` (beide im Benutzer-PATH).
+- UI-Änderungen: Layout-Prüfung läuft im Simulator mit; `tools/preview.ps1` zeichnet jeden Reiter als Bild nach `scratch/preview` (ohne Spiel). Neue Grafiken nur über `tools/assets/make_assets.py`.
 - In-game: `/console scriptErrors 1`, `/gw probe` nach jedem Patch (Interface-Nummer), `/reload` nach Änderungen.
 - Dev-Setup: Junction `mklink /J "<WoW>\_forever_\Interface\AddOns\Goldweaver" "<Repo>\Goldweaver"` (Ordnername des Forever-Clients beim ersten Start prüfen; in der Beta hieß er `_classic_beta_`).
 

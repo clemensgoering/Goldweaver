@@ -13,6 +13,27 @@ local FAILURES, NOTES = {}, {}
 local function fail(msg) FAILURES[#FAILURES + 1] = msg end
 local function note(msg) NOTES[#NOTES + 1] = msg end
 
+-- layout checker and preview (shared with ClassPages): every window tab is checked in both languages; with
+-- GW_RENDER=<dir> (tools/preview.ps1) each one is also drawn as an HTML page
+local Layout = dofile(root .. "/tools/tests/layout.lua")
+local Render = dofile(root .. "/tools/tests/render.lua")(Layout)
+local RENDER_DIR = os.getenv("GW_RENDER")
+local function renderPage(env, name, title, roots)
+  if not RENDER_DIR then return end
+  local f = io.open(RENDER_DIR .. "/" .. name .. ".html", "w")
+  if not f then return end
+  f:write(Render.Page(roots, env.UIParent, env._frames, title, root .. "/tools/assets/png"))
+  f:close()
+end
+local LAYOUT_SEEN = {}
+local function checkLayout(env, frame, label, where)
+  if not (frame and frame._shown) then return end
+  for _, p in ipairs(Layout.Check(frame, env.UIParent, env._frames)) do
+    local key = where .. ": " .. p
+    if not LAYOUT_SEEN[key] then LAYOUT_SEEN[key] = true; fail(("%s: layout %s"):format(label, key)) end
+  end
+end
+
 ---------------------------------------------------------------------------------------------------
 -- Simulated client
 ---------------------------------------------------------------------------------------------------
@@ -70,17 +91,45 @@ local function newClient(opts)
   env._newObject = newObject
 
   local function m(name, fn) Methods[name] = fn end
-  for _, n in ipairs({ "SetPoint", "ClearAllPoints", "SetAllPoints", "SetMovable", "EnableMouse", "RegisterForDrag", "RegisterForClicks",
+  for _, n in ipairs({ "SetMovable", "EnableMouse", "RegisterForDrag", "RegisterForClicks",
     "StartMoving", "StopMovingOrSizing", "SetClampedToScreen", "SetFrameLevel", "SetToplevel", "SetBackdrop", "SetBackdropColor",
-    "SetBackdropBorderColor", "SetTexCoord", "SetVertexColor", "SetJustifyH", "SetJustifyV", "SetWordWrap", "SetMinMaxValues",
-    "SetStatusBarTexture", "SetStatusBarColor", "SetFontObject", "SetHighlightTexture", "SetNormalFontObject", "SetMultiLine",
-    "SetAutoFocus", "SetFocus", "ClearFocus", "HighlightText", "SetScrollChild", "SetDrawLayer", "SetOwner", "SetColorTexture",
-    "SetTextColor", "SetParent", "SetID", "SetHighlightFontObject", "SetDisabledFontObject", "SetPushedTextOffset",
-    "SetHitRectInsets", "SetDesaturated", "SetScale" }) do m(n, noop) end
+    "SetBackdropBorderColor", "SetJustifyV", "SetMinMaxValues",
+    "SetStatusBarTexture", "SetStatusBarColor", "SetHighlightTexture", "SetNormalFontObject", "SetMultiLine",
+    "SetAutoFocus", "SetFocus", "ClearFocus", "HighlightText", "SetScrollChild", "SetDrawLayer", "SetOwner",
+    "SetParent", "SetID", "SetHighlightFontObject", "SetDisabledFontObject", "SetPushedTextOffset",
+    "SetHitRectInsets", "SetScale", "SetTextInsets" }) do m(n, noop) end
+  -- geometry, fonts and colours are kept for the layout checker and the preview (tools/tests/layout.lua, render.lua)
+  -- SetPoint forms: (p) (p, x, y) (p, rel) (p, rel, rp) (p, rel, x, y) (p, rel, rp, x, y)
+  m("SetPoint", function(self, point, a, b, c, d)
+    local rel, rp, x, y
+    if type(a) == "number" then x, y = a, b
+    elseif type(a) == "table" then
+      rel = a
+      if type(b) == "string" then rp, x, y = b, c, d elseif type(b) == "number" then x, y = b, c end
+    elseif type(a) == "string" then rp, x, y = a, b, c
+    end
+    self._points = self._points or {}
+    self._points[point] = { rel = rel, relPoint = rp, x = x or 0, y = y or 0 }
+  end)
+  m("ClearAllPoints", function(self) self._points = {} end)
+  m("SetAllPoints", function(self, rel)
+    self._points = { TOPLEFT = { rel = rel, relPoint = "TOPLEFT", x = 0, y = 0 }, BOTTOMRIGHT = { rel = rel, relPoint = "BOTTOMRIGHT", x = 0, y = 0 } }
+  end)
   m("SetFontString", function(self, fs) self._fs = fs end)
-  m("SetSize", function(self, w, h) self._w, self._h = w, h end)
-  m("SetWidth", function(self, w) self._w = w end)
-  m("SetHeight", function(self, h) self._h = h end)
+  m("SetSize", function(self, w, h) self._w, self._h, self._wSet, self._hSet = w, h, true, true end)
+  m("SetWidth", function(self, w) self._w, self._wSet = w, true end)
+  m("SetHeight", function(self, h) self._h, self._hSet = h, true end)
+  m("SetWordWrap", function(self, v) self._nowrap = not v end)
+  m("SetFontObject", function(self, f) self._font = f end)
+  m("SetTexCoord", function(self, l, r, t, b) self._coords = { l, r, t, b } end)
+  m("SetVertexColor", function(self, r, g, b, a) self._vcolor = { r, g, b, a or 1 } end)
+  m("SetColorTexture", function(self, r, g, b, a) self._color = { r, g, b, a or 1 } end)
+  m("SetTextColor", function(self, r, g, b, a) self._textColor = { r, g, b, a or 1 } end)
+  m("SetJustifyH", function(self, j) self._justifyH = j end)
+  m("SetBlendMode", function(self, mode) self._blend = mode end)
+  m("SetDesaturated", function(self, on) self._desat = on end)
+  m("CreateMaskTexture", function(self) return newObject("Mask", self) end)
+  m("AddMaskTexture", function(self, mask) self._mask = mask end)
   m("GetWidth", function(self) return self._w end)
   m("GetHeight", function(self) return self._h end)
   m("GetPoint", function() return "CENTER", nil, "CENTER", 0, 0 end)
@@ -101,11 +150,12 @@ local function newClient(opts)
     self._events[e] = true
   end)
   m("UnregisterEvent", function(self, e) self._events[e] = nil end)
-  m("CreateTexture", function(self) return newObject("Texture", self) end)
-  m("CreateFontString", function(self) return newObject("FontString", self) end)
-  m("SetText", function(self, t) self._text = t and tostring(t) or "" end)
+  m("CreateTexture", function(self, _, layer) local t = newObject("Texture", self); t._layer, t._w, t._h = layer, 0, 0 return t end)
+  m("CreateFontString", function(self, _, _, font) local fs = newObject("FontString", self); fs._font = font; fs._w, fs._h = 0, 0 return fs end)
+  -- a button's SetText writes into its font string like in the client
+  m("SetText", function(self, t) self._text = t and tostring(t) or ""; if self._fs then self._fs._text = self._text end end)
   m("GetText", function(self) return self._text end)
-  m("GetStringWidth", function(self) return #(self._text or "") * 6 end)
+  m("GetStringWidth", function(self) return Layout.TextWidth(self) end) -- same estimate as the layout checker
   m("GetFontString", function(self) self._fs = self._fs or newObject("FontString", self); return self._fs end)
   m("SetTexture", function(self, t) self._texture = t end)
   m("SetAlpha", function(self, a) self._alpha = a end)
@@ -514,7 +564,11 @@ local function session(label, opts, savedDB)
     if #env._tooltipCalls == 0 and not opts.minimal then fail(label .. ": tooltip hook not registered") end
   end)
   s("every window tab", function()
-    for _, key in ipairs(ns.UI.order) do ns.UI.Open(key); env._advance(0.1) end
+    for _, key in ipairs(ns.UI.order) do
+      ns.UI.Open(key); env._advance(0.1)
+      checkLayout(env, env.GoldweaverMainWindow, label, "tab " .. key)
+      if label:find("^modern") then renderPage(env, (label:gsub("[^%w]+", "-")):lower() .. "-" .. key, label .. " · " .. key, { env.GoldweaverMainWindow }) end
+    end
     ns.UI.Open("heute"); ns.UI.Open("chars"); ns.UI.Toggle(); ns.UI.Toggle("berufe")
     for skillLine in pairs(ns.Chars.Current().professions) do ns.UI.SelectProfession(skillLine) end
   end)
@@ -522,7 +576,15 @@ local function session(label, opts, savedDB)
     for _, st in ipairs(ns.Steps.Build(8)) do if st.action then st.action() end end
     env._advance(2)
   end)
-  s("side panel", function() ns.Panel.Refresh(); ns.Panel.Toggle(); ns.Panel.Toggle() end)
+  s("side panel", function()
+    ns.Panel.Refresh(); ns.Panel.Toggle(); ns.Panel.Toggle()
+    for _, name in ipairs({ "GoldweaverPanel", "GoldweaverOnboarding", "GoldweaverDestroyFrame" }) do
+      checkLayout(env, env[name], label, name)
+      if label:find("^modern") and env[name] and env[name]._shown then
+        renderPage(env, (label:gsub("[^%w]+", "-")):lower() .. "-" .. name, label .. " · " .. name, { env[name] })
+      end
+    end
+  end)
   s("mailbox send", function()
     env.MailFrame._shown = true
     env._fire("MAIL_SHOW"); env._advance(1)
