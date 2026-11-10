@@ -163,9 +163,13 @@ UI.RegisterTab("guide", "Guide", function(frame)
         (L["%d in the mail"]):format(mailTotal(crafter)), (L["waiting for %s"]):format(first(crafter)))
     elseif me and me == crafter and gatherer then
       local inMail = mailTotal(me)
-      meCard:SetChar(me, true, (L["Level %d · %d item(s) in your mailbox"]):format(me.level or 0, inMail))
+      -- the game knows about new mail before the inbox was opened; the items are counted when it opens
+      local newMail = inMail == 0 and HasNewMail and HasNewMail()
+      local mailLine = newMail and L["New mail"] or (L["%d in the mail"]):format(inMail)
+      meCard:SetChar(me, true, newMail and (L["Level %d · new mail, open the mailbox"]):format(me.level or 0)
+        or (L["Level %d · %d item(s) in your mailbox"]):format(me.level or 0, inMail))
       otherCard:SetChar(gatherer, false, (L["Level %d · last seen %s"]):format(gatherer.level or 0, ns.Util.Ago(gatherer.lastSeen)))
-      pipe:Set((L["%d in the mail"]):format(inMail), (L["from %s"]):format(first(gatherer)),
+      pipe:Set(mailLine, newMail and L["open the mailbox to count it"] or (L["from %s"]):format(first(gatherer)),
         (L["State of %s"]):format(first(gatherer)), ns.Util.Ago(gatherer.lastSeen))
     else
       meCard:SetChar(me, true, me and ("%s · " .. L["Level %d"]):format(roleLine, me.level or 0) or "")

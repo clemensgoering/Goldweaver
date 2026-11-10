@@ -150,6 +150,42 @@ end
 
 -- Mailbox UI -----------------------------------------------------------------------------------
 local sendButton, attached, pendingSend
+local lastAttach, lastSend = {}, nil
+
+-- What the send tab holds right now: { [itemID] = count }.
+local function attachedItems()
+  local items = {}
+  if not GetSendMailItem then return items end
+  for i = 1, MAX_ATTACH do
+    local _, itemID, _, count = GetSendMailItem(i)
+    if itemID and not ns.Secret.Any(itemID, count) then items[itemID] = (items[itemID] or 0) + (count or 1) end
+  end
+  return items
+end
+
+-- The own character a typed recipient means ("Cupedos", "Cupedos Grel", "Cupedos-Realm"); nil for anyone else.
+local function ownRecipient(recipient)
+  if type(recipient) ~= "string" or ns.Secret.IsSecret(recipient) or recipient == "" then return nil end
+  local want = recipient:lower():gsub("%s+", " ")
+  local firstPart = want:match("^([^%s%-]+)")
+  local me = ns.Chars.Current()
+  for _, rec in pairs(ns.db.chars) do
+    if rec ~= me and (not me or rec.market == me.market) then
+      local mailName = (ns.Chars.MailName(rec) or ""):lower()
+      local first = (rec.firstName or ""):lower()
+      if want == mailName or want == (rec.name or ""):lower() or (first ~= "" and firstPart == first) then return rec end
+    end
+  end
+  return nil
+end
+
+-- Every mail to an own character counts for the team view, also one sent with Blizzard's own Send button.
+local function onSendMail(recipient)
+  local items = attachedItems()
+  if not next(items) then items = lastAttach end
+  local rec = ownRecipient(recipient)
+  lastSend = rec and next(items) and { rec = rec, items = items } or nil
+end
 
 local function countAttachments()
   local n = 0
@@ -157,6 +193,13 @@ local function countAttachments()
     for i = 1, MAX_ATTACH do if GetSendMailItem(i) then n = n + 1 end end
   end
   return n
+end
+
+-- The button is a tab under the mail frame (bottom right, like the Inbox/Send tabs): as wide as its label.
+local function setLabel(text)
+  sendButton:SetText(text)
+  local fs = sendButton:GetFontString()
+  sendButton:SetWidth(math.max(90, math.min(200, ((fs and fs:GetStringWidth()) or 80) + 28)))
 end
 
 local function refreshSendButton()
@@ -167,7 +210,7 @@ local function refreshSendButton()
   -- keeps pointing at the target it was filled for (bug found by tools/tests/sim.lua, 09.11.2026).
   if attached and attached > 0 and sendButton.plan then
     local rec = sendButton.plan.rec
-    sendButton:SetText((L["Send %d » %s"]):format(attached, rec.firstName or rec.name))
+    setLabel((L["Send %d » %s"]):format(attached, rec.firstName or rec.name))
     sendButton.tip = (L["Send to %s (%d attachments)"]):format(rec.name, attached)
     sendButton:Enable(); sendButton:Show()
     return
@@ -176,18 +219,18 @@ local function refreshSendButton()
   local first
   for _, p in pairs(plan) do if not first or p.value > first.value then first = p end end
   if not first then
-    sendButton:SetText(L["Nothing to send"])
+    setLabel(L["Nothing to send"])
     sendButton.tip = L["Nothing to send (/gw mail shows why)"]
     sendButton:Disable(); sendButton:Show(); return
   end
   sendButton.plan = first
   sendButton:Enable(); sendButton:Show()
   if attached and attached > 0 then
-    sendButton:SetText((L["Send %d » %s"]):format(attached, first.rec.firstName or first.rec.name))
+    setLabel((L["Send %d » %s"]):format(attached, first.rec.firstName or first.rec.name))
     sendButton.tip = (L["Send to %s (%d attachments)"]):format(first.rec.name, attached)
   else
     local n = math.min(MAX_ATTACH, #first.items)
-    sendButton:SetText((L["Attach %d » %s"]):format(n, first.rec.firstName or first.rec.name))
+    setLabel((L["Attach %d » %s"]):format(n, first.rec.firstName or first.rec.name))
     sendButton.tip = (L["Attach for %s: %d of %d (%s)"]):format(first.rec.name, n, first.count, ns.Util.Money(first.value))
   end
 end
@@ -203,13 +246,7 @@ local function onSendClick()
     if SendMailNameEditBox then SendMailNameEditBox:SetText(recipient) end
     local subject = (L["Goldweaver: %d items"]):format(attached)
     if SendMailSubjectEditBox then SendMailSubjectEditBox:SetText(subject) end
-    -- what travels, for the team view ("in the mail")
-    local items = {}
-    for i = 1, MAX_ATTACH do
-      local _, itemID, _, count = GetSendMailItem(i)
-      if itemID and not ns.Secret.Any(itemID, count) then items[itemID] = (items[itemID] or 0) + (count or 1) end
-    end
-    pendingSend = { variant = variant, recipient = recipient, t = GetTime(), rec = p.rec, items = items }
+    pendingSend = { variant = variant, recipient = recipient, t = GetTime() }
     local ok, err = pcall(SendMail, recipient, subject, "")
     if not ok then ns.Print((L["Sending failed: %s"]):format(tostring(err))); pendingSend = nil end
     return
@@ -231,9 +268,10 @@ end
 
 local function createButton()
   if sendButton or not MailFrame then return end
-  -- beside the mail frame (top right, outside): never covers the Inbox/Send tabs or the frame's own buttons
-  sendButton = ns.UI.Button(MailFrame, "", 150, onSendClick)
-  sendButton:SetPoint("TOPLEFT", MailFrame, "TOPRIGHT", 4, -30)
+  -- a tab under the mail frame at the bottom right, opposite Blizzard's Inbox/Send tabs: compact, covers nothing
+  sendButton = ns.UI.Button(MailFrame, "", 120, onSendClick, "tabOn")
+  sendButton:SetHeight(28)
+  sendButton:SetPoint("TOPRIGHT", MailFrame, "BOTTOMRIGHT", -6, 2)
   -- short label on the button, the full sentence (recipient, counts, value) on hover
   sendButton:SetScript("OnEnter", function(self)
     if not self.tip then return end
@@ -270,7 +308,8 @@ ns:RegisterModule("Mail", {
     ns.Events:On("MAIL_SEND_SUCCESS", function()
       attached = 0
       if pendingSend and ns.Learn then ns.Learn.MailResult(pendingSend.variant, true) end
-      if pendingSend and ns.Coop then ns.Coop.RecordSent(pendingSend.rec, pendingSend.items) end
+      if lastSend and ns.Coop then ns.Coop.RecordSent(lastSend.rec, lastSend.items) end
+      lastSend, lastAttach = nil, {}
       pendingSend = nil
       C_Timer.After(0.5, refreshSendButton)
     end, "Mail")
@@ -284,7 +323,12 @@ ns:RegisterModule("Mail", {
         pendingSend = nil
       end
     end, "Mail")
-    ns.Events:On("MAIL_SEND_INFO_UPDATE", function() attached = countAttachments(); refreshSendButton() end, "Mail")
+    ns.Events:On("MAIL_SEND_INFO_UPDATE", function()
+      attached = countAttachments()
+      lastAttach = attachedItems()
+      refreshSendButton()
+    end, "Mail")
+    if hooksecurefunc and SendMail then hooksecurefunc("SendMail", function(recipient) pcall(onSendMail, recipient) end) end
     ns.Events:On("BAG_UPDATE_DELAYED", function() if MailFrame and MailFrame:IsShown() then C_Timer.After(0.5, refreshSendButton) end end, "Mail")
   end,
 })

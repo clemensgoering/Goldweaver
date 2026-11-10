@@ -24,7 +24,7 @@ read_globals = {
   "GetTradeSkillItemLink", "GetTradeSkillRecipeLink", "GetTradeSkillLine", "GetTradeSkillTools", "DoTradeSkill",
   "GetNumCrafts", "GetCraftInfo", "GetCraftReagentInfo", "GetCraftNumReagents", "GetCraftItemLink", "DoCraft",
   -- Mail
-  "SendMail", "GetInboxNumItems", "GetInboxItem", "ATTACHMENTS_MAX_RECEIVE", "TradeFrame", "GetInboxHeaderInfo", "GetInboxInvoiceInfo", "TakeInboxItem", "AutoLootMailItem",
+  "SendMail", "GetInboxNumItems", "HasNewMail", "GetInboxItem", "ATTACHMENTS_MAX_RECEIVE", "TradeFrame", "GetInboxHeaderInfo", "GetInboxInvoiceInfo", "TakeInboxItem", "AutoLootMailItem",
   "SendMailNameEditBox", "SendMailFrame", "MailFrame", "InboxFrame",
   -- Optional addons
   "Auctionator", "TSM_API", "Syndicator", "GatherMate2",

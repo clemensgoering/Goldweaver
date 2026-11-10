@@ -172,6 +172,7 @@ local function newClient(opts)
   env.HideUIPanel = function(f) if f then f:Hide() end end
   env.ReloadUI = noop
   env.hooksecurefunc = function(obj, name, fn)
+    if type(obj) == "string" then obj, name, fn = env, obj, name end -- global form: hooksecurefunc("SendMail", fn)
     local old = obj[name]
     obj[name] = function(...) local r = { old(...) }; fn(...); return unpack(r) end
   end
@@ -244,7 +245,7 @@ local function newClient(opts)
     GetContainerItemInfo = function(bag, slot) local b = env._bags[bag] return b and b[slot] end,
     UseContainerItem = function(bag, slot)
       local it = env._bags[bag] and env._bags[bag][slot]
-      if it and env.MailFrame._shown then env._sendItems[#env._sendItems + 1] = it; env._bags[bag][slot] = nil end
+      if it and env.MailFrame._shown then env._sendItems[#env._sendItems + 1] = it; env._bags[bag][slot] = nil; env._fire("MAIL_SEND_INFO_UPDATE") end
     end,
   }
 
@@ -522,6 +523,10 @@ local function session(label, opts, savedDB)
       if not send then fail(label .. ": attach did not switch to send") return end
       send:Click(); env._advance(1)
       if not env._sentTo then fail(label .. ": mail not sent") end
+      -- the team view must know what travels (playtest 10.11.2026: "0 in the mail" although mail was sent)
+      local target = ns.Chars.ByRole("processor", ns.Chars.MarketKey())[1]
+      local inc = target and target.inventory and target.inventory.incoming
+      if not (inc and next(inc.items or {})) then fail(label .. ": sent mail not recorded as in transit for " .. tostring(target and target.name)) end
     end
     env._fire("MAIL_INBOX_UPDATE"); env.AutoLootMailItem(1); env._advance(1)
     env.MailFrame._shown = false; env._fire("MAIL_CLOSED")
