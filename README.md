@@ -47,15 +47,15 @@ This is an early version. The decision logic, the mail flow and the auction hous
 
 ## Development
 
-The addon lives in `Goldweaver/`; `tools/` holds the checks and `docs/` the design documents (in German).
+The addon lives in `Goldweaver/`; `tools/` holds the checks, the simulator and the script that generates the art set.
 
 1. Link the addon into the game: `mklink /J "<WoW>\_forever_\Interface\AddOns\Goldweaver" "<repo>\Goldweaver"`.
 2. Run `tools/check.ps1` (Windows) or `tools/check.sh` before every commit. It runs a syntax check with LuaJIT, luacheck, the headless tests and a simulator that plays complete sessions through every module and checks the layout in both languages.
 3. `tools/preview.ps1` renders every tab as an image without the game.
 4. In game: `/console scriptErrors 1`, then `/gw debug run`.
 
-Rules for contributions are in `CLAUDE.md`: Mainline API only, one action per click, no stored names of other players, user data is never reset.
+Rules for contributions: Mainline API only (no Classic calls), one action per click and never from a timer, no stored names of other players, user data is never reset (additive migrations only), every text through `ns.L` with a German translation.
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Logo and banner in `tools/assets/brand/` are original works under the same license; the banner title is set in STIX (SIL Open Font License).
+MIT, see [LICENSE](LICENSE). Logo and banner in `tools/assets/brand/` are original works under the same license.

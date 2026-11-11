@@ -7,11 +7,9 @@ move-folders:
 
 # Paths relative to the working copy. Dot-files are always ignored.
 ignore:
-  - docs
   - tools
   - README.md
   - CHANGELOG.md
-  - CLAUDE.md
 
 manual-changelog:
   filename: CHANGELOG.md
