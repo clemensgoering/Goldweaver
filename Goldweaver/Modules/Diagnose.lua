@@ -74,7 +74,7 @@ end)
 R("prices", function(add)
   local market = ns.db.prices[ns.Chars.MarketKey()]
   local hasOwn = market and next(market) ~= nil
-  local hasAuctionator = Auctionator and Auctionator.API and Auctionator.API.v1
+  local hasAuctionator = ns.API.External.HasAuctionator()
   if not hasOwn and not hasAuctionator then
     add({ id = "prices", severity = "info", title = "No market prices yet",
       detail = "Search the auction house once or install Auctionator; until then Goldweaver uses vendor prices." })

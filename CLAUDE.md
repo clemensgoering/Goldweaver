@@ -16,7 +16,7 @@ b. `docs/14-UI-FUEHRUNG.md`: Reiter Leitfaden · Unterwegs · Berufe · Team, Sc
 - **Secret Values:** Jeder Event-Handler über `ns.Events:On(...)` (Secret-Guard). Vor Vergleich, Tabellen-Key oder Speichern: `ns.Secret.IsSecret(v)`. Nie Kampf-, Auren-, Cooldown- oder Combat-Log-Daten lesen.
 - **Keine Automatisierung:** Posten, Kaufen, Abbrechen, Senden, Herstellen, Entzaubern nur im Klick-Handler eines Buttons, eine Aktion pro Klick. Timer nur für Anzeigen. `C_AuctionHouse.IsThrottledMessageSystemReady()` vor jeder AH-Anfrage.
 - **Berufsneutral:** Engine-Code (`Core/`, `Modules/`) kennt keine Berufsnamen. Alles Berufsspezifische steht in `Professions/<Beruf>.lua` und wird über `ns.Professions:Register(profile)` eingebunden.
-- **Fremdcode:** Kein Code, keine Daten, keine Texte aus ForeverArtisan (proprietär). Auctionator/TSM/Syndicator/GatherMate2 nur über deren öffentliche API lesen, immer optional (`if Auctionator and Auctionator.API then`).
+- **Fremdcode:** Kein Code, keine Daten, keine Texte aus ForeverArtisan (proprietär). Andere Addons (Auctionator, RestedXP) nur über `ns.API.External` in `Core/API.lua` lesen: dort wird zuerst geprüft, ob Funktion oder Tabelle wie erwartet vorliegt, sonst erfolgt kein Zugriff. Immer optional, nur lesend, nichts davon speichern.
 - **Keine Netzwerk-, Chat- oder Werbefunktionen.** Keine Spendenhinweise im Spiel.
 - **Datenschutz:** In SavedVariables landen nur Daten des eigenen Accounts (eigene Charaktere, eigene Verkäufe, gesehene Preise). Nie Namen anderer Spieler speichern (AH-Verkäufer, Käufer aus Rechnungen nur als „vorhanden ja/nein").
 - **Vor Veröffentlichung:** Repo auf public stellen (Richtlinie „Code vollständig sichtbar"), Audit-Checkliste in `docs/07-AUDIT.md` erneut durchgehen.

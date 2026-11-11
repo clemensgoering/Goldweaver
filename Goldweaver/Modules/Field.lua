@@ -49,15 +49,13 @@ local function skillOf(rec, skillLine)
   return p.rank or 0
 end
 
--- RestedXP: read the current guide and the zones of the next steps. Optional and read-only.
+-- RestedXP: the zones of the next steps of the active guide. Optional and read-only; the access itself lives in
+-- ns.API.External, which returns nil when RestedXP is absent or its tables look different.
 function Field.Route(lookahead)
-  local rxp = _G.RXP
-  local data = _G.RXPCData
-  if type(rxp) ~= "table" or type(data) ~= "table" then return nil end
+  local guide = ns.API.External.RestedXPGuide()
+  if not guide then return nil end
   local ok, route = pcall(function()
-    local guide = rxp.currentGuide
-    if type(guide) ~= "table" or type(guide.steps) ~= "table" then return nil end
-    local start = tonumber(data.currentStep) or 1
+    local start = guide.step
     local out, seen = {}, {}
     for s = start, math.min(#guide.steps, start + (lookahead or 40)) do
       local step = guide.steps[s]
@@ -70,7 +68,7 @@ function Field.Route(lookahead)
         end
       end
     end
-    return { guide = guide.displayname or guide.name or "?", step = start, zones = out }
+    return { guide = guide.name, step = start, zones = out }
   end)
   if ok then return route end
   ns.Health.Record("Field.Route (RestedXP)", route)

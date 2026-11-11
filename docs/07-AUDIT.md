@@ -38,7 +38,7 @@ Der Stand verletzt keine Blizzard-Richtlinie und keine Fremdlizenz. Der Durchlau
 | Eigener Code | MIT, `LICENSE` vorhanden, `X-License: MIT` in der TOC |
 | ForeverArtisan (proprietär) | Kein Code, keine Daten, keine Bezeichner übernommen |
 | Auctionator | Nur `Auctionator.API.v1.GetAuctionPriceByItemID` und `GetAuctionAgeByItemID` mit eigener Aufrufer-Kennung, immer optional |
-| RestedXP | Nur lesend, wenn aktiv: `Field.Route` liest die globalen Tabellen `RXP.currentGuide` und `RXPCData.currentStep` (Zonen der nächsten Schritte), mit `pcall` abgesichert. RestedXP bietet dafür **keine öffentliche API**; siehe Abschnitt 6 |
+| RestedXP | Nur lesend, wenn aktiv: `ns.API.External.RestedXPGuide()` liest `RXP.currentGuide` und `RXPCData.currentStep` (Zonen der nächsten Schritte). RestedXP bietet dafür keine öffentliche API; der Zugriff ist gekapselt und findet nur statt, wenn die Tabellen mit dem erwarteten Aufbau vorliegen (entschieden am 11.11.2026) |
 | TradeSkillMaster, GatherMate2, Syndicator | Kein Zugriff mehr. `Core/Probe.lua` prüft lediglich, ob die Syndicator-Funktion existiert |
 | Grafik | Eigenes Grafikset (`tools/assets/make_assets.py`), Logo und Banner per Bildgenerator ohne Spielgrafik; Bannerschrift STIX (SIL Open Font License, Lizenztext liegt bei) |
 | Spieldaten (Item-IDs, Rezeptnamen, Zonen) | Fakten aus Classic-Leitfäden, keine Texte übernommen |
@@ -66,7 +66,7 @@ Zusätzlich entfernt: die Vorlage `BackdropTemplate` an vier Fenstern (seit dem 
 - Schritte für den Kontoinhaber in `12-CURSEFORGE.md` Abschnitt 4.
 
 ## 6. Bekannte Grenzen (kein Mangel, aber offen zu sagen)
-- **RestedXP ohne öffentliche API:** Die Projektregel verlangt Zugriffe nur über öffentliche APIs. Für RestedXP gibt es keine; gelesen werden interne Tabellen, nichts davon wird kopiert oder gespeichert. Technisch harmlos (bei einer Umbenennung verschwindet nur die Routenzeile), aber eine bewusste Ausnahme von der Regel. Entscheidung offen: so lassen oder die RestedXP-Anbindung entfernen.
+- **Fremd-Addons nur über `ns.API.External`:** Das ist die einzige Stelle, die ein anderes Addon berührt (Auctionator über dessen öffentliche API, RestedXP über interne Tabellen, weil es keine API gibt). Jede Funktion prüft zuerst, ob Funktion oder Tabelle mit dem erwarteten Typ vorliegt, und liefert sonst nichts: kein Addon oder geänderter Aufbau heißt kein Zugriff. Alles bleibt lokal, nichts davon wird gespeichert.
 - Teile der Berufsdaten (Lehrernamen, Levelpfade, Sammelzonen) stammen aus Classic-Wissen und sind auf Forever nicht vollständig bestätigt; das Addon korrigiert sie durch eigene Beobachtung. README und Projektseite sagen das.
 - Ein Kauf beim Händler wird beim Klick als Einkaufspreis gemerkt, auch wenn der Kauf danach scheitert (zum Beispiel volle Taschen). Der Preis selbst stimmt; nur die gemerkte Menge kann abweichen.
 - Der Speicherbedarf der gespeicherten Daten ist begrenzt: Preise 30 Tage, Verkaufsbuch 2000 Einträge je Charakter, Fundorte 40 je Item und Zone, Fehlerliste 50, Debug-Log 200 Zeilen.

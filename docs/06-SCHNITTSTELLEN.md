@@ -10,6 +10,7 @@ Stand: 08.11.2026 (nach dem Architektur-Durchgang). Jede Session, die eine Schni
 | `ns.Events` | `On(event, fn, owner?)`, `Off(event, fn)`, `Summary()`, `skipped`; `ns.Health.Record(where, err)`, `.errors`, `.detached` |
 | `ns.Secret` | `IsSecret(v)`, `Any(...)`, `Safe(v, fallback)` |
 | `ns.API` | `Has(path)`, `Resolve(path)`, `Call(path, ...) → ok, ...`, `ItemInfo(id) → {name, quality, reqLevel, equipLoc, sellPrice, classID, subclassID, bindType, icon}`, `ItemInfoInstant(id)`, `ItemName/ItemIcon/ItemCount`, `NumSlots/FreeSlots/ContainerItem(bag, slot)/UseContainerItem`, `failures` |
+| `ns.API.External` | Einzige Stelle für Zugriffe auf andere Addons, jeweils erst nach Prüfung von Existenz und Typ, sonst `nil`: `HasAuctionator()`, `AuctionatorPrice(itemID) → copper, ageDays`, `RestedXPGuide() → {name, step, steps}` (nur lesend) |
 | `ns.Features` | `Define(name, {label, requires})` ★, `Available(name) → ok, why`, `Missing(name)`, `SetEnabled(name, on)`, `Status()` |
 | `ns.DB` | `Prepare(db)`, `Backup(reason, db?)`, `HasBackup()`, `RestoreBackup()`, `Stats()`, `MIGRATIONS` ★, `SCHEMA`; `ns.db`, `ns.cdb`, `ns.INTERFACE` |
 | `ns.Util` | `Money(copper)`, `AfterCut(copper, cut?)`, `Round(x, digits)` |

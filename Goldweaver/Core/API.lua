@@ -23,6 +23,46 @@ end
 
 function API.Has(path) return API.Resolve(path) ~= nil end
 
+-- Other addons --------------------------------------------------------------------------------------
+-- ns.API.External is the only place that touches another addon. Every function first checks that the expected
+-- function or table exists with the expected type and returns nil otherwise: no addon or a changed layout means
+-- no access at all. Everything is read-only and stays local; nothing read here is copied into SavedVariables.
+--   External.HasAuctionator() -> boolean
+--   External.AuctionatorPrice(itemID) -> copper, ageDays | nil     public API (Auctionator.API.v1)
+--   External.RestedXPGuide() -> { name, step, steps } | nil        internal tables (RestedXP has no public API)
+local External = {}
+API.External = External
+
+local function auctionatorV1()
+  local v1 = API.Resolve("Auctionator.API.v1")
+  if type(v1) == "table" and type(v1.GetAuctionPriceByItemID) == "function" then return v1 end
+  return nil
+end
+
+function External.HasAuctionator() return auctionatorV1() ~= nil end
+
+function External.AuctionatorPrice(itemID)
+  local v1 = auctionatorV1()
+  if not v1 then return nil end
+  local ok, copper = pcall(v1.GetAuctionPriceByItemID, ADDON, itemID)
+  if not ok or type(copper) ~= "number" then return nil end
+  local age
+  if type(v1.GetAuctionAgeByItemID) == "function" then
+    local okAge, days = pcall(v1.GetAuctionAgeByItemID, ADDON, itemID)
+    if okAge and type(days) == "number" then age = days end
+  end
+  return copper, age
+end
+
+-- The active RestedXP guide. steps is RestedXP's own list and must be treated as read-only by the caller.
+function External.RestedXPGuide()
+  local guide = API.Resolve("RXP.currentGuide")
+  if type(guide) ~= "table" or type(guide.steps) ~= "table" then return nil end
+  local step = tonumber(API.Resolve("RXPCData.currentStep")) or 1
+  local name = guide.displayname or guide.name
+  return { name = type(name) == "string" and name or "?", step = step, steps = guide.steps }
+end
+
 -- Calls a path safely. Returns ok, results...
 function API.Call(path, ...)
   local fn = API.Resolve(path)

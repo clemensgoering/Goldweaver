@@ -127,11 +127,9 @@ end
 
 -- Default sources. Optional addons are probed at call time so load order does not matter.
 Price.RegisterSource("auctionator", 10, function(itemID)
-  local api = Auctionator and Auctionator.API and Auctionator.API.v1
-  if not (api and api.GetAuctionPriceByItemID) then return nil end
-  local copper = api.GetAuctionPriceByItemID(ADDON, itemID)
-  local age = api.GetAuctionAgeByItemID and api.GetAuctionAgeByItemID(ADDON, itemID) or nil
-  return copper, age and age * DAY or 0, 3
+  local copper, ageDays = ns.API.External.AuctionatorPrice(itemID)
+  if not copper then return nil end
+  return copper, ageDays and ageDays * DAY or 0, 3
 end)
 
 Price.RegisterSource("observed", 30, function(itemID)
@@ -149,8 +147,8 @@ ns:RegisterModule("Price", {
   end,
   SelfTest = function()
     local results = {}
-    local auct = Auctionator and Auctionator.API and Auctionator.API.v1 and Auctionator.API.v1.GetAuctionPriceByItemID
-    results[#results + 1] = { name = "Auctionator-API", ok = auct ~= nil, warn = true, detail = auct and L["available"] or L["not installed (prices only from your own AH searches)"] }
+    local auct = ns.API.External.HasAuctionator()
+    results[#results + 1] = { name = "Auctionator-API", ok = auct, warn = true, detail = auct and L["available"] or L["not installed (prices only from your own AH searches)"] }
     local market = ns.db.prices[ns.Chars.MarketKey()]
     local n = 0
     for _ in pairs(market or {}) do n = n + 1 end
