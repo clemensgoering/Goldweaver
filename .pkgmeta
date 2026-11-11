@@ -11,6 +11,11 @@ ignore:
   - README.md
   - CHANGELOG.md
 
+# CurseForge relations (project slugs). Nothing is embedded and nothing is required.
+optional-dependencies:
+  - auctionator
+  - restedxp-guide
+
 manual-changelog:
   filename: CHANGELOG.md
   markup-type: markdown
