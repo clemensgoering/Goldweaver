@@ -54,7 +54,7 @@ Stand: 08.11.2026 (nach dem Architektur-Durchgang). Jede Session, die eine Schni
 | `ns.Field` (Fundorte) | `PlayerSpot() → {m, x, y}`, `Spots(zoneID, items?) → {m, x, y, item}`, `NearestNeededNode() → label` (Wegpunkt); Daten `learned.zoneGathers[zone][item].spots` (Schema 7, höchstens 40 je Item) |
 | `ns.UI` (Ergänzung) | `FrameTabs(frame, n)` (Aktionsreiter unter Blizzard-Fenstern, `tab:Set(label, tip, onClick, enabled)`/`Clear()`), `ProgressRows`, `SetHeaderInfo`, `ApplyScale()` |
 | `ns.Professions` (Ergänzung) | `ZoneFor(profile, skill) → {from, to, zone, note}`; Profile für alle zwölf Berufe |
-| `ns.Autopilot` | `GuessRole(rec, market)`, `ReadQueue(rec?)`, `StartReading()`, `QuickHealth()`, `status` |
+| `ns.Autopilot` | `GuessRole(rec, market)`, `QuickHealth()`, `status` |
 | `ns.Panel` | `Refresh()`, `Toggle()`, `ShouldShow()` |
 | `ns.Settings` | `Open()` |
 | `ns.HUD` | `Refresh()`, `ShouldShow()` |

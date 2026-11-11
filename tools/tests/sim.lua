@@ -552,7 +552,6 @@ local function session(label, opts, savedDB)
 
   s("ADDON_LOADED", function()
     env._fire("ADDON_LOADED", "Goldweaver")
-    if opts.blockOpen then ns.db.settings.autoReadProfessions = true; ns.db.learned.autoReadBlocked = nil end
   end)
   s("PLAYER_LOGIN + 40 s autopilot", function() env._fire("PLAYER_LOGIN"); env._advance(40) end)
   s("bags and zone", function() env._fire("BAG_UPDATE_DELAYED"); env._fire("ZONE_CHANGED_NEW_AREA"); env._advance(3) end)
@@ -704,9 +703,6 @@ local function session(label, opts, savedDB)
   s("role dropdown", function()
     ns.UI.Open("team")
     for _, f in ipairs(env._frames) do if f.SetValue and f.menu and f._scripts.OnClick then f:Click(); f:Click(); break end end
-  end)
-  s("blocked background reading", function()
-    if opts.blockOpen and not ns.db.learned.autoReadBlocked then fail(label .. ": blocked reading not remembered") end
   end)
   s("texts in the chosen language", function()
     if opts.language and ns.Locale.active ~= opts.language then fail(label .. ": language setting ignored, active " .. ns.Locale.active) end

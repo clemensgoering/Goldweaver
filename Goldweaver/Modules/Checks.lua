@@ -114,7 +114,6 @@ D("f11skillup", { group = "F", title = "F11 Skill-up chances from own crafts (mi
 D("recipeFields", { group = "F", title = "Recipe fields detected (source, requirements)", hint = "Open a profession window." })
 D("openRecipe", { group = "B", title = "Profession window opens on the recipe", hint = "In the guide click 'Open recipe' on a craft step." })
 D("trainerRanks", { group = "F", title = "Rank requirements read from the trainer", hint = "Talk to a profession trainer." })
-D("autoRead", { group = "B", title = "Professions read automatically in the background", hint = "Runs by itself at login (out of combat)." })
 D("fieldZone", { group = "B", title = "Current zone detected (On the road)", hint = "Runs by itself." })
 D("fieldObserve", { group = "B", title = "Gathering find assigned to a zone", hint = "Gather an herb, ore or leather." })
 D("recipeSources", { group = "B", title = "At least one recipe source (trainer/vendor) assigned", hint = "Visit a trainer or recipe vendor." })

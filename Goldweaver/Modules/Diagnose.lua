@@ -63,10 +63,9 @@ R("books", function(add)
   local me = ns.Chars.Current()
   if not me then return end
   local missing = ns.Adapter.MissingBooks(me)
-  local blocked = ns.Autopilot and ns.Autopilot.status.blocked
-  if #missing > 0 and blocked then
+  if #missing > 0 then
     add({ id = "books", severity = "warn", title = "%d profession(s) not read", targs = { #missing },
-      detail = "The game blocked background reading. One click opens the profession once.",
+      detail = "Goldweaver reads the recipes when a profession is opened. One click opens it once.",
       fixLabel = "Load recipes", fix = function() ns.Adapter.Open(missing[1].skillLine) end })
   end
 end)

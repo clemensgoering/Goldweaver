@@ -19,7 +19,7 @@ Stand: 09.11.2026. Ergebnis der Evaluation der drei Stränge aus dem Spieltest v
 | Rollen | `Modules/Autopilot.lua`: ohne Main wird der Charakter mit dem höchsten Level Main; Charaktere mit Herstellungsberuf werden Verarbeiter. Vom Spieler gewählte Rollen werden nie überschrieben (`roleSource = "manual"`). | Rolle einmal anklicken |
 | Rezeptbücher | Beim Login (12 s, außerhalb des Kampfs, wenn kein anderes Fenster offen ist) öffnet der Autopilot jeden Herstellungsberuf unsichtbar (Alpha 0), liest ihn und schließt ihn. Täglich erneuert. Blockiert der Client (`ADDON_ACTION_BLOCKED`), schaltet er sich für die Sitzung ab und meldet es. | Einstellung „Berufe beim Login im Hintergrund einlesen" |
 | Selbsttest | 15 s nach dem Login: alle Features und Modul-Selbsttests. Nur Probleme erscheinen im Chat; Minimap-Badge „!"; Ergebnis im Leitfaden und im Team-Reiter. | – |
-| Abnahme | Die 32 Prüfungen bestehen weiter durch Spielereignisse; neu: Hintergrund-Lesen, Zone erkannt, Sammelfund zugeordnet. | – |
+| Abnahme | Die 32 Prüfungen bestehen weiter durch Spielereignisse; neu: Zone erkannt, Sammelfund zugeordnet. | – |
 | Lernen | Sammelfunde je Zone, Einzahlung, Postformat, Skill-up-Raten, Lehrer, Händler (wie bisher). | – |
 
 Nicht automatisierbar (braucht einen Besuch im Spiel): Bankinhalt, Lehrer- und Händlerdaten, AH-Preise ohne Auctionator.
@@ -53,6 +53,6 @@ Blizzard-Templates nur noch, wo nötig (Schließen-Knopf, sichere Knöpfe), übe
 Datenqualität: Zonenlisten sind Classic-Daten und als unbestätigt markiert; jeder eigene Fund bestätigt oder ergänzt sie dauerhaft. Spätere Ausbaustufe: optionaler Import aus GatherMate2 (Node-Koordinaten) und Questie (Gegnerlevel je Zone), beide nur lesend.
 
 ## 5. Offene Punkte
-- Im Spiel prüfen: `PortraitFrameTemplate`/`PanelTabButtonTemplate` vorhanden? (Bericht „UI: Fenster-Template"), Hintergrund-Lesen nicht blockiert? (Prüfung „autoRead"), Settings-Kategorie sichtbar?
+- Im Spiel prüfen: `PortraitFrameTemplate`/`PanelTabButtonTemplate` vorhanden? (Bericht „UI: Fenster-Template"), Settings-Kategorie sichtbar?
 - Lokalisierung der Zonennamen: Anzeige nutzt `C_Map.GetMapInfo` (Client-Sprache), die Tabelle nur als Fallback.
 - Angeln je Zone und Sammelrouten (GatherMate2) als nächste Ausbaustufe.

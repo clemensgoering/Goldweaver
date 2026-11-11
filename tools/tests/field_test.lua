@@ -109,10 +109,7 @@ ns.db.chars["New Alt"] = nil
 me.role = "none"
 eq(ns.Autopilot.GuessRole(me, me.market), "main", "highest level without a main becomes main")
 me.role = "main"
--- read queue: books missing or stale for crafting professions only
-eq(#ns.Autopilot.ReadQueue(me), 0, "gathering professions need no book")
 me.professions[165] = { name = "Lederverarbeitung", rank = 81, maxRank = 150 }
-eq(ns.Autopilot.ReadQueue(me)[1], 165, "leatherworking queued")
 
 -- steps: the main gets a gather step for demanded items in a zone with linen
 local steps = ns.Steps.Build(8)

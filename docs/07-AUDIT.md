@@ -27,7 +27,7 @@ Der Stand verletzt keine Blizzard-Richtlinie und keine Fremdlizenz. Der Durchlau
 | Herstellen | `UI/TabProfessions.lua` → `Adapter.Craft` | Nur im Klick-Handler |
 | Entzaubern | `Modules/Destroy.lua` | Secure-Button mit Makrotext `/cast` + `/use`, ein Item pro Klick, im Kampf gesperrt |
 | Timer | alle Module | Lösen nur Anzeigen, Bestandsaufnahmen und das Lesen bereits vorhandener Daten aus, nie eine der Aktionen oben |
-| Berufe im Hintergrund lesen | `Modules/Autopilot.lua` | Standard aus. Forever blockiert das Öffnen ohne Klick; das Addon merkt sich die Blockade dauerhaft und versucht es nicht erneut. Empfehlung: Schalter in einer späteren Version entfernen |
+| Berufe im Hintergrund lesen | entfernt (11.11.2026) | Forever blockiert das Öffnen eines Berufs ohne Klick; Schalter und Code sind gestrichen. Rezepte werden gelesen, wenn der Spieler den Beruf öffnet |
 | Secret Values | `Core/Events.lua` | Jeder Handler läuft über `ns.Events` und wird übersprungen, wenn ein Argument geheim ist. `UNIT_*`-Events sind nur für den eigenen Charakter registriert (eigene Sammel-, Herstell- und Entzauber-Zauber). Keine Auren-, Cooldown- oder Combat-Log-Daten |
 | Chat und Netzwerk | alle Module | Kein `SendChatMessage`, kein `SendAddonMessage` |
 

@@ -85,8 +85,6 @@ UI.RegisterTab("team", "Team", function(frame)
       lines[#lines + 1] = { L["Self-test runs 15 seconds after login."], 0.8, 0.8, 0.8 }
     end
     lines[#lines + 1] = { (L["Confirmed in game: %d of %d features (fills up as you play)."]):format(s.pass, s.total), 0.85, 0.85, 0.85 }
-    local ap = ns.Autopilot and ns.Autopilot.status or {}
-    lines[#lines + 1] = { (L["Professions read in the background: %d%s"]):format(ap.books or 0, ap.blocked and (" · " .. L["blocked by the client"]) or ""), 0.7, 0.7, 0.7 }
     lines[#lines + 1] = { (L["Backup: %s"]):format(ns.DB.HasBackup() and (L[GoldweaverBackupDB.reason] .. ", " .. date("%d.%m. %H:%M", GoldweaverBackupDB.when)) or L["none yet"]), 0.7, 0.7, 0.7 }
     statusLines:Set(lines)
   end
