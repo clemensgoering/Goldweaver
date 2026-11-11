@@ -12,11 +12,25 @@ Tells you what to do with every item, what to craft, how to level each professio
 
 ## Categories
 
-Professions (main), Auction & Economy, Mail, Bags & Inventory
+Professions (main), Auction & Economy, Mail, Bags & Inventory (one main category, three of at most four additional ones)
+
+## Project settings
+
+- Comments: allowed.
+- Experimental: off.
+- License: MIT License.
+- Issues tracker and Source: the GitHub repository (`https://github.com/clemensgoering/Goldweaver`), once it is public.
+- Donation method: none.
 
 ## Description
 
+Paste this into the **Markdown** editor (choose Markdown instead of WYSIWYG when creating the project). Put the banner image above the first line.
+
 **Goldweaver** connects professions, mail and the auction house on WoW: Forever. It works for a single character and for a team: one character gathers and mails materials, another one crafts.
+
+### Why I built it
+
+I play with two characters: my main gathers on the way, my alt crafts. Every item raised the same question: vendor, auction house, mail it to the alt, disenchant it or keep it for a skill point? The game answers that in five different windows. Goldweaver answers it in one line.
 
 ### What you get
 
@@ -35,6 +49,13 @@ Professions (main), Auction & Economy, Mail, Bags & Inventory
 - **Selling help.** Every search result you look at is remembered as a price. When you sell, a line suggests a price and shows deposit, proceeds and your break-even.
 - **A disenchant queue (`/gw de`)** with the items where disenchanting beats selling.
 
+### Getting started
+
+1. Install Goldweaver and log in. It assigns the roles of your characters by itself (gatherer or crafter); you can change them in the Team tab.
+2. Open each profession once so Goldweaver can read its recipes.
+3. Open the window with `/gw` or the minimap button and follow the step card.
+4. For prices, search the auction house as usual or install Auctionator.
+
 ### How it behaves
 
 - **No automation.** Every purchase, sale, mail, craft and disenchant is one click on a button.
@@ -49,7 +70,7 @@ This is an early version. The decision logic, the mail flow and the auction hous
 
 ### Feedback
 
-Please report problems as a GitHub issue and attach the report from `/gw debug run`. Open source under the MIT license.
+Please report problems in the comments or as an issue (see the Issues link of this project) and attach the report from `/gw debug run`. Open source under the MIT license.
 
 ## Image captions (gallery)
 

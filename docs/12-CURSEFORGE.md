@@ -42,6 +42,24 @@ Die fertigen englischen Texte (Name, Summary, Kategorien, Beschreibung, Bildunte
    Der Workflow erstellt das Zip `Goldweaver-v0.1.0.zip`, den GitHub-Release und den CurseForge-Upload (Status „Under Review", Freigabe durch Moderation).
 8. Nach Freigabe: drei In-Game-Screenshots in die Galerie, je ein Satz Bildunterschrift.
 
+Beim Anlegen (Schritt 1) zusätzlich: Editor **Markdown** wählen (die Beschreibung ist Markdown), Kommentare erlauben, „Experimental" aus. Nach dem Anlegen unter „Manage Project" Issues-Tracker und Source auf das GitHub-Repo setzen, keine Spendenmethode.
+
+## 4a. Abgleich mit dem „Project Submission Guide and Tips" (11.11.2026)
+
+| Punkt des Guides | Stand |
+|---|---|
+| Name eindeutig, ohne Versionsnummer, ohne „Addon", nicht überlang | „Goldweaver"; Eindeutigkeit zuletzt am 08.11.2026 geprüft, vor dem Anlegen erneut suchen |
+| Logo mind. 400×400, 1:1, PNG, Original, keine Einfarbfläche, keine Spielgrafik | `tools/assets/brand/logo_400.png` (400×400 PNG, eigenes Motiv) |
+| Summary: eine Zeile, was das Projekt tut, nicht wer es gemacht hat oder für wen | erfüllt (`16-PROJECT-PAGE.md`) |
+| Eine Hauptkategorie, höchstens vier weitere | Professions plus drei weitere |
+| Kommentare erlauben, sonst Rückmeldekanal verlinken | Kommentare an, dazu Issues-Link |
+| Beschreibung: Entstehung, Besonderheit, Nutzen; Installations- und Bedienhinweise erlaubt; Spenden- und Partnerlinks nur klein unten | Abschnitte „Why I built it", „What you get", „Getting started"; keine Spenden- oder Partnerlinks |
+| Lizenz aus der Liste; bei Fork oder Port Ursprungslizenz beachten | MIT, kein Fork |
+| Bilder: Screenshots aus dem Spiel mit aktivem Addon | **offen:** drei Screenshots aufnehmen |
+| Dateien über den Reiter „Files" | per Packager beim Tag; Testbuild am 11.11.2026 bestanden (ein Wurzelordner `Goldweaver`) |
+| Source und Issues-Tracker (optional) | GitHub-Repo; **offen:** Repo auf public stellen |
+
+
 ## 5. Testbuild ohne Upload (jederzeit)
 Lokal in Git Bash im Repo-Root:
 ```
