@@ -120,6 +120,7 @@ local function newClient(opts)
   m("SetWidth", function(self, w) self._w, self._wSet = w, true end)
   m("SetHeight", function(self, h) self._h, self._hSet = h, true end)
   m("SetWordWrap", function(self, v) self._nowrap = not v end)
+  m("SetMaxLines", function(self, n) self._maxLines = n end)
   m("SetFontObject", function(self, f) self._font = f end)
   m("SetTexCoord", function(self, l, r, t, b) self._coords = { l, r, t, b } end)
   m("SetVertexColor", function(self, r, g, b, a) self._vcolor = { r, g, b, a or 1 } end)
@@ -246,6 +247,9 @@ local function newClient(opts)
 
   -- character
   local char = opts.char
+  -- stress names (opts.longNames): the longest names the game realistically shows, so the layout check finds every
+  -- text that is not limited to its card
+  local function long(name, extra) if opts.longNames and name then return name .. extra end return name end
   env.UnitFullName = function() return char.first, char.surname end
   env.UnitName = function(unit) if unit == "npc" then return env._npc end return char.first end
   env.UnitFactionGroup = function() return "Horde", "Horde" end
@@ -278,7 +282,7 @@ local function newClient(opts)
     end,
     GetItemInfoInstant = function(id) local it = ITEMS[id] if not it then return nil end return id, "t", "s", it[7], 134000, it[4], it[5] end,
     GetItemCount = function(id) local n = 0 for _, s in pairs(env._bags[0]) do if s.itemID == id then n = n + s.stackCount end end return n end,
-    GetItemNameByID = function(id) return ITEMS[id] and ITEMS[id][1] end,
+    GetItemNameByID = function(id) return ITEMS[id] and long(ITEMS[id][1], " Xanthippos Aldebaran Maximus") end,
     GetItemIconByID = function(id) return ITEMS[id] and (134000 + id % 1000) end,
     RequestLoadItemDataByID = noop,
     GetItemQualityColor = function() return 0.1, 1, 0.1 end,
@@ -330,7 +334,7 @@ local function newClient(opts)
     GetRecipeInfo = function(id)
       local r = recipesFor(open)[id]
       if not r then return nil end
-      return { recipeID = id, name = r.name, learned = r.learned, relativeDifficulty = r.diff, icon = 136000 + id % 100, maxTrivialLevel = r.grey, canSkillUp = r.diff < 3, numSkillUps = 1 }
+      return { recipeID = id, name = long(r.name, " Xanthippos Aldebaran Maximus"), learned = r.learned, relativeDifficulty = r.diff, icon = 136000 + id % 100, maxTrivialLevel = r.grey, canSkillUp = r.diff < 3, numSkillUps = 1 }
     end,
     GetRecipeSchematic = function(id)
       local r = recipesFor(open)[id]
@@ -349,7 +353,11 @@ local function newClient(opts)
   env._mapID = opts.mapID or 1413
   env.C_Map = {
     GetBestMapForUnit = function() return env._mapID end,
-    GetMapInfo = function(id) return MAPS[id] or { name = "Zone " .. tostring(id) } end,
+    GetMapInfo = function(id)
+      local m = MAPS[id] or { name = "Zone " .. tostring(id) }
+      if opts.longNames then return { name = m.name .. " Xanthippos Aldebaran Maximus", parentMapID = m.parentMapID } end
+      return m
+    end,
     GetPlayerMapPosition = function() return { x = 0.5, y = 0.4, GetXY = function(self) return self.x, self.y end } end,
     SetUserWaypoint = function(p) env._waypoint = p end,
   }
@@ -439,7 +447,7 @@ local function newClient(opts)
 
   -- RestedXP (optional)
   if opts.rxp then
-    env.RXP = { currentGuide = { name = "23-25 Brachland", steps = { { elements = { { zone = 1413 } } }, { elements = { { zone = 1442 } } } } } }
+    env.RXP = { currentGuide = { name = long("23-25 Brachland", "/Xanthippos Aldebaran/Stonetalon Maximus"), steps = { { elements = { { zone = 1413 } } }, { elements = { { zone = 1442 } } } } } }
     env.RXPCData = { currentStep = 1 }
   end
 
@@ -735,6 +743,9 @@ for _, mode in ipairs({ { name = "modern", minimal = false }, { name = "minimal"
   session(mode.name .. " · Main, neuer Patch, Spiel blockiert", { minimal = mode.minimal, char = MAIN, interface = 16002, blockOpen = true,
     unknownEvents = { AUCTION_HOUSE_BROWSE_RESULTS_UPDATED = true } }, deepCopy(db))
   if not mode.minimal then
+    -- longest realistic names in both languages: nothing may leave its card
+    session(mode.name .. " · Main, lange Namen", { char = MAIN, longNames = true, rxp = true }, deepCopy(db))
+    session(mode.name .. " · Bank, long names, English UI", { char = BANK, longNames = true, rxp = true, language = "enUS", mapID = 1454, auctionator = true }, deepCopy(db))
     -- language setting beats the game language, in both directions
     session(mode.name .. " · Bank, English UI, German client", { char = BANK, language = "enUS", mapID = 1454 }, deepCopy(db))
     session(mode.name .. " · Main, German UI, English client", { char = MAIN, language = "deDE", clientLocale = "enUS" }, deepCopy(db))

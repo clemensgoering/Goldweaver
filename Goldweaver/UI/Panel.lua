@@ -37,7 +37,7 @@ local function create()
   header:SetSize(WIDTH, 22)
   header:SetPoint("TOPLEFT")
   header.text = header:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  header.text:SetPoint("LEFT", 8, 0); header.text:SetJustifyH("LEFT"); header.text:SetWidth(WIDTH - 40)
+  header.text:SetPoint("LEFT", 8, 0); header.text:SetJustifyH("LEFT"); header.text:SetWidth(WIDTH - 40); header.text:SetWordWrap(false)
   collapse = header:CreateTexture(nil, "OVERLAY")
   collapse:SetSize(14, 14); collapse:SetPoint("RIGHT", -6, 0)
   header:SetScript("OnClick", function(_, button)
@@ -68,6 +68,7 @@ local function create()
   coopRows = ns.UI.ProgressRows(holder, ROWS - 1, WIDTH - 8, -38, 28)
   routeText = holder:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
   routeText:SetJustifyH("LEFT"); routeText:SetWidth(WIDTH - 12); routeText:SetWordWrap(true)
+  if routeText.SetMaxLines then routeText:SetMaxLines(2) end -- the frame reserves two lines; longer routes end with "…"
 end
 
 function Panel.ShouldShow()

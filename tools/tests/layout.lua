@@ -45,6 +45,7 @@ local function size(f)
     local w = f._wSet and f._w or tw
     local lines = 1
     if f._wSet and not f._nowrap and f._w > 0 then lines = math.max(1, math.ceil(tw / f._w)) end
+    if f._maxLines and lines > f._maxLines then lines = f._maxLines end
     local h = f._hSet and f._h or lines * LINE[fontClass(f)]
     return w, h
   end

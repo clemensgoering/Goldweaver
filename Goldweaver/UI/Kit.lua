@@ -315,6 +315,8 @@ end
 function UI.Section(parent, text, width)
   local fs = UI.Text(parent, text, "GameFontNormal")
   fs:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
+  -- one line, as wide as the card: a long title (guide or zone name) is cut with "…" instead of leaving the card
+  if width then fs:SetWidth(width); fs:SetWordWrap(false) end
   local line = UI.Divider(parent)
   line:SetPoint("TOPLEFT", fs, "BOTTOMLEFT", 0, -4)
   line:SetWidth(width or 200)
