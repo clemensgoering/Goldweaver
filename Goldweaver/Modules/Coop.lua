@@ -334,7 +334,13 @@ end
 
 ns:RegisterModule("Coop", {
   Init = function()
-    ns.Events:On("BAG_UPDATE_DELAYED", function() C_Timer.After(0.3, function() pcall(onBags) end) end, "Coop")
+    -- coalesce bursts: looting fires this several times in a row and onBags runs the planner
+    local pending = false
+    ns.Events:On("BAG_UPDATE_DELAYED", function()
+      if pending then return end
+      pending = true
+      C_Timer.After(0.3, function() pending = false; pcall(onBags) end)
+    end, "Coop")
     ns.Events:On("MAIL_INBOX_UPDATE", Coop.ScanInbox, "Coop")
     ns.Events:On("PLAYER_LOGIN", function()
       Coop.session.login = time()

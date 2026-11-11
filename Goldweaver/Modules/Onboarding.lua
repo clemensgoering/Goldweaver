@@ -9,7 +9,7 @@ local card
 
 local function create()
   if card then return end
-  card = CreateFrame("Frame", "GoldweaverOnboarding", UIParent, "BackdropTemplate")
+  card = CreateFrame("Frame", "GoldweaverOnboarding", UIParent)
   card:SetSize(440, 120)
   card:SetPoint("CENTER", UIParent, "CENTER", 0, 160)
   card:SetFrameStrata("DIALOG")

@@ -324,6 +324,7 @@ end
 
 function Probe.Mail()
   local lines, result = {}, {}
+  local function present(v) return v ~= nil and "<present>" or "<none>" end
   if not GetInboxNumItems then return ns.Print("probe mail: inbox API missing") end
   local n, total = GetInboxNumItems()
   result.inbox, result.total = n, total
@@ -331,13 +332,14 @@ function Probe.Mail()
   if n and n > 0 then
     local h = { GetInboxHeaderInfo(1) }
     result.header = {}
-    for i, v in ipairs(h) do result.header[i] = show(v) end
-    lines[#lines + 1] = ("header[1]: sender=%s subject=%s money=%s cod=%s daysLeft=%s items=%s"):format(show(h[3]), show(h[4]), show(h[5]), show(h[6]), show(h[7]), show(h[8]))
+    -- privacy: names of other players (sender, buyer) are never stored or printed, only whether the field is filled
+    for i, v in ipairs(h) do result.header[i] = i == 3 and present(v) or show(v) end
+    lines[#lines + 1] = ("header[1]: sender=%s subject=%s money=%s cod=%s daysLeft=%s items=%s"):format(present(h[3]), show(h[4]), show(h[5]), show(h[6]), show(h[7]), show(h[8]))
     if GetInboxInvoiceInfo then
       local inv = { GetInboxInvoiceInfo(1) }
       result.invoice = {}
-      for i, v in ipairs(inv) do result.invoice[i] = show(v) end
-      lines[#lines + 1] = ("invoice[1]: type=%s item=%s buyer=%s bid=%s buyout=%s deposit=%s cut=%s count=%s"):format(show(inv[1]), show(inv[2]), show(inv[3]), show(inv[4]), show(inv[5]), show(inv[6]), show(inv[7]), show(inv[9]))
+      for i, v in ipairs(inv) do result.invoice[i] = i == 3 and present(v) or show(v) end
+      lines[#lines + 1] = ("invoice[1]: type=%s item=%s buyer=%s bid=%s buyout=%s deposit=%s cut=%s count=%s"):format(show(inv[1]), show(inv[2]), present(inv[3]), show(inv[4]), show(inv[5]), show(inv[6]), show(inv[7]), show(inv[9]))
     end
   end
   store("mail", result)

@@ -54,7 +54,7 @@ end
 
 local function createFrame()
   if frame then return end
-  frame = CreateFrame("Frame", "GoldweaverDestroyFrame", UIParent, "BackdropTemplate")
+  frame = CreateFrame("Frame", "GoldweaverDestroyFrame", UIParent)
   frame:SetSize(300, 150)
   frame:SetPoint("CENTER", UIParent, "CENTER", 300, 0)
   frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag("LeftButton")

@@ -23,6 +23,8 @@ local function set(id, status, detail)
   if not Checks.defs[id] then return end
   local s = store()
   local prev = s[id]
+  -- unchanged status (the tooltip hook passes on every hover): update in place, no new table, no window refresh
+  if prev and prev.status == status then prev.detail, prev.when = detail, time(); return end
   s[id] = { status = status, detail = detail, when = time() }
   if (not prev or prev.status ~= status) and status == "pass" then ns.Log("check passed", id, detail) end
   if ns.UI and ns.UI.Refresh then ns.UI.Refresh() end

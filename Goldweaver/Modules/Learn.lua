@@ -61,17 +61,21 @@ end
 function Learn.CrateTooltip(itemID, name, lines)
   -- Only real crates: the name or a line must name a crate AND a line must mention favor. (First run matched
   -- "Magiepartikel ... Verfügbar bei Händlern", so the word "Händler" alone is not enough.)
-  local text = {}
+  -- Runs for every item tooltip, so the lines are only copied once both words were found.
   local mentionsFavor, mentionsCrate = false, false
   for _, line in ipairs(lines or {}) do
     local left = line.leftText
     if type(left) == "string" and not ns.Secret.IsSecret(left) then
-      text[#text + 1] = left
       if left:find("Favor") or left:find("Gunst") then mentionsFavor = true end -- locale-ok: game text
       if left:find("Crate") or left:find("Kiste") or left:find("Waylaid") or left:find("Lieferung") or left:find("Bündel") then mentionsCrate = true end -- locale-ok: game text
     end
   end
   if not (mentionsFavor and mentionsCrate) then return end
+  local text = {}
+  for _, line in ipairs(lines) do
+    local left = line.leftText
+    if type(left) == "string" and not ns.Secret.IsSecret(left) then text[#text + 1] = left end
+  end
   local l = LD()
   l.crates = l.crates or {}
   local entry = { name = name, lines = text, t = time(), bundles = {}, favor = nil }

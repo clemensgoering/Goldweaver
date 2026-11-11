@@ -149,6 +149,7 @@ local function newClient(opts)
     if opts.unknownEvents and opts.unknownEvents[e] then error("Attempt to register unknown event \"" .. e .. "\"") end
     self._events[e] = true
   end)
+  m("RegisterUnitEvent", function(self, e) self._events[e] = true end)
   m("UnregisterEvent", function(self, e) self._events[e] = nil end)
   m("CreateTexture", function(self, _, layer) local t = newObject("Texture", self); t._layer, t._w, t._h = layer, 0, 0 return t end)
   m("CreateFontString", function(self, _, _, font) local fs = newObject("FontString", self); fs._font = font; fs._w, fs._h = 0, 0 return fs end)

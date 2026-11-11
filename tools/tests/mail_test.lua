@@ -83,3 +83,20 @@ C_Item.GetItemInfoInstant = function() return nil end
 UnitFullName = function() return "Testchar", "" end
 GetRealmName = nil
 UnitFactionGroup = function() return "Alliance", "Alliance" end
+
+-- Ledger: a sale is recorded once when its invoice leaves the inbox, also for two identical invoices; an invoice
+-- that stays in the inbox is never recorded (the remaining time of a mail must not matter).
+ns.cdb = ns.cdb or {}
+ns.cdb.ledger = nil
+local invoices = { { "seller", "Linen Cloth", nil, 0, 500, 100, 25, nil, nil, nil, 20 }, { "seller", "Linen Cloth", nil, 0, 500, 100, 25, nil, nil, nil, 20 } }
+GetInboxNumItems = function() return #invoices end
+GetInboxInvoiceInfo = function(i) if invoices[i] then return unpack(invoices[i]) end end
+eq(ns.Ledger.ScanInbox(), 0, "ledger: invoices in the inbox are not sales yet")
+eq(ns.Ledger.ScanInbox(), 0, "ledger: a second scan of the same inbox records nothing")
+table.remove(invoices, 1)
+eq(ns.Ledger.ScanInbox(), 1, "ledger: one of two identical invoices looted")
+table.remove(invoices, 1)
+eq(ns.Ledger.ScanInbox(), 1, "ledger: the second one looted")
+eq(ns.Ledger.ScanInbox(), 0, "ledger: nothing left")
+eq(#ns.cdb.ledger.entries, 2, "ledger: two sales stored")
+GetInboxNumItems, GetInboxInvoiceInfo = nil, nil

@@ -28,38 +28,41 @@ function Ledger.RecordInvoice(index)
   return entry
 end
 
--- Passive inbox scan: Forever's mailbox has its own "Open all". We read every invoice while the inbox is shown
--- and record a sale once its mail disappears (looted or deleted). Keyed by item, price, count and arrival time.
+-- Passive inbox scan: Forever's mailbox has its own "Open all". We count the invoices in the inbox per item, price
+-- and quantity and record a sale for each one that is gone at the next scan (looted or deleted). The remaining
+-- time of a mail is not part of the key: it changes while the mail waits and would record the same sale twice.
 local seenInvoices = {}
 function Ledger.ScanInbox()
-  if not (GetInboxNumItems and GetInboxHeaderInfo and GetInboxInvoiceInfo) then return end
+  if not (GetInboxNumItems and GetInboxInvoiceInfo) then return end
   local n = GetInboxNumItems() or 0
+  if ns.Secret.IsSecret(n) then return end
   local current = {}
   for i = 1, n do
-    local _, _, _, _, _, _, daysLeft = GetInboxHeaderInfo(i)
     local invoiceType, itemName, _, bid, buyout, deposit, consignment, _, _, _, count = GetInboxInvoiceInfo(i)
-    if invoiceType == "seller" and not ns.Secret.Any(itemName, bid, buyout, deposit, consignment, count, daysLeft) then
+    if invoiceType == "seller" and not ns.Secret.Any(itemName, bid, buyout, deposit, consignment, count) then
       local price = (buyout and buyout > 0) and buyout or bid or 0
-      local key = ("%s|%d|%d|%.3f"):format(tostring(itemName), price, count or 1, daysLeft or 0)
-      current[key] = true
+      local key = ("%s|%d|%d"):format(tostring(itemName), price, count or 1)
       if not seenInvoices[key] then
-        seenInvoices[key] = { item = itemName, count = count or 1, price = price, deposit = deposit or 0, cut = consignment or 0 }
+        seenInvoices[key] = { n = 0, item = itemName, count = count or 1, price = price, deposit = deposit or 0, cut = consignment or 0 }
       end
+      current[key] = (current[key] or 0) + 1
     end
   end
   local recorded = 0
   for key, inv in pairs(seenInvoices) do
-    if not current[key] then
+    local now = current[key] or 0
+    for _ = now + 1, inv.n do
       local l = store()
       l.entries[#l.entries + 1] = { t = time(), kind = "sale", item = inv.item, count = inv.count, price = inv.price, deposit = inv.deposit, cut = inv.cut }
       while #l.entries > 2000 do table.remove(l.entries, 1) end
-      seenInvoices[key] = nil
       recorded = recorded + 1
       if ns.Checks then
         ns.Checks.Pass("ledger", ("%s x%d for %s"):format(tostring(inv.item), inv.count, ns.Util.Money(inv.price)))
         ns.Checks.Pass("mailOpen", "invoices recorded when opening")
       end
     end
+    inv.n = now
+    if now == 0 then seenInvoices[key] = nil end
   end
   return recorded
 end
@@ -164,6 +167,5 @@ ns:RegisterModule("Ledger", {
     end, "Ledger")
     ns.Events:On("MAIL_SHOW", function() C_Timer.After(0.5, Ledger.ScanInbox) end, "Ledger")
     ns.Events:On("MAIL_INBOX_UPDATE", function() Ledger.ScanInbox() end, "Ledger")
-    ns.Events:On("MAIL_CLOSED", function() Ledger.ScanInbox() end, "Ledger")
   end,
 })

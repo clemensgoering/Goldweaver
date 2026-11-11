@@ -50,9 +50,9 @@ b. `docs/14-UI-FUEHRUNG.md`: Reiter Leitfaden · Unterwegs · Berufe · Team, Sc
 - Dev-Setup: Junction `mklink /J "<WoW>\_forever_\Interface\AddOns\Goldweaver" "<Repo>\Goldweaver"` (Ordnername des Forever-Clients beim ersten Start prüfen; in der Beta hieß er `_classic_beta_`).
 
 ## Abschluss eines WP
-- CHANGELOG.md unter „Unreleased" ergänzen.
+- `CHANGELOG.md` unter „Unreleased" ergänzen: Englisch, aus Spielersicht, nur was sich für Spieler ändert (wird auf CurseForge gezeigt). Interne Details gehören in die Commit-Nachricht.
 - Offene Fragen in `docs/02-ROADMAP.md` aktualisieren.
 - Checkliste `docs/04-COMPLIANCE.md` Abschnitt 3 für jede geänderte Datei durchgehen.
 
 ## Sprache
-Dokumente und Chat Deutsch, Code-Bezeichner und Kommentare Englisch, Spielbegriffe in Lokalisierungsdateien.
+Dokumente und Chat Deutsch (Ausnahme: alles, was veröffentlicht wird, ist Englisch: `README.md`, `CHANGELOG.md`, `docs/16-PROJECT-PAGE.md`), Code-Bezeichner und Kommentare Englisch, Spielbegriffe in Lokalisierungsdateien.

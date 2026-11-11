@@ -9,7 +9,7 @@
 --   ns.Health.Record(where, err)      store an error (session list + GoldweaverDB.debug.errors)
 --   ns.Health.errors / .detached      error entries / handlers detached after MAX_ERRORS failures
 --
--- Rules: handlers are skipped when any event argument is a secret value; a handler that fails MAX_ERRORS times is
+-- Rules: events named UNIT_* are registered for the player only; handlers are skipped when any event argument is a secret value; a handler that fails MAX_ERRORS times is
 -- detached so one broken module cannot spam the session. Handlers run newest-first (reverse registration order).
 local ADDON, ns = ...
 local L = ns.L
@@ -48,7 +48,13 @@ function ns.Events:On(event, fn, owner)
   assert(type(event) == "string" and type(fn) == "function", "Events:On(event, fn, owner?)")
   owner = owner or inferOwner()
   if not handlers[event] then
-    local ok, err = pcall(frame.RegisterEvent, frame, event)
+    -- unit events are delivered for the player only: no module reads other units, and a raid fires them constantly
+    local ok, err
+    if event:find("^UNIT_") and frame.RegisterUnitEvent then
+      ok, err = pcall(frame.RegisterUnitEvent, frame, event, "player")
+    else
+      ok, err = pcall(frame.RegisterEvent, frame, event)
+    end
     if not ok then
       ns.Health.Record("RegisterEvent " .. event .. " (" .. owner .. ")", err)
       ns.Events.unknown = ns.Events.unknown or {}

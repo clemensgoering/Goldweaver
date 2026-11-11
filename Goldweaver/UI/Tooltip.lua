@@ -112,6 +112,9 @@ function Tooltip.Lines(itemID, quantity, isBound)
   return lines
 end
 
+local CACHE_SECONDS = 1
+local last = { t = 0 }
+
 local function onItemTooltip(tooltip, data)
   if not (tooltip == GameTooltip or tooltip == ItemRefTooltip) then return end
   if ns.db.settings.tooltipOff then return end
@@ -133,8 +136,19 @@ local function onItemTooltip(tooltip, data)
     local name = data.lines[1] and data.lines[1].leftText
     pcall(ns.Learn.CrateTooltip, itemID, name, data.lines)
   end
-  local ok, lines = pcall(Tooltip.Lines, itemID, quantity, isBound)
-  if not ok then ns.Log("tooltip error", lines); return end
+  -- The game re-fires this call several times per second while the cursor rests on an item: reuse the last
+  -- result for one second instead of ranking every option again.
+  local shift = IsShiftKeyDown and IsShiftKeyDown() or false
+  local now = GetTime and GetTime() or 0
+  local lines
+  if last.itemID == itemID and last.quantity == quantity and last.isBound == isBound and last.shift == shift and now - last.t < CACHE_SECONDS then
+    lines = last.lines
+  else
+    local ok, result = pcall(Tooltip.Lines, itemID, quantity, isBound)
+    if not ok then ns.Log("tooltip error", result); return end
+    lines = result
+    last.itemID, last.quantity, last.isBound, last.shift, last.t, last.lines = itemID, quantity, isBound, shift, now, lines
+  end
   if not lines then return end
   tooltip:AddLine(" ")
   for _, l in ipairs(lines) do

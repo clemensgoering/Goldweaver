@@ -15,7 +15,7 @@ local pending = false
 
 local function create()
   if frame then return end
-  frame = CreateFrame("Frame", "GoldweaverPanel", UIParent, "BackdropTemplate")
+  frame = CreateFrame("Frame", "GoldweaverPanel", UIParent)
   frame:SetSize(WIDTH, 60)
   -- default: right edge below the middle, clear of the quest tracker under the minimap (playtest 09.11.2026)
   frame:SetPoint("RIGHT", UIParent, "RIGHT", -16, -150)

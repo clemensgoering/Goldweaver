@@ -299,6 +299,10 @@ ns:RegisterModule("Auction", {
       end)
     end)
     ns.Events:On("COMMODITY_PRICE_UPDATED", onPriceUpdated, "Auction")
+    -- the server may answer the purchase start with "no price": back to search instead of waiting forever
+    ns.Events:On("COMMODITY_PRICE_UNAVAILABLE", function()
+      if shop.state == "starting" then shop.state = "idle"; pcall(refreshShop) end
+    end, "Auction")
     ns.Events:On("COMMODITY_PURCHASE_SUCCEEDED", function() onPurchaseDone(true) end, "Auction")
     ns.Events:On("COMMODITY_PURCHASE_FAILED", function() onPurchaseDone(false) end, "Auction")
     ns.Events:On("AUCTION_HOUSE_CLOSED", function() shop.state, shop.item = "idle", nil end, "Auction")

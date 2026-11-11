@@ -9,7 +9,7 @@ local frame, text
 
 local function create()
   if frame then return end
-  frame = CreateFrame("Button", "GoldweaverHUD", UIParent, "BackdropTemplate")
+  frame = CreateFrame("Button", "GoldweaverHUD", UIParent)
   frame:SetSize(420, 22)
   frame:SetPoint("TOP", UIParent, "TOP", 0, -4)
   frame:SetMovable(true); frame:EnableMouse(true); frame:RegisterForDrag("LeftButton")

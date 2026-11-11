@@ -1,6 +1,6 @@
 # Goldweaver – Grafik-Aufträge (für Codex oder einen Grafiker)
 
-Stand: 08.11.2026. Jeder Auftrag ist eigenständig umsetzbar. Ergebnisse kommen nach `Goldweaver/Media/` und werden im Code referenziert (Pfade unten). Lizenz: eigene Werke, im Repo unter MIT; keine Blizzard-Grafiken kopieren, keine Markenlogos.
+Stand: 11.11.2026. **Erledigt:** A1 und A2 (Logo `Goldweaver/Media/logo.tga` und `logo64.tga`, CurseForge-Logo und Banner unter `tools/assets/brand/`) sowie A5 (ersetzt durch das eigene Grafikset aus `tools/assets/make_assets.py`). Offen und optional: A3, A4, A6, A7. Jeder Auftrag ist eigenständig umsetzbar. Ergebnisse kommen nach `Goldweaver/Media/` und werden im Code referenziert (Pfade unten). Lizenz: eigene Werke, im Repo unter MIT; keine Blizzard-Grafiken kopieren, keine Markenlogos.
 
 ## Technische Vorgaben für alle Texturen
 - Format **TGA 32-Bit unkomprimiert mit Alphakanal** (sicherste Wahl für den WoW-Client) oder PNG (Mainline unterstützt PNG; TGA bevorzugen).

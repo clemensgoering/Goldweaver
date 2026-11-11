@@ -58,7 +58,7 @@ Konsequenz: **Ein** Berufe-Tab mit Berufsauswahl oben, darunter vier feste Blöc
 |---|---|---|
 | Rezepte, Farbe, Reagenzien, gelernt/ungelernt | `C_TradeSkillUI` beim Öffnen eines Berufs; Cache in `GoldweaverDB.recipes[skillLine]`, gelernte IDs je Charakter | umgesetzt (Adapter) |
 | Skill-up-Chance je Farbe | Faustwerte 100/75/35 %, Kalibrierung aus eigenen Craft-Logs (F11) | Faustwerte |
-| Preise | Auctionator-API → TSM → selbst gesehene AH-Seiten (werden beim Suchen mitgelesen) → Händlerpreis | umgesetzt |
+| Preise | Auctionator-API → selbst gesehene AH-Seiten (werden beim Suchen mitgelesen) → Händlerpreis | umgesetzt |
 | Bestand | Taschen live, Bank beim Bankbesuch, Twinks aus deren Snapshots | umgesetzt |
 | Rang-Bedingungen | Profil (75/150/225/300; Skill 50/125/200; Level 10/20/35) | Startwerte, Probe im Spiel beim Lehrer |
 | Wo lerne ich den Rang | Profil-Text aus Beta-Guides; besuchte Lehrer aus dem Rekorder (`/gw contacts`) | Schneiderei/Verzauberkunst mit Text, Rekorder umgesetzt |
