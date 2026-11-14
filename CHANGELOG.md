@@ -35,4 +35,5 @@ First public version.
 - English and German, switchable in the settings.
 - No required dependencies. Auctionator prices are used when it is installed; a RestedXP route is read when it is active.
 - Your data is never reset: structure changes are additive migrations with an automatic backup (`/gw backup`, `/gw restore confirm`).
+- Saved data schema 8 adds money, class trainer costs and gathering pace per character; the update makes a backup first and keeps everything else.
 - Self-check and diagnosis (`/gw debug run`) with a report you can copy into an issue.

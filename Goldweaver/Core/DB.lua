@@ -17,7 +17,7 @@ local ADDON, ns = ...
 local L = ns.L
 
 ns.INTERFACE = 16001
-local SCHEMA = 7
+local SCHEMA = 8
 
 local DEFAULTS = {
   schema = SCHEMA,
@@ -111,6 +111,25 @@ local MIGRATIONS = {
         end
       end
     end
+  end,
+  [8] = function(db)
+    -- 7 -> 8: the Gold tab keeps per character money, ridingKnown and classTraining = { byTrainer = { [npc] =
+    -- { when, services } } } (Modules/Budget.lua), learned.gatherPace (Modules/Field.lua) and settings.cashFirst.
+    -- All are filled on use; values of the wrong type (test builds stored classTraining.services directly) are
+    -- dropped and read again at the next trainer visit. Nothing else is touched.
+    for _, rec in pairs(db.chars or {}) do
+      if type(rec) == "table" then
+        if rec.money ~= nil and type(rec.money) ~= "number" then rec.money = nil end
+        if rec.ridingKnown ~= nil and type(rec.ridingKnown) ~= "boolean" then rec.ridingKnown = nil end
+        local t = rec.classTraining
+        if t ~= nil and not (type(t) == "table" and type(t.byTrainer) == "table") then rec.classTraining = nil end
+      end
+    end
+    local pace = db.learned and db.learned.gatherPace
+    if pace ~= nil and not (type(pace) == "table" and type(pace.nodes) == "number" and type(pace.seconds) == "number") then
+      db.learned.gatherPace = nil
+    end
+    if db.settings and db.settings.cashFirst ~= nil and type(db.settings.cashFirst) ~= "boolean" then db.settings.cashFirst = nil end
   end,
 }
 

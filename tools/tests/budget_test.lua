@@ -121,6 +121,48 @@ for _, w in ipairs(ways) do if not w.perHour and not w.total then tips = tips + 
 eq(tips > 0, true, "profession tips of the team are listed")
 eq(ns.Earn.ValueText({ perHour = 25000 }), "≈ 2g 50s 00c/h", "value text per hour")
 
+-- extension point: a registered expense counts; a broken one is recorded and skipped --------------------------------------
+ns.Budget.RegisterExpense("testGuild", function(r) if r == main then return { { id = "guild", kind = "materials", label = "Guild tabard", copper = 1000, level = 28 } } end end)
+ns.Budget.RegisterExpense("testBroken", function() error("broken expense") end)
+local found = false
+for _, e in ipairs(ns.Budget.Expenses(main)) do if e.id == "guild" then found = true end end
+eq(found, true, "registered expense counts")
+local recorded = false
+for _, e in ipairs(ns.Health.errors) do if tostring(e.where):find("budget testBroken") then recorded = true end end
+eq(recorded, true, "broken expense recorded, the others still count")
+ns.Budget.expenses.testGuild, ns.Budget.expenses.testBroken = nil, nil
+for i = #ns.Budget.order, 1, -1 do if ns.Budget.order[i]:find("^test") then table.remove(ns.Budget.order, i) end end
+
+-- classes with a mount quest pay nothing for riding
+main.class = "PALADIN"
+local paladinRiding = false
+for _, e in ipairs(ns.Budget.Expenses(main)) do if e.kind == "riding" then paladinRiding = true end end
+eq(paladinRiding, false, "paladin: no riding cost")
+main.class = "HUNTER"
+
+-- damaged saved data never breaks the budget
+local keep = { money = main.money, training = main.classTraining }
+main.money = "lots"
+main.classTraining = { byTrainer = { Urek = "broken", Ormak = { services = { "x", { cost = "y", levelReq = 30 } } } } }
+ns.Budget.Invalidate()
+local okSummary, summary = pcall(ns.Budget.Summary)
+eq(okSummary, true, "summary survives damaged data")
+eq(okSummary and summary.cash >= 0, true, "money of the wrong type counts as 0")
+main.money, main.classTraining = keep.money, keep.training
+ns.Budget.Invalidate()
+
+-- materials in the costs by level come from the profession seed path at the own prices
+ns.Price.Observe(2592, 40, 20) -- Wool Cloth
+local bands = ns.Budget.Timeline(twink)
+eq(bands[1].from, 6, "twink timeline starts at 6")
+eq(bands[1].materials > 0, true, "materials 75 -> 150 priced from Wool Cloth")
+eq(bands[1].materialsPriced > 0, true, "priced share reported")
+
+-- short money
+eq(ns.Util.MoneyShort(0), "0c", "short money: zero")
+eq(ns.Util.MoneyShort(-15000), "-1g 50s", "short money: negative")
+eq(ns.Util.MoneyShort(3000000), "300g", "short money: large amounts round to gold")
+
 -- cleanup
 GetNumTrainerServices, GetTrainerServiceInfo, GetTrainerServiceCost, GetTrainerServiceLevelReq, IsTradeskillTrainer = nil, nil, nil, nil, nil
 ns.db.chars, ns.db.recipes, ns.db.prices = saved.chars, saved.recipes, saved.prices

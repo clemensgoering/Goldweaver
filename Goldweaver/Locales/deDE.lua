@@ -1058,3 +1058,6 @@ L["skill %d · level %d · cap %d"] = "Skill %d · Stufe %d · bis %d"
 L["Level %s · %s"] = "Stufe %s · %s"
 L["gold unknown"] = "Gold unbekannt"
 L["Confirmed in game"] = "Im Spiel bestätigt"
+
+L["Budget (own gold)"] = "Budget (eigenes Gold)"
+L["Reading class trainer costs"] = "Kosten des Klassenlehrers lesen"

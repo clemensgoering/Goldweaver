@@ -104,7 +104,9 @@ local PACE_GAP, PACE_DEFAULT, PACE_MIN_SECONDS = 300, 30, 900
 local lastGatherAt
 local function recordPace(items)
   local now = time()
-  local pace = ns.db.learned.gatherPace or { nodes = 0, seconds = 0, items = 0 }
+  local pace = ns.db.learned.gatherPace
+  if type(pace) ~= "table" then pace = { nodes = 0, seconds = 0, items = 0 } end
+  pace.nodes, pace.seconds, pace.items = tonumber(pace.nodes) or 0, tonumber(pace.seconds) or 0, tonumber(pace.items) or 0
   if lastGatherAt and now - lastGatherAt <= PACE_GAP then
     pace.nodes = pace.nodes + 1
     pace.seconds = pace.seconds + (now - lastGatherAt)
@@ -118,7 +120,7 @@ end
 -- Returns nodesPerHour, itemsPerNode, own (boolean).
 function Field.GatherPace()
   local pace = ns.db.learned.gatherPace
-  if pace and pace.seconds >= PACE_MIN_SECONDS and pace.nodes > 0 then
+  if type(pace) == "table" and tonumber(pace.seconds) and pace.seconds >= PACE_MIN_SECONDS and tonumber(pace.nodes) and pace.nodes > 0 then
     return pace.nodes / pace.seconds * 3600, math.max(1, pace.items / pace.nodes), true
   end
   return PACE_DEFAULT, 2, false

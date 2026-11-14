@@ -78,6 +78,29 @@ eq(reason, "Testregel", "custom rule applied")
 table.remove(Mail.rules, 1)
 
 -- cleanup
+-- Gold first at the mailbox: covered changes nothing, light keeps only sellable gear, strong keeps every sellable item
+-- no plan needs; demanded items always travel.
+local savedFor = { strength = ns.Budget.Strength, best = ns.Advisor.Best, info = ns.API.ItemInfo, demand = ns.Demand.For }
+CLASSES[2589] = { 7, 5 }
+ns.API.ItemInfo = function(id) local c = CLASSES[id] return c and { reqLevel = 10, quality = id == 5555 and 2 or 1, classID = c[1], sellPrice = 10 } or nil end
+ns.Advisor.Best = function() return { action = "auction", value = 300 } end
+ns.Demand.For = function() return nil end
+ns.Budget.Strength = function() return "covered" end
+eq((Mail.TargetFor({ itemID = 5555, quality = 2, isBound = false })) ~= nil, true, "covered: gear goes to the enchanter")
+ns.Budget.Strength = function() return "light" end
+local t1, why1 = Mail.TargetFor({ itemID = 5555, quality = 2, isBound = false })
+eq(t1, nil, "light: gear stays to be sold")
+eq(why1, "sell it: gold first", "reason names gold first")
+eq((Mail.TargetFor({ itemID = 2589, quality = 1, isBound = false })) ~= nil, true, "light: materials still travel")
+ns.Budget.Strength = function() return "strong" end
+eq(Mail.TargetFor({ itemID = 2589, quality = 1, isBound = false }), nil, "strong: unneeded materials stay to be sold")
+ns.Demand.For = function(id) return id == 2589 and { qty = 10 } or nil end
+eq((Mail.TargetFor({ itemID = 2589, quality = 1, isBound = false })) ~= nil, true, "strong: what a plan needs still travels")
+ns.Advisor.Best = function() return { action = "convert", value = 900 } end
+ns.Demand.For = function() return nil end
+eq((Mail.TargetFor({ itemID = 5555, quality = 2, isBound = false })) ~= nil, true, "strong: a use that clearly beats selling still travels")
+ns.Budget.Strength, ns.Advisor.Best, ns.API.ItemInfo, ns.Demand.For = savedFor.strength, savedFor.best, savedFor.info, savedFor.demand
+
 ns.db.chars = {}
 C_Item.GetItemInfoInstant = function() return nil end
 UnitFullName = function() return "Testchar", "" end

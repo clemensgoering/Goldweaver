@@ -191,6 +191,8 @@ Features.Define("auctionSell", { label = "AH sell suggestion", requires = { "C_A
 Features.Define("contacts", { label = "Remembering trainers and vendors", requires = { "C_Map.GetBestMapForUnit", "C_Map.GetPlayerMapPosition", "GetMerchantNumItems", { "C_MerchantFrame.GetItemInfo", "GetMerchantItemInfo" } } })
 Features.Define("openProfession", { label = "Open profession by button", requires = { "C_TradeSkillUI.OpenTradeSkill" } })
 Features.Define("minimap", { label = "Minimap button", requires = { "Minimap" } })
+Features.Define("budget", { label = "Budget (own gold)", requires = { "GetMoney" } })
+Features.Define("classTrainer", { label = "Reading class trainer costs", requires = { "GetNumTrainerServices", "GetTrainerServiceInfo", "GetTrainerServiceCost", "GetTrainerServiceLevelReq" } })
 
 ns.Slash.Register("feature", function(arg)
   local name, state = arg:match("^(%S+)%s*(%S*)$")

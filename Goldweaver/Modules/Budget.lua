@@ -89,13 +89,13 @@ Budget.RegisterExpense("classSkills", function(rec)
   local level = rec.level or 1
   local byLevel, own = {}, false
   local t = rec.classTraining
-  if t and t.byTrainer and next(t.byTrainer) then
+  if type(t) == "table" and type(t.byTrainer) == "table" and next(t.byTrainer) then
     own = true
     for _, visit in pairs(t.byTrainer) do
-      for _, s in ipairs(visit.services or {}) do
+      for _, s in ipairs(type(visit) == "table" and type(visit.services) == "table" and visit.services or {}) do
         -- available = learnable now: due at the current level even if it was unlocked earlier
-        local lv = s.available and level or s.levelReq
-        if s.cost and s.cost > 0 and lv then byLevel[lv] = (byLevel[lv] or 0) + s.cost end
+        local lv = type(s) == "table" and (s.available and level or s.levelReq) or nil
+        if lv and type(s.cost) == "number" and s.cost > 0 then byLevel[lv] = (byLevel[lv] or 0) + s.cost end
       end
     end
   else
@@ -149,8 +149,9 @@ function Budget.Summary(market)
   local me = ns.Chars.Current()
   for _, rec in ipairs(ns.Chars.All(market or ns.Chars.MarketKey())) do
     if rec.role ~= "none" then
-      s.cash = s.cash + (rec.money or 0)
-      s.perChar[rec.name] = rec.money or 0
+      local money = type(rec.money) == "number" and rec.money or 0
+      s.cash = s.cash + money
+      s.perChar[rec.name] = money
       local level = rec.level or 1
       for _, e in ipairs(Budget.Expenses(rec)) do
         -- due right now for the character at the keyboard: paid from its own bags, not the team's
@@ -167,7 +168,7 @@ function Budget.Summary(market)
   -- biggest first within the horizon, so the four visible rows explain most of the money
   table.sort(s.items, function(a, b) return a.copper > b.copper end)
   s.gap = s.due - s.cash
-  s.nowCash = me and me.money or 0
+  s.nowCash = me and type(me.money) == "number" and me.money or 0
   s.nowGap = s.nowDue - s.nowCash
   -- what is due now and cannot be paid always means strong support (example: level 28, skills for 75 s each)
   if s.nowGap > 0 then s.strength = "strong"
@@ -249,6 +250,7 @@ Budget.RecordMoney = recordMoney
 -- older lists of its group, so learned skills drop out and nothing counts twice. Pet trainers form their own group.
 function Budget.ReadClassTrainer()
   if not (GetNumTrainerServices and GetTrainerServiceInfo and GetTrainerServiceCost and GetTrainerServiceLevelReq) then return nil end
+  if ns.Features and not ns.Features.Available("classTrainer") then return nil end
   if IsTradeskillTrainer and IsTradeskillTrainer() then return nil end
   local found, names, n = {}, {}, GetNumTrainerServices() or 0
   for i = 1, n do
@@ -267,11 +269,12 @@ function Budget.ReadClassTrainer()
   if not rec then return nil end
   local npc = (UnitName and UnitName("npc")) or "?"
   if ns.Secret.IsSecret(npc) then npc = "?" end
-  rec.classTraining = rec.classTraining or {}
-  rec.classTraining.byTrainer = rec.classTraining.byTrainer or {}
+  if type(rec.classTraining) ~= "table" then rec.classTraining = {} end
+  if type(rec.classTraining.byTrainer) ~= "table" then rec.classTraining.byTrainer = {} end
   for other, visit in pairs(rec.classTraining.byTrainer) do
-    for _, s in ipairs(visit.services or {}) do
-      if names[s.name] then rec.classTraining.byTrainer[other] = nil; break end
+    local services = type(visit) == "table" and type(visit.services) == "table" and visit.services or {}
+    for _, s in ipairs(services) do
+      if type(s) == "table" and names[s.name] then rec.classTraining.byTrainer[other] = nil; break end
     end
   end
   rec.classTraining.byTrainer[npc] = { when = time(), services = found }
