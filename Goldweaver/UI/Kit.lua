@@ -764,7 +764,7 @@ local HEAD_H, TABS_H = 64, 30
 local WIN_W, WIN_H = 780, 620
 local TAB_ICONS = {
   guide = "Interface\\Icons\\INV_Misc_Book_09", field = "Interface\\Icons\\INV_Misc_Flower_02",
-  berufe = "Interface\\Icons\\Trade_BlackSmithing", team = "Interface\\Icons\\INV_Letter_15",
+  berufe = "Interface\\Icons\\Trade_BlackSmithing", gold = "Interface\\Icons\\INV_Misc_Coin_02", team = "Interface\\Icons\\INV_Letter_15",
 }
 
 local function selectTab(key)

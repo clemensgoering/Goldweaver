@@ -23,6 +23,10 @@ ns.Professions:Register({
     { from = 150, to = 225, zone = "Stranglethorn Vale / Arathi Highlands / Hillsbrad Foothills / Desolace", note = "Panthers, tigers, raptors, scorpids" },
     { from = 225, to = 300, zone = "Tanaris / Un'Goro Crater / Felwood / Winterspring", note = "Devilsaurs, cats, bears, scorpids" },
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Leather for leatherworkers", detail = "Skin every beast you kill; leather and hides sell steadily.", minSkill = 1, effort = "medium" },
+  },
   notes = {
     "A Skinning Knife is required; skin only beasts that match your level for the best chance of skill points.",
     "Leather feeds Leatherworking and sells steadily; keep a few stacks for twinks.",

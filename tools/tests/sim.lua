@@ -599,7 +599,12 @@ local function session(label, opts, savedDB)
     local b = findButton(env, "^Anhängen")
     local hasProcessor = #ns.Chars.ByRole("processor", ns.Chars.MarketKey()) > 0
     if ns.Chars.Current().role == "main" and hasProcessor then
-      if not b then fail(label .. ": no attach button for the main") return end
+      if not b then
+        local why = {}
+        for _, e in ipairs(ns.Mail.Explain()) do why[#why + 1] = ("%s=%s"):format(tostring(e.item.itemID), tostring(e.reason)) end
+        fail(label .. ": no attach button for the main (" .. table.concat(why, ", ") .. "; gold support " .. ns.Budget.Strength() .. ")")
+        return
+      end
       b:Click(); env._advance(0.5)
       local send = findButton(env, "^Senden")
       if not send then fail(label .. ": attach did not switch to send") return end

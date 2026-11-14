@@ -35,7 +35,7 @@ read_globals = {
   "ATTACHMENTS_MAX_SEND", "GetNumLootItems", "GetLootSlotInfo", "GetLootSlotLink", "C_Map",
   "GetMerchantNumItems", "GetMerchantItemInfo", "GetMerchantItemLink", "UnitName", "unpack",
   "GetNumTrainerServices", "GetTrainerServiceInfo", "GetTrainerServiceSkillReq", "GetTrainerServiceLevelReq",
-  "GetTrainerServiceCost", "ERR_MAIL_TARGET_NOT_FOUND", "debugstack", "C_MerchantFrame",
+  "GetTrainerServiceCost", "IsSpellKnown", "IsTradeskillTrainer", "ERR_MAIL_TARGET_NOT_FOUND", "debugstack", "C_MerchantFrame",
   "C_SuperTrack", "UiMapPoint", "ClassTrainerFrame", "MerchantFrame", "ProfessionsFrame", "HideUIPanel",
   "ITEM_QUALITY_COLORS", "OpenWorldMap", "ToggleWorldMap", "PanelTemplates_SetNumTabs", "PanelTemplates_SetTab",
   "PanelTemplates_TabResize", "PlaySound", "SOUNDKIT", "Settings", "RXP", "RXPCData", "ReloadUI",

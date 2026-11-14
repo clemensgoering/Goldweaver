@@ -37,6 +37,7 @@ Data\VendorReagents.lua
 Data\Conversions.lua
 Data\Gathering.lua
 Data\Zones.lua
+Data\EarnTips.lua
 
 Professions\Registry.lua
 Professions\Adapter.lua
@@ -53,11 +54,12 @@ Professions\Fishing.lua
 Professions\Cooking.lua
 Professions\FirstAid.lua
 
-# UI: kit first, tabs in display order (Leitfaden, Unterwegs, Berufe, Team)
+# UI: kit first, tabs in display order (Guide, On the road, Professions, Gold, Team)
 UI\Kit.lua
 UI\TabGuide.lua
 UI\TabField.lua
 UI\TabProfessions.lua
+UI\TabGold.lua
 UI\TabTeam.lua
 UI\Settings.lua
 UI\Panel.lua
@@ -83,6 +85,9 @@ Modules\Compare.lua
 Modules\Auction.lua
 Modules\Ledger.lua
 Modules\Dashboard.lua
+Modules\Gates.lua
+Modules\Budget.lua
+Modules\Earn.lua
 Modules\Onboarding.lua
 Modules\Contacts.lua
 Modules\Diagnose.lua

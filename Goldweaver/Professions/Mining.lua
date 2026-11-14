@@ -24,6 +24,10 @@ ns.Professions:Register({
     { from = 175, to = 250, zone = "Badlands / Searing Gorge / Stranglethorn Vale / Desolace", note = "Mithril Deposit, Truesilver Deposit" },
     { from = 250, to = 300, zone = "Un'Goro Crater / Burning Steppes / Winterspring / Eastern Plaguelands", note = "Thorium Vein, Rich Thorium Vein" },
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Smelt or sell raw", detail = "Ore and bars sell to blacksmiths and engineers; the tooltip shows which is worth more.", minSkill = 1, effort = "medium" },
+  },
   notes = {
     "A Mining Pick is required and must be carried in the bags.",
     "Smelting at a forge is part of Mining and turns ore into bars for Blacksmithing and Engineering.",

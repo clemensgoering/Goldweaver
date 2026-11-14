@@ -141,7 +141,7 @@ UI.RegisterTab("berufe", "Professions", function(frame)
         if rank.canTrain then hint = " |cff80ff80· " .. L["trainable now"] .. "|r"
         elseif rank.needSkill > 0 then hint = (" · " .. L["%d more points"]):format(rank.needSkill)
         elseif rank.needLevel > 0 then hint = (" · " .. L["%d more levels"]):format(rank.needLevel) end
-        nextText = (L[" » %s from skill %d, level %d%s"]):format(L[rank.next.name], rank.next.reqSkill, rank.next.reqLevel, hint)
+        nextText = (L[" » %s from skill %d, level %d%s"]):format(L[rank.next.name], rank.next.reqSkill, rank.reqLevel, hint)
       end
       lines[1] = { ("%s · %s%s"):format(p.name or "?", rank and rank.current and L[rank.current.name] or "?", nextText), 1, 1, 1 }
       local trainer = rank and rank.next and rank.trainer

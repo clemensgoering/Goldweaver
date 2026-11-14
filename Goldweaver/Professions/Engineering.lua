@@ -33,6 +33,8 @@ ns.Professions:Register({
     { from = 175, to = 225, recipe = "Mithril Casing",          crafts = 50, mats = { { item = MITHRIL_BAR, qty = 150 } }, untested = true },
     { from = 225, to = 300, recipe = "Thorium Widget",          crafts = 75, mats = { { item = THORIUM_BAR, qty = 150 } }, untested = true },
   },
+  -- what to collect for this profession while the character levels (shown with level gates)
+  levelling = { text = "Mine the ore along your levelling route; take Mining if no one in the team has it." },
   notes = {
     "Engineering needs the Arclight Spanner in the bags as a tool.",
     "Blasting powders and tubes are cheap to make and sell to other engineers.",

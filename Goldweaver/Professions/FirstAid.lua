@@ -34,6 +34,8 @@ ns.Professions:Register({
     { from = 260, to = 290, recipe = "Runecloth Bandage",       crafts = 30, mats = { { item = RUNECLOTH, qty = 30 } }, untested = true },
     { from = 290, to = 300, recipe = "Heavy Runecloth Bandage", crafts = 10, mats = { { item = RUNECLOTH, qty = 20 } }, untested = true },
   },
+  -- what to collect for this profession while the character levels (shown with level gates)
+  levelling = { text = "Kill humanoids while levelling: their cloth makes bandages.", drops = "cloth" },
   notes = {
     "Bandages sell and heal outside combat; keep a stack for yourself and your twink.",
     "Expert needs the book Expert First Aid - Under Wraps; Artisan needs the Triage quest.",

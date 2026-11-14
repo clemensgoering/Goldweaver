@@ -190,6 +190,18 @@ function Learn.EnumName(value, pattern)
 end
 
 -- trainers ----------------------------------------------------------------------------------------------
+-- First number among the return values of a pcall'ed trainer function. GetTrainerServiceSkillReq returns
+-- (skillName, skillRank, hasReq) on Forever, so the rank is not the first value (verified from saved data 14.11.2026).
+local function firstNumber(ok, ...)
+  if not ok then return nil end
+  for i = 1, select("#", ...) do
+    local v = select(i, ...)
+    if type(v) == "number" and not ns.Secret.IsSecret(v) then return v end
+  end
+  return nil
+end
+Learn.FirstNumber = firstNumber
+
 -- Reads the open trainer window. Stores services with skill/level requirements and costs.
 function Learn.TrainerServices(npc)
   if not (npc and GetNumTrainerServices and GetTrainerServiceInfo) then return end
@@ -203,9 +215,9 @@ function Learn.TrainerServices(npc)
     local name, rank, category = GetTrainerServiceInfo(i)
     if name and category ~= "header" and not ns.Secret.Any(name, rank, category) then
       local skillReq, levelReq, cost
-      if GetTrainerServiceSkillReq then local ok, s = pcall(GetTrainerServiceSkillReq, i) if ok then skillReq = tonumber(s) end end
-      if GetTrainerServiceLevelReq then local ok, lv = pcall(GetTrainerServiceLevelReq, i) if ok then levelReq = tonumber(lv) end end
-      if GetTrainerServiceCost then local ok, c = pcall(GetTrainerServiceCost, i) if ok then cost = tonumber(c) end end
+      if GetTrainerServiceSkillReq then skillReq = firstNumber(pcall(GetTrainerServiceSkillReq, i)) end
+      if GetTrainerServiceLevelReq then levelReq = firstNumber(pcall(GetTrainerServiceLevelReq, i)) end
+      if GetTrainerServiceCost then cost = firstNumber(pcall(GetTrainerServiceCost, i)) end
       entry.services[#entry.services + 1] = { name = name, rank = rank, category = category, skillReq = skillReq, levelReq = levelReq, cost = cost }
     end
   end
@@ -252,6 +264,19 @@ function Learn.RecipeSource(recipe)
     end
   end
   -- Forever's RecipeInfo has no source field (verified 08.11.2026); only own visits can answer this.
+  return nil
+end
+
+-- Level requirement and cost of a rank as a trainer showed it: levelReq, cost (copper) or nil.
+function Learn.RankRequirement(skillLine, reqSkill)
+  local l = LD()
+  for _, t in pairs(l.trainers or {}) do
+    if t.skillLine == skillLine then
+      for _, r in ipairs(t.ranks or {}) do
+        if r.skillReq == reqSkill then return r.levelReq, r.cost end
+      end
+    end
+  end
   return nil
 end
 

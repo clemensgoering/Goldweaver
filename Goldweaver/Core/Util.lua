@@ -18,6 +18,20 @@ function ns.Util.Money(copper)
   return neg and ("-" .. out) or out
 end
 
+-- Short form for overviews: "151g", "12g 30s", "75s", "40c". Pure function, used by tests.
+function ns.Util.MoneyShort(copper)
+  copper = math.floor(tonumber(copper) or 0)
+  local neg = copper < 0
+  if neg then copper = -copper end
+  local g, s = math.floor(copper / 10000), math.floor((copper % 10000) / 100)
+  local out
+  if g >= 100 or (g > 0 and s == 0) then out = g .. "g"
+  elseif g > 0 then out = ("%dg %ds"):format(g, s)
+  elseif s > 0 then out = s .. "s"
+  else out = (copper % 100) .. "c" end
+  return neg and ("-" .. out) or out
+end
+
 -- Net proceeds after the auction house cut (default 5 %).
 function ns.Util.AfterCut(copper, cut)
   cut = cut or (ns.db and ns.db.settings.ahCut) or 0.05

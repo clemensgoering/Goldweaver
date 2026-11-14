@@ -50,11 +50,11 @@ end
 for _, rel in ipairs({
   "Locales/enUS.lua", "Locales/deDE.lua", "Core/Init.lua", "Core/Util.lua", "Core/Secret.lua", "Core/Events.lua", "Core/API.lua", "Core/DB.lua",
   "Core/Chars.lua", "Core/Inventory.lua", "Core/Price.lua", "Core/Graph.lua",
-  "Data/Disenchant.lua", "Data/Crates.lua", "Data/VendorReagents.lua", "Data/Conversions.lua", "Data/Gathering.lua", "Data/Zones.lua",
-  "Professions/Registry.lua", "Professions/Adapter.lua", "Professions/Tailoring.lua", "Professions/Enchanting.lua",
+  "Data/Disenchant.lua", "Data/Crates.lua", "Data/VendorReagents.lua", "Data/Conversions.lua", "Data/Gathering.lua", "Data/Zones.lua", "Data/EarnTips.lua",
+  "Professions/Registry.lua", "Professions/Adapter.lua", "Professions/Tailoring.lua", "Professions/Enchanting.lua", "Professions/Leatherworking.lua", "Professions/Skinning.lua",
   "Modules/Checks.lua", "Modules/Learn.lua", "Modules/Demand.lua", "Modules/Coop.lua", "Modules/Field.lua", "Modules/Autopilot.lua",
   "Modules/Advisor.lua", "Modules/Mail.lua", "Modules/Planner.lua", "Modules/CraftProfit.lua", "Modules/Compare.lua",
-  "Modules/Ledger.lua", "Modules/Dashboard.lua",
+  "Modules/Ledger.lua", "Modules/Dashboard.lua", "Modules/Gates.lua", "Modules/Budget.lua", "Modules/Earn.lua",
 }) do loadAddonFile(rel) end
 
 -- Simulate the client: ADDON_LOADED initialises SavedVariables and module Init().

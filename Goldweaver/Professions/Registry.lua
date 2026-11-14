@@ -6,20 +6,32 @@
 --   seedPath = { { from = 1, to = 30, recipe = "Bolt of Linen Cloth", crafts = 30, mats = { { item = 2589, qty = 60 } } }, ... },
 --   zones = { { from, to, zone = "English zone list", note = "what grows there" } } (gathering professions, optional),
 --   trainers = { Journeyman = { Horde = "...", Alliance = "..." } | { both = "..." }, Expert = ..., Artisan = ... },
---   notes = { "..." }
+--   notes = { "..." },
+--   earn = { { title, detail, minSkill?, minLevel?, effort = "low"|"medium"|"high", icon? } } (optional: ways this
+--          profession makes gold; English keys, shown in the Gold tab through ns.L)
+--   levelling = { text, drops = "cloth" | "leather" } (optional: what to collect while levelling to the next gate)
 -- }
+-- Ranks: crafting and secondary professions use DEFAULT_RANKS, gathering professions GATHERING_RANKS. reqLevel and
+-- cost are guide values; what a trainer actually showed wins (Learn.RankRequirement).
 local ADDON, ns = ...
 
 local Registry = { profiles = {}, bySkillLine = {} }
 ns.Professions = Registry
 
--- Forever: four ranks, apprentice has no level requirement (community guides, to be confirmed by trainers in game).
+-- Forever: four ranks (Icy Veins, Boostroom, 11/2026; to be confirmed by trainers in game). cost in copper.
 Registry.DEFAULT_RANKS = {
   -- name = key for profile.trainers and the English label (translated with ns.L where shown)
-  { name = "Apprentice", max = 75,  reqSkill = 0,   reqLevel = 0 },
-  { name = "Journeyman", max = 150, reqSkill = 50,  reqLevel = 10 },
-  { name = "Expert",     max = 225, reqSkill = 125, reqLevel = 20 },
-  { name = "Artisan",    max = 300, reqSkill = 200, reqLevel = 35 },
+  { name = "Apprentice", max = 75,  reqSkill = 0,   reqLevel = 0,  cost = 10 },
+  { name = "Journeyman", max = 150, reqSkill = 50,  reqLevel = 10, cost = 500 },
+  { name = "Expert",     max = 225, reqSkill = 125, reqLevel = 20, cost = 5000 },
+  { name = "Artisan",    max = 300, reqSkill = 200, reqLevel = 35, cost = 50000 },
+}
+-- gathering professions unlock earlier: Expert at 10, Artisan at 25
+Registry.GATHERING_RANKS = {
+  { name = "Apprentice", max = 75,  reqSkill = 0,   reqLevel = 0,  cost = 10 },
+  { name = "Journeyman", max = 150, reqSkill = 50,  reqLevel = 0,  cost = 500 },
+  { name = "Expert",     max = 225, reqSkill = 125, reqLevel = 10, cost = 5000 },
+  { name = "Artisan",    max = 300, reqSkill = 200, reqLevel = 25, cost = 50000 },
 }
 
 Registry.SKILL_LINES = {
@@ -32,7 +44,7 @@ function Registry:Register(profile)
   assert(profile.skillLineID, "profile " .. profile.key .. " needs a skillLineID")
   assert(profile.category, "profile " .. profile.key .. " needs a category")
   profile.name = profile.name or profile.key
-  profile.ranks = profile.ranks or self.DEFAULT_RANKS
+  profile.ranks = profile.ranks or (profile.category == "gathering" and self.GATHERING_RANKS or self.DEFAULT_RANKS)
   profile.crateCategories = profile.crateCategories or {}
   profile.vendorReagents = profile.vendorReagents or {}
   profile.seedPath = profile.seedPath or {}

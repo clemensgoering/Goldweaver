@@ -116,11 +116,8 @@ Steps.RegisterSource("professions", 40, function(add, ctx)
             -- lands on this recipe in the profession window; our Professions tab only if the game refuses
             if not ns.Adapter.Open(skillLine, r.id) then openGuide(skillLine) end
           end })
-      elseif rank and rank.capped and rank.next and not rank.canTrain then
-        add({ id = "cap" .. skillLine, icon = p.icon or ICON.train, category = p.name or L["Profession"],
-          title = (L["%s at its cap (%d)"]):format(p.name or "?", p.rank or 0),
-          detail = (L["Next rank %s from level %d."]):format(L[rank.next.name], rank.next.reqLevel) })
       end
+      -- a rank that needs a higher character level is a step of Modules/Gates.lua
     end
   end
 end)

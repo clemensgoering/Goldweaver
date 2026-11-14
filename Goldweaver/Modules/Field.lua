@@ -98,9 +98,36 @@ local function addSpot(e, spot)
   if #e.spots > MAX_SPOTS then table.remove(e.spots, 1) end
 end
 
+-- Gathering pace: nodes per hour from the player's own farming. Two gathers less than PACE_GAP apart count as one
+-- stretch of farming; longer breaks are left out. learned.gatherPace = { nodes, seconds, items }.
+local PACE_GAP, PACE_DEFAULT, PACE_MIN_SECONDS = 300, 30, 900
+local lastGatherAt
+local function recordPace(items)
+  local now = time()
+  local pace = ns.db.learned.gatherPace or { nodes = 0, seconds = 0, items = 0 }
+  if lastGatherAt and now - lastGatherAt <= PACE_GAP then
+    pace.nodes = pace.nodes + 1
+    pace.seconds = pace.seconds + (now - lastGatherAt)
+    for _, it in ipairs(items) do pace.items = pace.items + (it.qty or 1) end
+  end
+  lastGatherAt = now
+  ns.db.learned.gatherPace = pace
+end
+
+-- Nodes per hour and items per node: from own farming once PACE_MIN_SECONDS were observed, else a cautious default.
+-- Returns nodesPerHour, itemsPerNode, own (boolean).
+function Field.GatherPace()
+  local pace = ns.db.learned.gatherPace
+  if pace and pace.seconds >= PACE_MIN_SECONDS and pace.nodes > 0 then
+    return pace.nodes / pace.seconds * 3600, math.max(1, pace.items / pace.nodes), true
+  end
+  return PACE_DEFAULT, 2, false
+end
+
 -- Record what a gathering spell yielded in this zone (called on LOOT_OPENED after a gather cast).
 function Field.RecordGather(kind, items, zoneID, spot)
   if not zoneID then return end
+  if kind == "herb" or kind == "ore" then recordPace(items) end
   ns.db.learned.zoneGathers = ns.db.learned.zoneGathers or {}
   local z = ns.db.learned.zoneGathers[zoneID] or {}
   for _, it in ipairs(items) do

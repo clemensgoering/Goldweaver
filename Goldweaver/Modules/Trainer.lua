@@ -18,9 +18,9 @@ local function serviceInfo(i)
   local name, rank, category = GetTrainerServiceInfo(i)
   if not name or ns.Secret.Any(name, category) or category == "header" then return nil end
   local cost, skillReq, levelReq
-  if GetTrainerServiceCost then local ok, c = pcall(GetTrainerServiceCost, i) if ok then cost = tonumber(c) end end
-  if GetTrainerServiceSkillReq then local ok, s = pcall(GetTrainerServiceSkillReq, i) if ok then skillReq = tonumber(s) end end
-  if GetTrainerServiceLevelReq then local ok, lv = pcall(GetTrainerServiceLevelReq, i) if ok then levelReq = tonumber(lv) end end
+  if GetTrainerServiceCost then cost = ns.Learn.FirstNumber(pcall(GetTrainerServiceCost, i)) end
+  if GetTrainerServiceSkillReq then skillReq = ns.Learn.FirstNumber(pcall(GetTrainerServiceSkillReq, i)) end
+  if GetTrainerServiceLevelReq then levelReq = ns.Learn.FirstNumber(pcall(GetTrainerServiceLevelReq, i)) end
   return { index = i, name = name, rank = rank, available = category == "available", cost = cost or 0, skillReq = skillReq, levelReq = levelReq }
 end
 

@@ -24,6 +24,10 @@ ns.Professions:Register({
     { from = 205, to = 250, zone = "Feralas / Dustwallow Marsh / Swamp of Sorrows / Hinterlands", note = "Fadeleaf, Khadgar's Whisker, Goldthorn, Sungrass" },
     { from = 250, to = 300, zone = "Un'Goro Crater / Felwood / Eastern Plaguelands / Winterspring", note = "Sungrass, Gromsblood, Plaguebloom, Icecap" },
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Herbs for alchemists", detail = "Herbs sell to players levelling Alchemy; sell stacks of 20.", minSkill = 1, effort = "medium" },
+  },
   notes = {
     "Gather while levelling or travelling; herbs sell well at the Auction House and feed Alchemy.",
     "Nodes respawn on a timer, so a loop through one zone beats single trips.",

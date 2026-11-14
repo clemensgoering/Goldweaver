@@ -79,9 +79,15 @@ function Planner.NextRank(skillLine, rec)
   local level = rec.level or (UnitLevel and UnitLevel("player")) or 0
   local info = { current = rank, next = nextRank, skill = p.rank or 0, maxSkill = p.maxRank or rank.max, level = level }
   if nextRank then
-    info.canTrain = (p.rank or 0) >= nextRank.reqSkill and level >= nextRank.reqLevel
+    -- what a trainer showed beats the guide values (reqLevel, cost)
+    local seenLevel, seenCost = nil, nil
+    if ns.Learn and ns.Learn.RankRequirement then seenLevel, seenCost = ns.Learn.RankRequirement(skillLine, nextRank.reqSkill) end
+    info.reqLevel = seenLevel or nextRank.reqLevel or 0
+    info.cost = seenCost or nextRank.cost
+    info.costSeen = seenCost ~= nil
+    info.canTrain = (p.rank or 0) >= nextRank.reqSkill and level >= info.reqLevel
     info.needSkill = math.max(0, nextRank.reqSkill - (p.rank or 0))
-    info.needLevel = math.max(0, nextRank.reqLevel - level)
+    info.needLevel = math.max(0, info.reqLevel - level)
     -- a trainer we actually met beats the guide text
     local seen = ns.Learn and ns.Learn.TrainerFor and ns.Learn.TrainerFor(skillLine, nextRank.reqSkill)
     info.trainer = seen or Planner.ForFaction(profile.trainers and profile.trainers[nextRank.name]) or nil

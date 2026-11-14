@@ -11,8 +11,16 @@ First public version.
 **Guide window (`/gw`)**
 - Guide: one step card with the most useful next action and one button, plus the team view of gatherer and crafter with a shared gathering list.
 - Field: what to gather in the current zone for your skill, remembered herb and ore spots with a waypoint to the next one, best zones for your level.
+- Gold: budget, gold support, costs by level, level gates and ways to make gold (see above).
 - Professions: all twelve professions. Cheapest next skill-up with a shopping list across your characters, what is worth crafting after the auction house cut, recipes you have not learned yet, when and where to train the next rank.
 - Team: roles per character (gatherer, crafter and bank, inactive), self-check and backup status.
+
+**Gold tab**
+- Budget: what is due now and in the next ten levels (class skills, profession ranks, riding at 40, materials for the next skill-ups) against the gold of all your characters. Class skill costs are read from your own class trainer; until then a typical curve is used.
+- Gold support in three strengths. When gold is short, selling wins over disenchanting, crafting and crates unless they earn clearly more, and the mailbox keeps sellable gear (light) or everything no plan needs (strong). When something is due now and the character cannot pay it, support is always strong. Can be switched off.
+- Costs by level for every character, in bands of ten levels.
+- Level gates: profession ranks that need a higher character level (crafting: Journeyman 10, Expert 20, Artisan 35; gathering: Expert 10, Artisan 25), shown early, with what to collect for that profession while levelling.
+- Ways to make gold for your character, ranked by what they should earn: sell your bags, gather in the best zone for your skill, cloth from humanoids, profitable crafts of your team, profession tips. Estimates use your own prices and your own gathering pace.
 
 **Helpers at game windows, one action per click**
 - Mailbox: attach everything your crafter should get, then send. Sales are recorded from auction house invoices.

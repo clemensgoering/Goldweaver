@@ -18,6 +18,8 @@ local function defs()
     { L["Show the minimap button"], function() return not s.minimapHidden end, function(on) s.minimapHidden = not on; if ns.Minimap then ns.Minimap.SetShown(on) end end },
     { L["Show tooltip lines"], function() return not s.tooltipOff end, function(on) s.tooltipOff = not on end },
     { L["Show the HUD line (session gold, mail) at the top"], function() return ns.HUD.ShouldShow() end, function(on) if on then s.hudOn = true; s.hudOff = nil else s.hudOff = true; s.hudOn = nil end; ns.HUD.Refresh() end },
+    { L["Gold first when gold is short (sell before mailing or disenchanting)"], function() return s.cashFirst ~= false end,
+      function(on) s.cashFirst = on; if ns.Budget then ns.Budget.Invalidate() end end },
     { L["Fill in the suggested auction price automatically"], function() return s.autofillPrice ~= false end, function(on) s.autofillPrice = on end },
     { L["Keep materials for your own professions (do not mail them)"], function() return s.keepOwnMaterials ~= false end, function(on) s.keepOwnMaterials = on end },
     { L["Notice when you gather something the twink needs"], function() return s.coopToast ~= false end, function(on) s.coopToast = on end },

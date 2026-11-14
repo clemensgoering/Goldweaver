@@ -34,6 +34,12 @@ ns.Professions:Register({
     { from = 200, to = 250, recipe = "Thick Armor Kit",        crafts = 50, mats = { { item = THICK, qty = 250 } }, untested = true },
     { from = 250, to = 300, recipe = "Rugged Armor Kit",       crafts = 50, mats = { { item = RUGGED, qty = 250 }, { item = RUNE_THREAD, qty = 50 } }, untested = true },
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Armor Kits", detail = "Armor Kits are cheap with your own leather and sell to levelling players.", minSkill = 1, effort = "low" },
+  },
+  -- what to collect for this profession while the character levels (shown with level gates)
+  levelling = { text = "Skin the beasts you kill while levelling; take Skinning if no one in the team has it.", drops = "leather" },
   notes = {
     "Leather comes from skinning; the main can skin and mail it to the twink.",
     "Armor kits sell to every class and are a steady seller at the auction house.",

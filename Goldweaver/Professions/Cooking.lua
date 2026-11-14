@@ -35,6 +35,13 @@ ns.Professions:Register({
     { from = 225, to = 275, recipe = "Runn Tum Tuber Surprise", crafts = 50, mats = { { item = RUNN_TUM, qty = 50 } }, untested = true },
     -- 275-300: filled by the live planner (Dirge's Kickin' Chimaerok Chops and similar).
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Cook food for the AH", detail = "Well Fed food sells at every level; meat and fish from your own levelling keep the cost near zero.", minSkill = 1, effort = "low" },
+    { title = "Resell the Expert Cookbook", detail = "The Expert Cookbook (Cooking 150-225) comes from a vendor and is tradeable; compare AH and vendor price.", minSkill = 1, effort = "low" },
+  },
+  -- what to collect for this profession while the character levels (shown with level gates)
+  levelling = { text = "Keep the meat and fish from your levelling; most low recipes use it." },
   notes = {
     "Cooking needs a fire; use a campfire or an inn hearth fire.",
     "Cook with food drops from your own levelling to keep costs near zero.",

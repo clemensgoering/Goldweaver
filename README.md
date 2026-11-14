@@ -7,10 +7,11 @@ Goldweaver is an addon for **World of Warcraft: Forever** that connects professi
 ## What it does
 
 - **Tooltip:** one line on every item with its best use and value: send to your crafter, disenchant, craft, sell on the auction house, sell to a vendor, put in a Waylaid Crate or keep for a skill-up. Hold Shift for the other options and the price source. A second line shows what your bank, mailbox and other characters hold.
-- **Guide window (`/gw`):** four tabs.
+- **Guide window (`/gw`):** five tabs.
   - *Guide* shows the most useful next step with one button, and the team view of gatherer and crafter with a shared gathering list.
   - *Field* shows what to gather in the current zone and remembers your herb and ore spots.
   - *Professions* shows the cheapest next skill-up with a shopping list, what is worth crafting, unlearned recipes and the next trainer rank.
+  - *Gold* compares what you will have to pay (class skills, profession ranks, riding, materials) with your gold, warns about profession ranks that need a higher character level, and lists ways to make gold for your character with an estimate. When gold is short, Goldweaver recommends selling over disenchanting and mailing.
   - *Team* holds the roles of your characters and the self-check.
 - **Helpers at game windows:** small tabs under the mailbox, merchant, bank, auction house and trainer windows. Attach and send materials, buy what the plan is missing, sell junk, take and store bank stacks, work through a shopping list, learn recipes.
 - **Auction house:** every search result you look at is remembered as a price. When you sell, a line suggests a price and shows deposit, proceeds and your break-even.

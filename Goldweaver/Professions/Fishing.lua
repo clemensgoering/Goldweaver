@@ -23,6 +23,10 @@ ns.Professions:Register({
     { from = 150, to = 225, zone = "Stranglethorn Vale / Hillsbrad Foothills / Arathi Highlands", note = "Deep water gives steadier skill-ups" },
     { from = 225, to = 300, zone = "Feralas / Dustwallow Marsh / Tanaris / Azshara", note = "Large lakes and open ocean give faster skill-ups" },
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Fish for cooks", detail = "Raw fish sells to players levelling Cooking; sell full stacks on the AH.", minSkill = 1, effort = "medium" },
+  },
   notes = {
     "Fishing yields cooking ingredients and tradable fish; pair it with Cooking.",
     "Expert needs a book from a fishing vendor; Artisan needs the Nat Pagle quest line.",

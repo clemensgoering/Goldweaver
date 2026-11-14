@@ -33,6 +33,12 @@ ns.Professions:Register({
     { from = 185, to = 230, recipe = "Superior Healing Potion", crafts = 50, mats = { { item = SUNGRASS, qty = 100 }, { item = KHADGARS, qty = 50 }, { item = CRYSTAL_VIAL, qty = 50 } }, untested = true },
     -- 230-300: depends on the server economy; filled by the live planner.
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Potions for dungeons", detail = "Healing and mana potions sell steadily from level 20; craft small batches and watch the margin.", minSkill = 50, effort = "low" },
+  },
+  -- what to collect for this profession while the character levels (shown with level gates)
+  levelling = { text = "Pick the herbs along your levelling route; take Herbalism if no one in the team has it." },
   notes = {
     "Herbs are the main cost; gather them with the main character or buy them in bulk.",
     "Vials come from alchemy or general goods vendors; buy them in stacks.",

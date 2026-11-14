@@ -62,6 +62,25 @@ end
 Mail.AddRule("bound", function(item) if item.isBound then return false, L["bound"] end end)
 Mail.AddRule("grey", function(item) if (item.quality or 1) == 0 then return false, L["vendor"] end end)
 
+-- Gold first (Modules/Budget.lua): while gold is short, an item no plan needs stays when selling it is the best use.
+-- Light support keeps only gear (sold instead of disenchanted at the crafter); materials still travel. Strong support
+-- keeps everything sellable that no plan needs.
+Mail.AddRule("cashFirst", function(item, info)
+  local strength = ns.Budget and ns.Budget.Strength() or "covered"
+  if strength == "covered" then return nil end
+  if ns.Demand and ns.Demand.For(item.itemID) then return nil end
+  if info.classID == CLASS_RECIPE then return nil end
+  if strength == "light" and info.classID ~= CLASS_WEAPON and info.classID ~= CLASS_ARMOR then return nil end
+  local data = ns.API.ItemInfo(item.itemID)
+  if not data then return nil end
+  local best = ns.Advisor.Best({ id = item.itemID, quantity = item.count or 1, reqLevel = data.reqLevel, quality = data.quality,
+    isWeapon = data.classID == CLASS_WEAPON, vendorSell = data.sellPrice, soulbound = item.isBound }, ns.Advisor.LiveContext({ needsMail = false }))
+  if best and (best.action == "auction" or best.action == "vendor") and best.value > 0 then
+    return false, L["sell it: gold first"]
+  end
+  return nil
+end)
+
 Mail.AddRule("tradegoods", function(_, info, me, list)
   if info.classID ~= CLASS_TRADEGOODS then return nil end
   local users = TRADEGOOD_USERS[info.subclassID] or {}

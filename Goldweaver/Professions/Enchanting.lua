@@ -56,6 +56,12 @@ ns.Professions:Register({
                { item = G_ETERNAL, qty = 4 }, { item = S_BRILLIANT, qty = 4 }, { item = L_BRILLIANT, qty = 2 } } },
     { from = 295, to = 300, recipe = "Enchant Cloak - Superior Defense", crafts = 5, mats = { { item = ILLUSION, qty = 40 } }, untested = true },
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Sell enchanting materials", detail = "Dust, essences and shards often sell for more than the item; the tooltip compares both.", minSkill = 1, effort = "low" },
+  },
+  -- what to collect for this profession while the character levels (shown with level gates)
+  levelling = { text = "Disenchant green quest rewards and drops while levelling instead of selling them." },
   notes = {
     "Disenchant is in the Professions window, not the spellbook; works on every item from skill 1.",
     "Artisan Enchanting is taught only by Annora in Uldaman (single source, unconfirmed).",

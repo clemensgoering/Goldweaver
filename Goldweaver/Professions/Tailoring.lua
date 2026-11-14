@@ -43,6 +43,12 @@ ns.Professions:Register({
     { from = 240, to = 265, recipe = "Runecloth Gloves",          crafts = 43, mats = { { item = BOLT_RUNECLOTH, qty = 172 }, { item = RUGGED_LEATHER, qty = 172 }, { item = RUNE_THREAD, qty = 43 } }, untested = true },
     -- 265-300: no confirmed trainer/vendor recipe on Forever yet; filled by the live planner.
   },
+  -- ways to make gold with this profession (Gold tab); English keys, translated at display
+  earn = {
+    { title = "Tailor bags", detail = "Woolen, silk and mageweave bags sell to every class; the Professions tab shows the margin.", minSkill = 75, effort = "low" },
+  },
+  -- what to collect for this profession while the character levels (shown with level gates)
+  levelling = { text = "Kill humanoids while levelling: they drop the cloth Tailoring needs.", drops = "cloth" },
   notes = {
     "Forever: Apprentice has no level requirement; many Artisan recipes turn grey 25-45 points earlier than Classic.",
     "Bolt of Runecloth gives no skill points on Forever; craft bolts in advance.",

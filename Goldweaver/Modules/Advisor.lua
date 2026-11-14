@@ -16,6 +16,8 @@
 --   keepFor     = function(itemID) -> reason | nil             planner says this item is needed for a skill-up
 --   crates      = ns.Data.Crates | false                       crate option on/off
 --   disenchant  = ns.Data.Disenchant
+--   cashFirst   = boolean                                      gold is short (Modules/Budget.lua): selling outranks
+--   cashMargin  = number                                       converting and crates unless they earn this factor more
 -- }
 -- option = { action, value (copper), label, detail?, conversion?, coverage?, runs?, unitPrice?, replacement? }
 -- Evaluate returns the options sorted by value desc; ties: keep first, then alphabetical by action.
@@ -127,6 +129,11 @@ end)
 -- Evaluation ----------------------------------------------------------------------------------------
 
 local TIE = { keep = 0 }
+-- Gold first: a disenchant, craft or crate only wins when it beats selling by the budget's margin (15 % when gold is
+-- a little short, 50 % when it is very short), because its gold comes later (another character, another sale) or
+-- never (crate favor).
+local CASH_MARGIN = 1.25 -- when a caller sets cashFirst without a margin
+local NON_CASH = { convert = true, crate = true }
 
 function Advisor.Evaluate(item, ctx)
   assert(type(item) == "table" and item.id, "Advisor.Evaluate(item, ctx) needs item.id")
@@ -145,12 +152,19 @@ function Advisor.Evaluate(item, ctx)
     end
   end
   ctx._options = nil
+  local topValue
+  for _, o in ipairs(options) do
+    o.sortValue = (ctx.cashFirst and NON_CASH[o.action] and o.value > 0) and (o.value / (ctx.cashMargin or CASH_MARGIN)) or o.value
+    if not topValue or o.value > topValue then topValue = o.value end
+  end
   table.sort(options, function(a, b)
-    if a.value ~= b.value then return a.value > b.value end
+    if a.sortValue ~= b.sortValue then return a.sortValue > b.sortValue end
     local ta, tb = TIE[a.action] or 1, TIE[b.action] or 1
     if ta ~= tb then return ta < tb end
     return a.action < b.action
   end)
+  -- tell the tooltip when gold first changed the answer
+  if options[1] and topValue and options[1].value < topValue then options[1].cashFirst = true end
   return options
 end
 
@@ -177,6 +191,7 @@ function Advisor.LiveContext(overrides)
     ctx.needsMail = me ~= nil and me.role == "main"
   end
   if ns.Planner and ns.Planner.KeepReason then ctx.keepFor = ns.Planner.KeepReason end
+  if ns.Budget and ns.Budget.NeedsCash then ctx.cashFirst, ctx.cashMargin = ns.Budget.NeedsCash(), ns.Budget.CashMargin() end
   for k, v in pairs(overrides or {}) do ctx[k] = v end
   return ctx
 end

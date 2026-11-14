@@ -33,6 +33,8 @@ ns.Professions:Register({
     { from = 200, to = 250, recipe = "Mithril Spurs",           crafts = 50, mats = { { item = MITHRIL_BAR, qty = 150 } }, untested = true },
     { from = 250, to = 300, recipe = "Thorium Belt",            crafts = 50, mats = { { item = THORIUM_BAR, qty = 200 } }, untested = true },
   },
+  -- what to collect for this profession while the character levels (shown with level gates)
+  levelling = { text = "Mine the ore along your levelling route; take Mining if no one in the team has it." },
   notes = {
     "Crafting needs an anvil and a forge nearby; most cities have both.",
     "Keep your Blacksmith Hammer in the bags, it is a required tool.",
