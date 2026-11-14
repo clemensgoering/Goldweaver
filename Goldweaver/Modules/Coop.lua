@@ -230,7 +230,7 @@ function Coop.SessionLine()
     ns.Util.Money(math.max(0, math.floor(delta / hours))))
   local view = Coop.Needs()
   if s.items > 0 and view then
-    line = line .. " · " .. (L["for %s: %d items · +%d skill"]):format(view.crafter.firstName or view.crafter.name, s.items, s.points)
+    line = line .. " · " .. (L["for %s: %d items · +%d skill"]):format(ns.Chars.ShortName(view.crafter), s.items, s.points)
   end
   return line
 end
@@ -320,7 +320,7 @@ local function onBags()
   for _, row in ipairs(view.rows) do
     local gained = row.gatherer - (before[row.item] or row.gatherer)
     if gained > 0 and row.source ~= "vendor" then
-      local who = view.crafter.firstName or view.crafter.name
+      local who = ns.Chars.ShortName(view.crafter)
       local line2
       if prevPoints and view.fromGatherer > prevPoints then
         line2 = (L["enough for +%d skill points for %s"]):format(view.fromGatherer, who)

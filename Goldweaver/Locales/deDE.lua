@@ -1048,3 +1048,13 @@ L["Selling wins unless another use earns 50 % more; everything no plan needs sta
 L["Due now: %s"] = "Jetzt fällig: %s"
 L["Nothing due now. Hover for the list."] = "Jetzt nichts fällig. Liste beim Überfahren."
 L["%s · %d levels to go"] = "%s · noch %d Stufen"
+
+-- profession rank ladder, team rows (14.11.2026)
+L["%s · lvl %d"] = "%s · St. %d"
+L["%s · skill %d"] = "%s · Skill %d"
+L["%s · learn now"] = "%s · jetzt lernen"
+L["+ more"] = "+ weitere"
+L["skill %d · level %d · cap %d"] = "Skill %d · Stufe %d · bis %d"
+L["Level %s · %s"] = "Stufe %s · %s"
+L["gold unknown"] = "Gold unbekannt"
+L["Confirmed in game"] = "Im Spiel bestätigt"

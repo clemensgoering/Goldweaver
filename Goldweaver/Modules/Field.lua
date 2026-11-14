@@ -235,6 +235,13 @@ function Field.Analyze(zoneID, rec)
   return report
 end
 
+-- Zone name in the game's language (map API); the English name from the zone data only as a fallback.
+function Field.ZoneName(mapID, fallback)
+  local info = C_Map and C_Map.GetMapInfo and mapID and C_Map.GetMapInfo(mapID)
+  if info and info.name and not ns.Secret.IsSecret(info.name) then return info.name end
+  return fallback and L[fallback] or tostring(mapID)
+end
+
 -- Where each gathering skill levels best within the character's level band (±6).
 function Field.BestZones(rec)
   G = G or ns.Data.Gathering
@@ -254,7 +261,7 @@ function Field.BestZones(rec)
             local color = node and G.ColorFor(skill, node.skill)
             if color == "orange" or color == "yellow" then count = count + 1 end
           end
-          if count > 0 and (not best or count > best.count) then best = { id = entry.id, name = entry.zone.name, count = count } end
+          if count > 0 and (not best or count > best.count) then best = { id = entry.id, name = Field.ZoneName(entry.id, entry.zone.name), count = count } end
         end
       end
       out[kind] = best
@@ -265,7 +272,7 @@ function Field.BestZones(rec)
     local maxLevel = G.SkinningMaxLevel(skin)
     local best
     for _, entry in ipairs(ns.Data.Zones.ForLevel(math.min(level, maxLevel))) do
-      if entry.zone.max <= maxLevel + 2 and entry.zone.max >= maxLevel - 8 then best = { id = entry.id, name = entry.zone.name, count = 1 }; break end
+      if entry.zone.max <= maxLevel + 2 and entry.zone.max >= maxLevel - 8 then best = { id = entry.id, name = Field.ZoneName(entry.id, entry.zone.name), count = 1 }; break end
     end
     out.skin = best
   end

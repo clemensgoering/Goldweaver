@@ -101,7 +101,7 @@ function Panel.Refresh()
   local view = ns.Coop and ns.Coop.Needs()
   local me = ns.Chars.Current()
   if view and me == view.gatherer then
-    local who = view.crafter.firstName or view.crafter.name
+    local who = ns.Chars.ShortName(view.crafter)
     header.text:SetText((L["Gather for %s · %s"]):format(who, report.name))
     local data, hereNames = {}, {}
     for _, r in ipairs(view.rows) do

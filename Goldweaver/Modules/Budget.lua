@@ -78,7 +78,8 @@ Budget.RegisterExpense("professionRanks", function(rec)
 end)
 
 Budget.RegisterExpense("riding", function(rec)
-  if RIDING_FREE[rec.class or ""] or rec.ridingKnown or (rec.level or 1) > RIDING_LEVEL then return nil end
+  -- a crafter in the city does not need a mount (user decision 14.11.2026); the main and other roles do
+  if rec.role == "processor" or RIDING_FREE[rec.class or ""] or rec.ridingKnown or (rec.level or 1) > RIDING_LEVEL then return nil end
   return { { id = "riding", kind = "riding", icon = "Interface\\Icons\\Ability_Mount_RidingHorse", label = L["Riding and mount"],
     copper = RIDING_COST, level = RIDING_LEVEL, estimate = true } }
 end)
@@ -283,8 +284,8 @@ local function moneyStep(add)
   local s = Budget.Summary()
   local top = ns.Earn and ns.Earn.List()[1]
   local missing = s.nowGap > 0 and s.nowGap or s.gap
-  add({ id = "budget", icon = "Interface\\Icons\\INV_Misc_Coin_02", category = L["Gold"], value = -missing,
-    title = s.nowGap > 0 and (L["%s missing for what is due now"]):format(ns.Util.Money(s.nowGap)) or (L["%s gold missing"]):format(ns.Util.Money(s.gap)),
+  add({ id = "budget", icon = "Interface\\Icons\\INV_Misc_Coin_02", category = L["Gold"],
+    title = s.nowGap > 0 and (L["%s missing for what is due now"]):format(ns.Util.MoneyShort(missing)) or (L["%s gold missing"]):format(ns.Util.MoneyShort(missing)),
     detail = top and (L["Best way now: %s"]):format(top.title) or L["Sell what no plan needs; the Gold tab shows how."],
     actionLabel = L["Gold tab"], action = function() ns.UI.Open("gold") end })
 end

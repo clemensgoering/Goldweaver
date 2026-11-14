@@ -87,6 +87,9 @@ local timeline = ns.Budget.Timeline(main)
 eq(timeline[1].from, 28, "timeline starts at the current level")
 eq(timeline[2].riding, 1200000, "riding sits in the 30-40 band")
 eq(#ns.Budget.Timeline(twink) >= 5, true, "twink: bands up to 60")
+local twinkRiding = 0
+for _, b in ipairs(ns.Budget.Timeline(twink)) do twinkRiding = twinkRiding + b.riding end
+eq(twinkRiding, 0, "no riding for the processor (crafts in the city)")
 
 -- gold first in the Advisor: a disenchant worth 20 % more than selling loses under strong support -----------------
 local options = ns.Advisor.Evaluate({ id = 1, quantity = 1 }, { cashFirst = true, cashMargin = 1.5, price = function() return nil end,

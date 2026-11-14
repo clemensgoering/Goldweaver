@@ -127,7 +127,7 @@ ns.Steps.RegisterSource("gates", 45, function(add, ctx)
   -- team members who are stuck: the gatherer should know why the crafter's list stops growing
   for _, g in ipairs(Gates.List()) do
     if g.rec ~= ctx.me and g.severity == "blocked" then
-      local who = g.rec.firstName or g.rec.name
+      local who = ns.Chars.ShortName(g.rec)
       add({ id = "gateTeam" .. g.skillLine .. who, icon = ns.Steps.ICON.roles, category = L["Team"],
         title = (L["%s needs level %d"]):format(who, g.reqLevel),
         detail = (L["%s stops at %d until then (%d levels to go). Play %s a little."]):format(g.profession, g.cap, g.needLevel, who) })

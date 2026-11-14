@@ -23,7 +23,7 @@ local function whoCan(conv)
   end
   if not skillLine then return nil end
   local names = {}
-  for _, rec in ipairs(ns.Chars.WithProfession(skillLine, ns.Chars.MarketKey())) do names[#names + 1] = rec.firstName or rec.name end
+  for _, rec in ipairs(ns.Chars.WithProfession(skillLine, ns.Chars.MarketKey())) do names[#names + 1] = ns.Chars.ShortName(rec) end
   if #names == 0 then return nil end
   return table.concat(names, ", ")
 end
@@ -65,7 +65,7 @@ function Tooltip.Lines(itemID, quantity, isBound)
     main = (L["Goldweaver: %s ≈ %s"]):format(label, ns.Util.Money(best.value))
     if who then main = main .. " (" .. who .. ")" end
     if best.cashFirst then main = main .. " · " .. L["gold first"] end
-    if target then main = (L["Goldweaver: send to %s » %s ≈ %s"]):format(target.firstName or target.name, label, ns.Util.Money(best.value)) end
+    if target then main = (L["Goldweaver: send to %s » %s ≈ %s"]):format(ns.Chars.ShortName(target), label, ns.Util.Money(best.value)) end
   end
   lines[#lines + 1] = { text = main, color = GOLD }
 

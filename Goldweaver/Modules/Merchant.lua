@@ -85,7 +85,7 @@ function Merchant.SellList()
   return out
 end
 
-local function first(rec) return rec and (rec.firstName or rec.name) or "" end
+local function first(rec) return rec and (ns.Chars.ShortName(rec)) or "" end
 
 local function refresh()
   if not tabs then return end

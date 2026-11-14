@@ -58,11 +58,28 @@ UI.RegisterTab("berufe", "Professions", function(frame)
   compareButton:SetPoint("BOTTOMLEFT", 10, 10)
 
   -- detail -----------------------------------------------------------------------------------------
-  local status = UI.Inset(frame, DW, 92)
+  local status = UI.Inset(frame, DW, 98)
   status:SetPoint("TOPLEFT", nav, "TOPRIGHT", 10, 0)
   local statusTitle = UI.Section(status, L["STATUS"], DW - 20)
   statusTitle:SetPoint("TOPLEFT", 10, -8)
-  local statusLines = UI.Lines(status, 3, DW - 190, "GameFontHighlightSmall", -28, true)
+  -- rank ladder: four segments (Apprentice .. Artisan), filled to the skill; under each the rank and what unlocks it
+  local LADDER_W = DW - 190
+  local ladder = {}
+  for i = 1, 4 do
+    local seg = CreateFrame("Frame", nil, status)
+    seg:SetSize(LADDER_W / 4 - 4, 8); seg:SetPoint("TOPLEFT", 10 + (i - 1) * LADDER_W / 4, -30)
+    seg.bg = seg:CreateTexture(nil, "BACKGROUND"); seg.bg:SetAllPoints()
+    seg.fill = seg:CreateTexture(nil, "ARTWORK"); seg.fill:SetPoint("TOPLEFT"); seg.fill:SetHeight(8)
+    seg.fill:SetColorTexture(1, 0.78, 0.35, 0.9)
+    seg.label = status:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    seg.label:SetPoint("TOPLEFT", seg, "BOTTOMLEFT", 0, -3); seg.label:SetWidth(LADDER_W / 4 - 4)
+    seg.label:SetJustifyH("LEFT"); seg.label:SetWordWrap(false)
+    ladder[i] = seg
+  end
+  local ladderHover = CreateFrame("Frame", nil, status)
+  ladderHover:SetPoint("TOPLEFT", 10, -26); ladderHover:SetSize(LADDER_W, 30); ladderHover:EnableMouse(true)
+  ladderHover:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  local statusLines = UI.Lines(status, 2, LADDER_W, "GameFontHighlightSmall", -58, true)
   local loadButton = UI.Button(status, L["Load recipes"], 160, nil)
   loadButton:SetPoint("TOPRIGHT", -10, -26)
 
@@ -134,28 +151,63 @@ UI.RegisterTab("berufe", "Professions", function(frame)
     local profile = ns.Professions:BySkillLine(skillLine)
     local rank = ns.Planner.NextRank(skillLine, me)
     local lines = {}
-    if p then
-      local nextText = ""
-      if rank and rank.next then
-        local hint = ""
-        if rank.canTrain then hint = " |cff80ff80· " .. L["trainable now"] .. "|r"
-        elseif rank.needSkill > 0 then hint = (" · " .. L["%d more points"]):format(rank.needSkill)
-        elseif rank.needLevel > 0 then hint = (" · " .. L["%d more levels"]):format(rank.needLevel) end
-        nextText = (L[" » %s from skill %d, level %d%s"]):format(L[rank.next.name], rank.next.reqSkill, rank.reqLevel, hint)
+    local ranks = profile and profile.ranks or ns.Professions.DEFAULT_RANKS
+    local level = me and me.level or 1
+    local from = 0
+    local nextShown = false
+    for i, seg in ipairs(ladder) do
+      local r = ranks[i]
+      if p and r then
+        local trained = r.max <= (p.maxRank or 0)
+        seg.bg:SetColorTexture(trained and 0.24 or 0.07, trained and 0.19 or 0.06, trained and 0.12 or 0.05, 1)
+        local share = math.max(0, math.min(1, ((p.rank or 0) - from) / math.max(1, r.max - from)))
+        seg.fill:SetWidth(math.max(1, (LADDER_W / 4 - 4) * share)); seg.fill:SetShown(share > 0)
+        local reqLevel = (ns.Learn.RankRequirement(skillLine, r.reqSkill)) or r.reqLevel or 0
+        if trained then
+          seg.label:SetText(L[r.name]); seg.label:SetTextColor(0.85, 0.80, 0.70)
+        elseif not nextShown then
+          nextShown = true
+          if level < reqLevel then
+            seg.label:SetText((L["%s · lvl %d"]):format(L[r.name], reqLevel)); seg.label:SetTextColor(1, 0.45, 0.35)
+          elseif (p.rank or 0) < r.reqSkill then
+            seg.label:SetText((L["%s · skill %d"]):format(L[r.name], r.reqSkill)); seg.label:SetTextColor(1, 0.82, 0.45)
+          else
+            seg.label:SetText((L["%s · learn now"]):format(L[r.name])); seg.label:SetTextColor(0.5, 1, 0.5)
+          end
+        else
+          seg.label:SetText(("%s %d"):format(L[r.name], reqLevel)); seg.label:SetTextColor(0.5, 0.47, 0.42)
+        end
+        seg:Show(); seg.label:Show()
+        from = r.max
+      else
+        seg:Hide(); seg.label:Hide()
       end
-      lines[1] = { ("%s · %s%s"):format(p.name or "?", rank and rank.current and L[rank.current.name] or "?", nextText), 1, 1, 1 }
+    end
+    if p then
+      -- the trainer of the next rank: the first one on the line, all of them in the tooltip
       local trainer = rank and rank.next and rank.trainer
       if trainer then
+        local firstTrainer, more = trainer:match("^(.-%))%s*,%s*(.+)$")
         local label = rank.canTrain and L["Train at"] or L["Next rank at"]
-        local text = ("%s: %s%s"):format(label, trainer, rank.trainerSeen and (" (" .. L["seen yourself"] .. ")") or "")
-        lines[2] = rank.canTrain and { text, 0.6, 1, 0.6 } or { text, 0.8, 0.8, 0.8 }
-      else lines[2] = { profile and profile.notes and profile.notes[1] and L[profile.notes[1]] or "", 0.7, 0.7, 0.7 } end
+        local text = ("%s: %s%s"):format(label, firstTrainer or trainer, more and (" " .. L["+ more"]) or "")
+        lines[1] = rank.canTrain and { text, 0.6, 1, 0.6 } or { text, 0.8, 0.8, 0.8 }
+      else lines[1] = { profile and profile.notes and profile.notes[1] and L[profile.notes[1]] or "", 0.7, 0.7, 0.7 } end
+      ladderHover:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(("%s %d / %d"):format(p.name or "?", p.rank or 0, p.maxRank or 0), 1, 0.82, 0)
+        for _, r in ipairs(ranks) do
+          local reqLevel = (ns.Learn.RankRequirement(skillLine, r.reqSkill)) or r.reqLevel or 0
+          GameTooltip:AddDoubleLine(L[r.name], (L["skill %d · level %d · cap %d"]):format(r.reqSkill, reqLevel, r.max), 1, 1, 1, 0.8, 0.8, 0.8)
+        end
+        if trainer then GameTooltip:AddLine(trainer, 0.8, 0.8, 0.8, true) end
+        GameTooltip:Show()
+      end)
       -- gathering professions have no recipe book: the zone band for the current skill instead (profile.zones)
       local band = profile and ns.Professions.ZoneFor(profile, p.rank or 0)
       if band then
-        lines[3] = { (L["Level in: %s (%s)"]):format(L[band.zone], L[band.note or ""]), 0.6, 0.85, 1 }
+        lines[2] = { (L["Level in: %s (%s)"]):format(L[band.zone], L[band.note or ""]), 0.6, 0.85, 1 }
       else
-        lines[3] = book and { (L["Recipes: %d of %d learned · read %s"]):format(p.learnedCount or 0, p.recipeCount or #book.list, ago(p.when)), 0.6, 0.6, 0.6 }
+        lines[2] = book and { (L["Recipes: %d of %d learned · read %s"]):format(p.learnedCount or 0, p.recipeCount or #book.list, ago(p.when)), 0.6, 0.6, 0.6 }
           or { L["Not read yet: 'Load recipes' (otherwise happens automatically at the next login)."], 1, 0.6, 0.2 }
       end
     end

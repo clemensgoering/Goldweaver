@@ -12,7 +12,7 @@ local LIST_W, RIGHT_W = 420, 322
 local ROLE_ICON = { main = "Interface\\Icons\\INV_Misc_Bag_08", processor = "Interface\\Icons\\Trade_BlackSmithing", none = "Interface\\Icons\\INV_Misc_QuestionMark" }
 local GOLD, GREEN, ORANGE, GREY = { 1, 0.82, 0.45 }, { 0.37, 0.83, 0.37 }, { 1, 0.6, 0.24 }, { 0.62, 0.57, 0.50 }
 
-local function first(rec) return rec and (rec.firstName or rec.name) or "?" end
+local function first(rec) return ns.Chars.ShortName(rec) end
 
 -- One character card: role icon, name (+ "YOU"), one info line, up to two profession skill bars.
 local function charCard(parent, highlight)

@@ -49,7 +49,7 @@ function HUD.Refresh()
   local count, value, target = ns.Mail.Pending()
   local processors = ns.Chars.ByRole("processor", ns.Chars.MarketKey())
   if target then
-    parts[#parts + 1] = (L["For %s: %s (%d)"]):format(target.firstName or target.name, ns.Util.Money(value), count)
+    parts[#parts + 1] = (L["For %s: %s (%d)"]):format(ns.Chars.ShortName(target), ns.Util.Money(value), count)
   elseif #processors > 0 then
     parts[#parts + 1] = (L["Nothing for %s"]):format(processors[1].firstName or processors[1].name)
   else

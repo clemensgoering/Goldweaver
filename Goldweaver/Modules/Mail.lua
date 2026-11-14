@@ -229,7 +229,7 @@ local function refreshSendButton()
   -- keeps pointing at the target it was filled for (bug found by tools/tests/sim.lua, 09.11.2026).
   if attached and attached > 0 and sendButton.plan then
     local rec = sendButton.plan.rec
-    setLabel((L["Send %d » %s"]):format(attached, rec.firstName or rec.name))
+    setLabel((L["Send %d » %s"]):format(attached, ns.Chars.ShortName(rec)))
     sendButton.tip = (L["Send to %s (%d attachments)"]):format(rec.name, attached)
     sendButton:Enable(); sendButton:Show()
     return
@@ -245,11 +245,11 @@ local function refreshSendButton()
   sendButton.plan = first
   sendButton:Enable(); sendButton:Show()
   if attached and attached > 0 then
-    setLabel((L["Send %d » %s"]):format(attached, first.rec.firstName or first.rec.name))
+    setLabel((L["Send %d » %s"]):format(attached, ns.Chars.ShortName(first.rec)))
     sendButton.tip = (L["Send to %s (%d attachments)"]):format(first.rec.name, attached)
   else
     local n = math.min(MAX_ATTACH, #first.items)
-    setLabel((L["Attach %d » %s"]):format(n, first.rec.firstName or first.rec.name))
+    setLabel((L["Attach %d » %s"]):format(n, ns.Chars.ShortName(first.rec)))
     sendButton.tip = (L["Attach for %s: %d of %d (%s)"]):format(first.rec.name, n, first.count, ns.Util.Money(first.value))
   end
 end
@@ -358,7 +358,7 @@ ns.Slash.Register("mail", function()
   local byReason = {}
   for _, e in ipairs(explained) do
     if e.target then
-      ns.Print(("» %s: %s x%d (%s)"):format(e.target.firstName or e.target.name, e.item.link or tostring(e.item.itemID), e.item.count, e.reason or ""))
+      ns.Print(("» %s: %s x%d (%s)"):format(ns.Chars.ShortName(e.target), e.item.link or tostring(e.item.itemID), e.item.count, e.reason or ""))
     else
       byReason[e.reason or "?"] = (byReason[e.reason or "?"] or 0) + 1
     end

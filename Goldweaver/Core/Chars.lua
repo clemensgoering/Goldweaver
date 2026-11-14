@@ -28,6 +28,18 @@ function Chars.Names()
   return first, second
 end
 
+-- Short display name: the first name, or the full name when another own character on the market has the same
+-- first name ("Cupedos Grel" and "Cupedos Bank").
+function Chars.ShortName(rec)
+  if not rec then return "?" end
+  local first = rec.firstName
+  if not first then return rec.name or "?" end
+  for _, other in pairs(ns.db and ns.db.chars or {}) do
+    if other ~= rec and other.firstName == first and other.market == rec.market then return rec.name or first end
+  end
+  return first
+end
+
 -- Registry key and display name: "Cupedos Grel".
 function Chars.FullName()
   local first, surname = Chars.Names()

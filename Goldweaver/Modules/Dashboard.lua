@@ -62,7 +62,7 @@ Steps.RegisterSource("mail", 20, function(add, ctx)
   local count, value, target = ns.Mail.Pending()
   if count > 0 and target then
     add({ id = "mail", icon = ICON.mail, category = L["Mail"], value = value,
-      title = (L["Send %d item(s) to %s"]):format(count, target.firstName or target.name),
+      title = (L["Send %d item(s) to %s"]):format(count, ns.Chars.ShortName(target)),
       detail = L["At the next mailbox: 'Attach', then 'Send'."], })
   end
 end)

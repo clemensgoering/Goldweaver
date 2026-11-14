@@ -1,11 +1,12 @@
--- Goldweaver: tab "Team" - characters with their roles (set automatically, changeable here), the self check status
--- and shortcuts to the settings (Blizzard options) and the debug report.
+-- Goldweaver: tab "Team" - characters with their roles (set automatically, changeable here), level and gold, one
+-- small skill bar per profession, the self check status and shortcuts to the settings and the debug report.
 local ADDON, ns = ...
 local L = ns.L
 
 local UI = ns.UI
 local Chars = ns.Chars
 local W = 752
+local PROF_SLOTS, PROF_W = 3, 76
 local ROLE_OPTIONS = { { "main", Chars.ROLE_LABELS.main }, { "processor", Chars.ROLE_LABELS.processor }, { "none", Chars.ROLE_LABELS.none } } -- English keys, UI.Dropdown translates
 local ROLE_ICON = {
   main = "Interface\\Icons\\INV_Misc_Bag_08", processor = "Interface\\Icons\\Trade_BlackSmithing",
@@ -37,7 +38,19 @@ UI.RegisterTab("team", "Team", function(frame)
     r.name:SetWidth(240)
     r.info = UI.Text(r, "", "GameFontDisableSmall")
     r.info:SetPoint("TOPLEFT", r.name, "BOTTOMLEFT", 0, -3)
-    r.info:SetWidth(W - 20 - 44 - 200); r.info:SetWordWrap(false)
+    r.info:SetWidth(180); r.info:SetWordWrap(false)
+    -- professions: up to four small bars with the name above, primary professions first
+    r.profs = {}
+    for k = 1, PROF_SLOTS do
+      local slot = CreateFrame("Frame", nil, r)
+      slot:SetSize(PROF_W, 30); slot:SetPoint("TOPLEFT", 290 + (k - 1) * (PROF_W + 8), -6)
+      slot.label = slot:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+      slot.label:SetPoint("TOPLEFT", 0, 0); slot.label:SetWidth(PROF_W); slot.label:SetJustifyH("LEFT"); slot.label:SetWordWrap(false)
+      slot.bar = UI.SkillBar(slot, PROF_W, 13)
+      slot.bar:SetPoint("TOPLEFT", 0, -15)
+      slot:Hide()
+      r.profs[k] = slot
+    end
     r.role = UI.Dropdown(r, 180, ROLE_OPTIONS, function(role) if r.rec then Chars.SetRole(r.rec.name, role) end end)
     r.role:SetPoint("RIGHT", 0, 0)
     content.rows[i] = r
@@ -68,9 +81,24 @@ UI.RegisterTab("team", "Team", function(frame)
       local auto = rec.roleSource == "auto" and " |cff999999" .. L["(automatic)"] .. "|r" or ""
       r.name:SetText(rec.name .. (rec.name == Chars.FullName() and " |cff80ff80" .. L["(you)"] .. "|r" or "") .. auto)
       local profs = {}
-      for _, p in pairs(rec.professions or {}) do if not p.former then profs[#profs + 1] = (p.name or "?") .. " " .. tostring(p.rank or 0) end end
-      table.sort(profs)
-      r.info:SetText((L["Level %s · %s · %s"]):format(tostring(rec.level or "?"), rec.market or "?", #profs > 0 and table.concat(profs, ", ") or L["no professions"]))
+      for skillLine, p in pairs(rec.professions or {}) do
+        local profile = not p.former and ns.Professions:BySkillLine(skillLine)
+        if not p.former then profs[#profs + 1] = { p = p, primary = profile and profile.category ~= "secondary" } end
+      end
+      table.sort(profs, function(a, b)
+        if a.primary ~= b.primary then return a.primary end
+        return (a.p.rank or 0) > (b.p.rank or 0)
+      end)
+      for k, slot in ipairs(r.profs) do
+        local e = profs[k]
+        if e then
+          slot.label:SetText(e.p.name or "?")
+          slot.bar:SetSkill(e.p.rank, e.p.maxRank, 0.25, 0.62, 0.25)
+          slot:Show()
+        else slot:Hide() end
+      end
+      local extra = #profs > PROF_SLOTS and (" · +" .. (#profs - PROF_SLOTS)) or ""
+      r.info:SetText((L["Level %s · %s"]):format(tostring(rec.level or "?"), rec.money and ns.Util.MoneyShort(rec.money) or L["gold unknown"]) .. extra)
       r.role:SetValue(rec.role or "none")
     end
     for i = #all + 1, #content.rows do content.rows[i]:Hide() end

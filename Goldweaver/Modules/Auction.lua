@@ -198,7 +198,7 @@ refreshShop = function()
   local name = ns.UI.ItemName(row.item)
   if shop.item ~= row.item then shop.item, shop.state, shop.qty = row.item, "idle", row.missing end
   local qty = shop.qty
-  local tip = (L["Shopping list %d/%d: %d × %s for %s's plan."]):format(shop.index, #list, qty, name, row.forRec and (row.forRec.firstName or row.forRec.name) or "?")
+  local tip = (L["Shopping list %d/%d: %d × %s for %s's plan."]):format(shop.index, #list, qty, name, row.forRec and (ns.Chars.ShortName(row.forRec)) or "?")
   if shop.state == "idle" then
     shopTabs[1]:Set((L["Search %s"]):format(name), tip, function()
       if not ready() then return ns.Print(L["Auction house is busy, try again in a moment."]) end
