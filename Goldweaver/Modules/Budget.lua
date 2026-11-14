@@ -9,7 +9,9 @@
 -- Public API (ns.Budget)
 --   RegisterExpense(name, fn(rec) -> { expense }) ★   expense = { id, label, copper|nil, level, kind, estimate?, icon? }
 --   Expenses(rec) -> { expense }        everything a character will pay from now to 60, by level
---   Summary(market?) -> { cash, due, gap, strength, items, later, perChar }   (cached a few seconds)
+--   Summary(market?) -> { cash, due, gap, strength, items, later, perChar, byKind = { [kind] = copper },
+--                         nowDue, nowCash, nowGap, nowItems }   (cached a few seconds)
+--   KINDS = { "class", "rank", "riding", "materials" }   display order of the cost kinds
 --   Strength() -> "covered" | "light" | "strong";  NeedsCash() -> boolean (light or strong, setting on)
 --   CashMargin() -> factor a non-cash use must beat selling by (1 when covered)
 --   Timeline(rec) -> { { from, to, class, ranks, riding, materials, materialsPriced, total } }   bands of ten levels
@@ -21,6 +23,7 @@ local L = ns.L
 
 local Budget = { expenses = {}, order = {} }
 ns.Budget = Budget
+Budget.KINDS = { "class", "rank", "riding", "materials" }
 
 local HORIZON = 10
 local CACHE = 5
@@ -141,7 +144,7 @@ function Budget.Invalidate() cache = nil end
 function Budget.Summary(market)
   local now = GetTime and GetTime() or 0
   if cache and not market and now - cacheAt < CACHE then return cache end
-  local s = { cash = 0, due = 0, items = {}, later = {}, perChar = {}, nowDue = 0, nowCash = 0, nowItems = {} }
+  local s = { cash = 0, due = 0, items = {}, later = {}, perChar = {}, byKind = {}, nowDue = 0, nowCash = 0, nowItems = {} }
   local me = ns.Chars.Current()
   for _, rec in ipairs(ns.Chars.All(market or ns.Chars.MarketKey())) do
     if rec.role ~= "none" then
@@ -152,7 +155,9 @@ function Budget.Summary(market)
         -- due right now for the character at the keyboard: paid from its own bags, not the team's
         if rec == me and e.copper and e.level <= level then s.nowDue = s.nowDue + e.copper; s.nowItems[#s.nowItems + 1] = e end
         if e.copper then
-          if e.level <= level + HORIZON then s.items[#s.items + 1] = e; s.due = s.due + e.copper
+          if e.level <= level + HORIZON then
+            s.items[#s.items + 1] = e; s.due = s.due + e.copper
+            s.byKind[e.kind] = (s.byKind[e.kind] or 0) + e.copper
           else s.later[#s.later + 1] = e end
         end
       end

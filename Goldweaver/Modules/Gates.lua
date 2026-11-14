@@ -6,6 +6,8 @@
 --   List(market?) -> { gate }   all characters of the market, most urgent first
 --   For(rec) -> { gate }        one character
 --   gate = { rec, skillLine, profession, rank, reqLevel, needLevel, skill, cap, pointsLeft, severity }
+--   Milestones(rec) -> { { level, label, professions = {name}, kind = "rank" | "riding" } }   every level from now
+--                      to 60 that unlocks a rank of an own profession, and riding at 40 (for the level track)
 --     severity: "blocked" (at the cap, cannot train), "soon" (POINTS_SOON or fewer points to the cap), "later"
 -- Steps: a guide step for this character's own gates, and one per blocked gate of a team member.
 local ADDON, ns = ...
@@ -52,6 +54,40 @@ function Gates.List(market)
     if ORDER[a.severity] ~= ORDER[b.severity] then return ORDER[a.severity] < ORDER[b.severity] end
     return a.pointsLeft < b.pointsLeft
   end)
+  return out
+end
+
+function Gates.Milestones(rec)
+  local byLevel = {}
+  local level = rec and rec.level or 1
+  for skillLine, p in pairs(rec and rec.professions or {}) do
+    local profile = not p.former and ns.Professions:BySkillLine(skillLine)
+    for _, r in ipairs(profile and profile.ranks or {}) do
+      local reqLevel = (ns.Learn.RankRequirement(skillLine, r.reqSkill)) or r.reqLevel or 0
+      if r.max > (p.maxRank or 0) and reqLevel > level then
+        local m = byLevel[reqLevel] or { level = reqLevel, kind = "rank", ranks = {}, professions = {} }
+        m.ranks[r.name] = true
+        m.professions[#m.professions + 1] = p.name or "?"
+        byLevel[reqLevel] = m
+      end
+    end
+  end
+  for _, e in ipairs(ns.Budget and ns.Budget.Expenses(rec) or {}) do
+    if e.kind == "riding" and e.level > level then
+      byLevel[e.level] = byLevel[e.level] or { level = e.level, kind = "riding", ranks = {}, professions = {} }
+      byLevel[e.level].riding = true
+    end
+  end
+  local out = {}
+  for _, m in pairs(byLevel) do
+    local names = {}
+    for name in pairs(m.ranks) do names[#names + 1] = L[name] end
+    table.sort(names)
+    if m.riding then names[#names + 1] = L["Riding"] end
+    m.label = table.concat(names, ", ")
+    out[#out + 1] = m
+  end
+  table.sort(out, function(a, b) return a.level < b.level end)
   return out
 end
 
